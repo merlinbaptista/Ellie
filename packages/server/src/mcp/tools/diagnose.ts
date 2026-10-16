@@ -5,6 +5,7 @@ import type { AppContext } from "../../context.js";
 import { diagnose } from "../../domain/diagnose.js";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
+import { mcpAppMeta } from "../apps.js";
 
 export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool(
@@ -13,6 +14,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       title: "Diagnose a home problem",
       description: "Help with a problem at home: something beeping, leaking, not working, or smelling odd. Ellie checks the item's history first. If there is a follow-up question, answer it and pass diagnosisId back.",
       inputSchema: ToolContracts.diagnose.shape,
+      ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
     },
     withTiming("diagnose", ctx, async (args: DiagnoseInput) => {

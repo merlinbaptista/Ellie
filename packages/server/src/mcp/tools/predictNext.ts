@@ -6,6 +6,7 @@ import { recomputeItem } from "../../domain/predictions.js";
 import { buildProviderLink } from "../../domain/providerLinks.js";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
+import { mcpAppMeta } from "../apps.js";
 
 export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool(
@@ -14,6 +15,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       title: "Predict next maintenance",
       description: "Tell the user when something at home will next run out or need service, and when Ellie will remind them. Use when asked when gas is due or when to change a filter.",
       inputSchema: ToolContracts.predict_next.shape,
+      ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     withTiming("predict_next", ctx, async (args: PredictNextInput) => {

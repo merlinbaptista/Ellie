@@ -4,6 +4,7 @@ import { activeSessionCount } from "../transport.js";
 import { toolResponse } from "../result.js";
 import { getRecentTimings, withTiming } from "../withTiming.js";
 import { getLlmDiagnostics } from "../../diagnosis/llmRanker.js";
+import { mcpAppStatus } from "../apps.js";
 import { linkPk } from "../../data/keys.js";
 
 export async function statusData(ctx: AppContext) {
@@ -41,6 +42,7 @@ export async function statusData(ctx: AppContext) {
       lastLatencyMs: llmDiagnostics.lastLatencyMs,
       fallbacks24h: llmDiagnostics.fallbacks24h,
     },
+    mcpApps: mcpAppStatus(),
     notifier: { implementation: ctx.notifier.name, smsEnabled: ctx.env.SNS_SMS_ENABLED, ...(ctx.env.SNS_TOPIC_ARN ? { topic: ctx.env.SNS_TOPIC_ARN } : {}) },
     scheduler: { implementation: ctx.scheduler.name, scheduled: schedulerHealth?.scheduled ?? (await ctx.scheduler.list()).length, ...(schedulerHealth?.queueDepth !== undefined ? { queueDepth: schedulerHealth.queueDepth } : {}) },
     links: { activeShortLinks: (await ctx.storage.query(linkPk())).filter((row) => row.type === "phone-short-link").length },

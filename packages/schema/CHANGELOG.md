@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 — 2026-10-20
+- Add browser-safe phone chat request/response and chat message schemas.
+- Add phone UI language and translation metadata, and allow chat actions.
+- Add optional localized safety stop-message map to region packs.
+
 ## 1.4.1 — 2026-10-16
 - Add optional structured safety category and emergency number to diagnosis records.
 

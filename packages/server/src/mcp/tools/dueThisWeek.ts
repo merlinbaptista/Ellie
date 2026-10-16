@@ -7,6 +7,7 @@ import { loadHouseholdSnapshot } from "../../domain/snapshot.js";
 import { speechList } from "@ellie/schema";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
+import { mcpAppMeta } from "../apps.js";
 
 interface DueEntry {
   itemId: string;
@@ -27,6 +28,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       title: "What's due at home",
       description: "Give the household a short briefing of what is due, overdue, or expiring soon. Use for what's due this week, home to-dos, and morning briefings.",
       inputSchema: ToolContracts.due_this_week.shape,
+      ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     withTiming("due_this_week", ctx, async (args: DueThisWeekInput) => {

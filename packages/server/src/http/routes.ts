@@ -3,8 +3,10 @@ import type { AppContext } from "../context.js";
 import { statusData } from "../mcp/tools/status.js";
 import { registerShortLinkRoutes } from "../links/shortLinks.js";
 import { registerPhoneApi } from "./phoneApi.js";
+import { registerStaticPhone } from "./static.js";
 
 export function registerHttpRoutes(app: Express, ctx: AppContext): void {
+  registerStaticPhone(app);
   registerShortLinkRoutes(app, ctx);
   registerPhoneApi(app, ctx);
   app.get("/health", (_req: Request, res: Response) => {

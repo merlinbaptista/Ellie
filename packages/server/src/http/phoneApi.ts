@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Express, Request, Response } from "express";
 import type { Diagnosis } from "@ellie/schema";
+import { PhoneChatRequest, PhoneUiLanguage } from "@ellie/schema";
 import type { AppContext } from "../context.js";
 import { logEvent } from "../domain/events.js";
 import { logResolution } from "../domain/resolutions.js";
@@ -9,8 +10,10 @@ import { buildPhoneView } from "../phone/views.js";
 import { renderPhonePage } from "../phone/fallbackPage.js";
 import { verifyPhoneLink, PhoneTokenError } from "../links/sign.js";
 import { allowRate } from "./rateLimit.js";
-import { linkPk, phoneActionSk, ttlClockForKey } from "../data/keys.js";
+import { linkPk, phoneActionSk, phoneChatDisabledSk, ttlClockForKey } from "../data/keys.js";
 import { NotFoundError } from "../lib/errors.js";
+import { getPhoneChat, postPhoneChat, ChatLimitError } from "../phone/chat.js";
+import { translatePhoneView } from "../phone/translate.js";
 
 const expiredSpeech = "This link has expired. Ask Alexa to send it again.";
 const invalidSpeech = "This link is invalid. Ask Alexa to send it again.";
@@ -47,10 +50,45 @@ export function registerPhoneApi(app: Express, ctx: AppContext): void {
     if (!allowRequest(req, token, "get")) { res.status(429).json({ error: "rate_limited" }); return; }
     try {
       const payload = verifyPhoneLink(token, ctx.env);
-      res.json(await buildPhoneView(ctx, payload));
+      const parsedLanguage = PhoneUiLanguage.safeParse(typeof req.query.lang === "string" ? req.query.lang : "en");
+      const language = parsedLanguage.success ? parsedLanguage.data : "en";
+      res.json(await translatePhoneView(ctx, payload, language));
     } catch (error) {
       if (error instanceof PhoneTokenError) respondTokenError(res, error);
       else if (error instanceof NotFoundError) res.status(404).json({ error: "not_found", message: error.speech });
+      else next(error);
+    }
+  });
+
+  app.get("/api/phone/chat", async (req, res, next) => {
+    setPrivateHeaders(res);
+    const token = requestToken(req);
+    if (!allowRequest(req, token, "get")) { res.status(429).json({ error: "rate_limited" }); return; }
+    try {
+      const payload = verifyPhoneLink(token, ctx.env);
+      if (payload.kind !== "fix") { res.status(404).json({ error: "chat_unavailable" }); return; }
+      const history = await getPhoneChat(ctx, payload);
+      res.json({ messages: history, disabled: Boolean(await ctx.storage.get(linkPk(), phoneChatDisabledSk(payload.nonce))) });
+    } catch (error) {
+      if (error instanceof PhoneTokenError) respondTokenError(res, error);
+      else if (error instanceof NotFoundError) res.status(404).json({ error: "chat_unavailable" });
+      else next(error);
+    }
+  });
+
+  app.post("/api/phone/chat", async (req, res, next) => {
+    setPrivateHeaders(res);
+    const token = requestToken(req);
+    if (!allowRequest(req, token, "post")) { res.status(429).json({ error: "rate_limited" }); return; }
+    try {
+      const payload = verifyPhoneLink(token, ctx.env);
+      const input = PhoneChatRequest.parse(req.body);
+      res.json(await postPhoneChat(ctx, payload, input));
+    } catch (error) {
+      if (error instanceof PhoneTokenError) respondTokenError(res, error);
+      else if (error instanceof ChatLimitError) res.status(429).json({ error: "chat_limit", message: error.message });
+      else if (error instanceof NotFoundError) res.status(404).json({ error: "chat_unavailable" });
+      else if (error instanceof Error && error.name === "ZodError") res.status(400).json({ error: "invalid_request" });
       else next(error);
     }
   });

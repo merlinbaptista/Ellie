@@ -18,7 +18,8 @@ describe("phone link signatures", () => {
   it("rejects tampering and malformed tokens", () => {
     const { token } = signPhoneLink({ householdId: "hh_sign-1", kind: "summary", env });
     const [body, signature] = token.split(".");
-    expect(() => verifyPhoneLink(`${body}.${signature!.slice(0, -1)}A`, env)).toThrow("invalid");
+    const changedSignature = `${signature![0] === "A" ? "B" : "A"}${signature!.slice(1)}`;
+    expect(() => verifyPhoneLink(`${body}.${changedSignature}`, env)).toThrow("invalid");
     expect(() => verifyPhoneLink("not-a-token", env)).toThrow("invalid");
   });
 

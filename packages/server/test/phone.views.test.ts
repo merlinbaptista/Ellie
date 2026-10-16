@@ -39,6 +39,8 @@ describe("phone views and fallback page", () => {
     const likely = view.sections.find((section) => section.heading === "What's likely wrong")?.body ?? "";
     expect(likely).toContain("overdue");
     expect(likely).toContain("resolved");
+    expect(view.actions.some((action) => action.id === "chat")).toBe(true);
+    expect(Object.keys(view.citationTexts ?? {})).toContain("fix_parts");
   });
 
   it("keeps a safety phone guide to the stop section and the category emergency number", async () => {

@@ -43,7 +43,10 @@ describe("prediction Journey 1", () => {
       expect(shortResponse.status).toBe(302);
       const pageResponse = await fetch(new URL(shortResponse.headers.get("location")!, base));
       expect(pageResponse.status).toBe(200);
-      expect(await pageResponse.text()).toContain("https://wa.me/917588888824?text=REFILL");
+      expect(await pageResponse.text()).toContain("/phone/assets/");
+      const pageToken = new URL(shortResponse.headers.get("location")!, base).searchParams.get("t")!;
+      const phoneView = await fetch(`${base}/api/phone/view`, { headers: { authorization: `Bearer ${pageToken}` } }).then((response) => response.json()) as { actions: Array<{ id: string; url?: string }> };
+      expect(phoneView.actions.find((action) => action.id === "book")?.url).toBe("https://wa.me/917588888824?text=REFILL");
       const schedule = await fetch(`${base}/api/schedule?householdId=demo-blr`).then((response) => response.json()) as Array<{ id: string }>;
       expect(schedule.some((job) => job.id.includes(data.data.mostUrgent.itemId))).toBe(false);
       const apiTravel = await fetch(`${base}/api/dev/time-travel`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ reset: true }) });

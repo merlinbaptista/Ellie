@@ -39,18 +39,20 @@ describe("phone handoff Journey 3", () => {
 
     const redirect = await fetch(result.data.shortUrl, { redirect: "manual" });
     expect(redirect.status).toBe(302);
-    const fallbackLocation = new URL(redirect.headers.get("location")!, base);
-    expect(fallbackLocation.pathname).toBe("/p/" + fallbackLocation.pathname.split("/").at(-1));
-    const token = decodeURIComponent(fallbackLocation.pathname.slice(3));
-    const page = await fetch(fallbackLocation);
+    const phoneLocation = new URL(redirect.headers.get("location")!, base);
+    expect(phoneLocation.pathname).toBe("/phone/");
+    expect(phoneLocation.searchParams.has("t")).toBe(true);
+    const token = phoneLocation.searchParams.get("t")!;
+    const page = await fetch(phoneLocation);
     expect(page.status).toBe(200);
-    expect(page.headers.get("cache-control")).toBe("no-store");
-    expect(page.headers.get("referrer-policy")).toBe("no-referrer");
-    expect(page.headers.get("content-security-policy")).toContain("default-src 'none'");
     const html = await page.text();
-    expect(html).toContain("Book on WhatsApp");
-    expect(html).toContain("https://wa.me/917588888824?text=REFILL");
-    expect(html).toContain("registered with Indane");
+    expect(html).toContain("/phone/assets/");
+    const view = await fetch(`${base}/api/phone/view`, { headers: { authorization: `Bearer ${token}` } }).then((response) => response.json()) as { actions: Array<{ id: string; url?: string }>; sections: Array<{ body?: string }> };
+    expect(view.actions.find((action) => action.id === "book")?.url).toBe("https://wa.me/917588888824?text=REFILL");
+    expect(view.sections.find((section) => section.body?.includes("registered with Indane"))).toBeDefined();
+    const fallback = await fetch(`${base}/p/${encodeURIComponent(token)}`);
+    expect(fallback.status).toBe(200);
+    expect(fallback.headers.get("cache-control")).toBe("no-store");
 
     const booking = await fetch(`${base}/api/phone/actions/booked`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: token }) });
     const firstAction = await booking.json() as { ok: boolean; eventId: string };

@@ -11,7 +11,7 @@ export function createApp(ctx: AppContext): express.Express {
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false, limit: "16kb" }));
   app.use(cors({
-    origin: [...new Set([...ctx.env.CORS_ORIGINS, new URL(ctx.env.PHONE_PAGE_BASE_URL).origin])],
+    origin: [...new Set([...ctx.env.CORS_ORIGINS, ...(ctx.env.PHONE_PAGE_BASE_URL ? [new URL(ctx.env.PHONE_PAGE_BASE_URL).origin] : [])])],
     exposedHeaders: ["Mcp-Session-Id"],
     allowedHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id", "Mcp-Protocol-Version", "Last-Event-ID"],
   }));

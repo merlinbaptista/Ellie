@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 6: phone handoff and AWS scheduling**
+**Status: Module 7: phone page, phone chat and MCP Apps view**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -105,11 +105,29 @@ The LLM may rank only the deterministic candidate list and explain cited evidenc
 
 ## Phone handoff
 
-`send_to_phone` sends a consented fix, booking guide, or due summary with a short expiring link. Links use HMAC signatures and wall-clock expiry; SMS contains one GSM-7 link and is limited to 160 characters. The `/p/:token` server-rendered page is the fallback until the Module 7 phone page is configured. The phone API rebuilds the view live and accepts token-scoped `fixed`, `not_fixed`, and `booked` actions.
+`send_to_phone` sends a consented fix, booking guide, or due summary with a short expiring link. Links use HMAC signatures and wall-clock expiry; SMS contains one GSM-7 link and is limited to 160 characters. The server-rendered `/p/:token` page remains a fallback; a production build also serves the mobile page at `/phone/`. The phone API rebuilds the view live and accepts token-scoped `fixed`, `not_fixed`, `booked`, and chat actions.
 
 Flow: Alexa → `send_to_phone` → SMS/email → `/l/code` → phone guide → token-authenticated action.
 
 Booking uses the saved household provider. A new item in a multi-provider region asks once; one-provider regions use their provider. The India starter list includes Indane's WhatsApp `REFILL` action and requires the registered phone number.
+
+## Phone page
+
+Build everything with `npm run build`; run the API and Vite page together with `npm run dev:all`. In development, set `PHONE_PAGE_BASE_URL=http://localhost:5174` in `.env` so short links use Vite's hot-reload page. The page moves the signed token from the query string into `sessionStorage` and sends it only as a Bearer header. Checked fix steps persist per diagnosis in local storage.
+
+The shared `@ellie/ui` package renders phone views and MCP cards. Phone chat is available only for non-safety fix guides, runs the safety gate first, and answers from diagnosis evidence/fix-plan context. Chat is disabled after a safety hit. With mock drivers, labels localize to English, Hindi, Kannada, Tamil, and Spanish while repair content remains in English. Hindi, Kannada, Tamil, and Spanish starter labels are marked `reviewed: false` and need native-speaker review.
+
+Phone summary preview at 390 × 844:
+
+![Ellie phone summary page](docs/phone-summary-390x844.png)
+
+### Phone chat and languages
+
+Chat answers only questions about the current repair, cites the supplied diagnosis or fix-plan context, and rejects unsupported facts or unsafe guidance. Safety-stop views never show chat. A safety hit during chat disables further messages. English, Hindi, Kannada, Tamil, and Spanish UI labels are available; translated repair content requires a configured LLM, otherwise the page clearly says the steps remain in English. Non-English starter labels need native-speaker review before production.
+
+## MCP Apps
+
+When the single-file card is built, supported hosts can render `ui://ellie/card.html` inline for due, prediction, history, diagnosis, and phone handoff tools. Text speech and structured results remain unchanged for Alexa+ and hosts without Apps support. The MCP Apps server helpers currently require MCP SDK v2, so Ellie registers the HTML resource and metadata directly on its MCP SDK v1 server; the compact embedded client remains under 150 KB.
 
 ## Go live on AWS
 

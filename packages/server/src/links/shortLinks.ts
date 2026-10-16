@@ -3,6 +3,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import type { AppContext } from "../context.js";
 import { verifyPhoneLink } from "./sign.js";
 import { linkPk, shortLinkSk, ttlClockForKey } from "../data/keys.js";
+import { hasPhoneBuild } from "../http/static.js";
 
 const alphabet = "23456789abcdefghjkmnpqrstuvwxyz";
 export interface ShortLinkRecord { token: string; householdId: string; kind: "fix" | "booking" | "summary"; createdAt: string }
@@ -53,16 +54,17 @@ export function registerShortLinkRoutes(app: Express, ctx: AppContext): void {
       const code = Array.isArray(req.params.code) ? req.params.code[0] : req.params.code;
       const record = await getShortLink(ctx, code ?? "");
       if (!record) { res.status(404).type("text/plain").send("This link is unavailable. Ask Alexa to send it again."); return; }
-      if (Date.now() - checkedAt >= 60_000) {
-        checkedAt = Date.now();
-        try {
-          const response = await fetch(ctx.env.PHONE_PAGE_BASE_URL, { method: "HEAD", signal: AbortSignal.timeout(1000) });
-          pageReachable = response.ok;
-        } catch { pageReachable = false; }
+      if (ctx.env.PHONE_PAGE_BASE_URL) {
+        if (Date.now() - checkedAt >= 60_000) {
+          checkedAt = Date.now();
+          try {
+            const response = await fetch(ctx.env.PHONE_PAGE_BASE_URL, { method: "HEAD", signal: AbortSignal.timeout(1000) });
+            pageReachable = response.ok;
+          } catch { pageReachable = false; }
+        }
+        if (pageReachable) { res.redirect(302, `${ctx.env.PHONE_PAGE_BASE_URL.replace(/\/$/, "")}/?t=${encodeURIComponent(record.token)}`); return; }
       }
-      const destination = pageReachable
-        ? `${ctx.env.PHONE_PAGE_BASE_URL.replace(/\/$/, "")}/?t=${encodeURIComponent(record.token)}`
-        : `/p/${encodeURIComponent(record.token)}`;
+      const destination = hasPhoneBuild() ? `/phone/?t=${encodeURIComponent(record.token)}` : `/p/${encodeURIComponent(record.token)}`;
       res.redirect(302, destination);
     } catch (error) { next(error); }
   });

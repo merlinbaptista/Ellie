@@ -7,6 +7,7 @@ import { speechList } from "@ellie/schema";
 import { recomputeItem } from "../../domain/predictions.js";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
+import { mcpAppMeta } from "../apps.js";
 
 async function findItem(householdId: string, phrase: string, ctx: AppContext) {
   const items = await ctx.repositories.items.list(householdId);
@@ -24,6 +25,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       title: "Read home history",
       description: "Read back remembered events for a household or item, including when recurring maintenance happened and its typical interval.",
       inputSchema: ToolContracts.get_history.shape,
+      ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     withTiming("get_history", ctx, async (args: GetHistoryInput) => {

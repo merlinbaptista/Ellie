@@ -18,7 +18,7 @@ import type { RegionRegistry } from "@ellie/schema";
 import { createServerRegionRegistry } from "./regions/registry.js";
 import { createRepositories, type Repositories } from "./data/index.js";
 import { handleReminderFire } from "./domain/reminders.js";
-import { registerDiagnosisMockHandler } from "./llm/mockHandlers.js";
+import { registerDiagnosisMockHandler, registerPhoneMockHandlers } from "./llm/mockHandlers.js";
 
 export interface AppContext {
   env: Env;
@@ -59,5 +59,6 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
   };
   context.scheduler.onFire((job) => handleReminderFire(job, context));
   registerDiagnosisMockHandler();
+  registerPhoneMockHandlers();
   return context;
 }

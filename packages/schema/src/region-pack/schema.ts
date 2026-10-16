@@ -82,6 +82,7 @@ export const SafetyBlock = z.object({
   stopMessages: z.record(z.string(), z.string())
     .refine((messages) => Object.keys(messages).every((key) => safetyCategoryValues.includes(key as (typeof safetyCategoryValues)[number])), "Unknown safety category")
     .refine((messages) => safetyCategoryValues.every((category) => category in messages), "Every safety category needs a stop message"),
+  stopMessagesByLanguage: z.record(z.string(), z.record(z.string(), z.string())).default({}),
   source: zSourceRef,
 }).strict().superRefine((safety, ctx) => {
   for (const [category, message] of Object.entries(safety.stopMessages)) {

@@ -30,8 +30,14 @@ export const shortLinkSk = (code: string) => code;
 export const phoneSendSk = (dedupeId: string, sentAtEpoch: number, id: string) => `${dedupeId}#${sentAtEpoch}#${id}`;
 export const phoneSendPrefix = (householdId: string) => `SEND#${householdId}#`;
 export const phoneActionSk = (tokenHash: string, action: string) => `${tokenHash}#ACTION#${action}`;
+export const phoneChatPrefix = (tokenHash: string) => `${tokenHash}#CHAT#`;
+export const phoneChatSk = (tokenHash: string, timestamp: string, id: string) => `${phoneChatPrefix(tokenHash)}${timestamp}#${id}`;
+export const phoneChatDisabledSk = (tokenHash: string) => `${tokenHash}#CHAT_DISABLED`;
+export const phoneChatCountSk = (tokenHash: string) => `${tokenHash}#CHAT_COUNT`;
+export const translationPk = () => "TRANSLATION";
+export const translationSk = (hash: string, language: string) => `${hash}#${language}`;
 export function ttlClockForKey(pk: string, sk: string): "app" | "wall" {
-  if (pk === linkPk()) return "wall";
+  if (pk === linkPk() && (sk.length === 8 || sk.includes("#ACTION#") || sk.includes("#CHAT#") || sk.includes("#CHAT_COUNT") || sk.includes("#CHAT_DISABLED"))) return "wall";
   if (pk === schedulePk() && sk.startsWith("FIRED#")) return "wall";
   return "app";
 }

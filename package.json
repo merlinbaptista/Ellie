@@ -2,15 +2,22 @@
   "name": "ellie",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*"],
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "npm run dev -w @ellie/server",
     "predev": "npm run build -w @ellie/schema",
-    "build": "npm run build -w @ellie/schema && npm run build -w @ellie/server",
+    "build": "npm run build -w @ellie/schema && npm run build:ui && npm run build -w @ellie/server",
+    "build:ui": "npm run build -w @ellie/ui && npm run build -w @ellie/phone && npm run build -w @ellie/mcp-app",
+    "dev:phone": "npm run dev -w @ellie/phone",
+    "dev:all": "concurrently -n server,phone \"npm run dev\" \"npm run dev:phone\"",
     "start": "npm run start -w @ellie/server",
-    "pretest": "npm run build -w @ellie/schema",
-    "pretypecheck": "npm run build -w @ellie/schema",
+    "pretest": "npm run build",
+    "pretypecheck": "npm run build",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "validate:packs": "npm run validate:packs -w @ellie/schema",
@@ -28,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9",
+    "concurrently": "^10.0.6",
     "eslint": "^9",
     "globals": "^15",
     "prettier": "^3",

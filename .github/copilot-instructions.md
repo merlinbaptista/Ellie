@@ -60,3 +60,21 @@ from history, and hands fixes/bookings to the phone.
 - The `SCHEDULE` mirror is the source of truth; EventBridge only triggers. Every fire checks the `FIRED` marker and staleness.
 - Phone API routes are token-scoped to one household and idempotent per action.
 - Ask for the provider once, at the first booking; one-provider regions never ask.
+
+## Phone page & UI rules (Module 7+)
+- Shared rendering lives in `@ellie/ui`; the phone page, MCP App view and simulator all use it. Never render HTML from data.
+- Tokens: read once from `?t`, keep in sessionStorage, send as Bearer, strip from the URL. Never log them.
+- Safety views show only the safety banner and call button. Chat is off for safety stops and turns off after a safety hit.
+- Phone chat answers only from diagnosis context, cites evidence or step IDs, and validates responses before returning them.
+- Translation protects URLs, numbers, dates and brand names with placeholders; safety text is never machine-translated.
+- Record TTL clock is chosen in `data/keys.ts` (`ttlClock`), never inside storage adapters.
+- MCP Apps are additive: text and `structuredContent` remain complete for hosts without UI.
+
+## Phone page & UI rules (Module 7+)
+- Shared rendering lives in `@ellie/ui`; the phone page, MCP App view and simulator all use it. Never render HTML from data.
+- Tokens: read once from `?t`, keep in sessionStorage, send as Bearer, strip from the URL. Never log them.
+- Safety views show only the safety banner and call button. Chat is off for safety stops and turns off after a safety hit.
+- Phone chat answers only from diagnosis context, cites evidence or step IDs, and validates responses before returning them.
+- Translation protects URLs, numbers, dates and brand names with placeholders; safety text is never machine-translated.
+- Record TTL clock is chosen in `data/keys.ts` (`ttlClock`), never inside storage adapters.
+- MCP Apps are additive: text and `structuredContent` remain complete for hosts without UI.

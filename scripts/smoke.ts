@@ -39,7 +39,10 @@ try {
   const due = await client.callTool({ name: "due_this_week", arguments: { householdId: "demo-blr" } });
   if (due.isError) throw new Error("due_this_week returned an error");
   console.log("Due:", due.content[0]?.text ?? "");
-  const handoff = await client.callTool({ name: "send_to_phone", arguments: { householdId: "demo-blr", contentType: "summary" } });
+  const smokeHousehold = "demo-smoke-phone";
+  const setup = await client.callTool({ name: "setup_household", arguments: { householdId: smokeHousehold, country: "US", region: "Smoke test", timeZone: "America/Chicago", phone: "+15555550100", consent: true, confirm: true } });
+  if (setup.isError) throw new Error("Could not prepare the smoke-test phone household");
+  const handoff = await client.callTool({ name: "send_to_phone", arguments: { householdId: smokeHousehold, contentType: "summary" } });
   if (handoff.isError) throw new Error("send_to_phone returned an error");
   const handoffData = handoff.structuredContent?.data as { shortUrl?: string } | undefined;
   if (!handoffData?.shortUrl) throw new Error("send_to_phone did not return a short URL");
@@ -47,7 +50,13 @@ try {
   const linkUrl = new URL(handoffData.shortUrl);
   linkUrl.host = mcpOrigin.replace(/^https?:\/\//, "");
   const phonePage = await fetch(linkUrl, { redirect: "follow" });
-  if (phonePage.status !== 200 || !(await phonePage.text()).includes("This week")) throw new Error("Phone summary link did not open the expected page");
+  const phoneHtml = await phonePage.text();
+  if (phonePage.status !== 200 || !phoneHtml.includes("/phone/assets/")) throw new Error("Phone summary link did not open the phone app");
+  const phoneToken = new URL(phonePage.url).searchParams.get("t");
+  if (!phoneToken) throw new Error("Phone summary link did not preserve its access token");
+  const phoneView = await fetch(new URL("/api/phone/view", mcpOrigin), { headers: { authorization: `Bearer ${phoneToken}` } });
+  const summary = await phoneView.json() as { title?: string; sections?: Array<{ heading: string }> };
+  if (!phoneView.ok || !summary.title?.includes("week") || !summary.sections?.length) throw new Error("Phone summary API did not return the expected view");
   console.log("Phone page:", phonePage.status, linkUrl.pathname);
 } finally {
   await client.close();

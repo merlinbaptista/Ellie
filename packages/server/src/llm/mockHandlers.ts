@@ -1,4 +1,6 @@
 import { registerMockHandler } from "../adapters/llm/mock.js";
+import { CHAT_PROMPT_V1 } from "../phone/chat.js";
+import { TRANSLATE_PROMPT_V1 } from "../phone/translate.js";
 let registered = false;
 export function registerDiagnosisMockHandler(): () => void {
   if (registered) return () => undefined;
@@ -23,4 +25,22 @@ export function registerDiagnosisMockHandler(): () => void {
       citations: citations.length ? citations : evidence.slice(0, 1).map((entry) => entry.id),
     });
   });
+}
+
+export function registerPhoneMockHandlers(): () => void {
+  const chat = registerMockHandler((request) => request.system === CHAT_PROMPT_V1, (request) => {
+    const context = JSON.parse(request.messages.at(-1)?.content ?? "{}") as { evidence?: Array<{ id: string; text: string }>; steps?: Array<{ id: string; text: string }>; parts?: string[]; question?: string };
+    const question = context.question?.toLowerCase() ?? "";
+    const evidence = context.evidence ?? [];
+    const step = context.steps?.[0];
+    const proof = evidence[0];
+    const text = /part|buy|need/.test(question) && context.parts?.length ? `You'll need ${context.parts.join(", ")}.` : step ? step.text : proof?.text ?? "I'm not sure — please call a technician.";
+    const citations = /part|buy|need/.test(question) ? [] : step ? [step.id] : proof ? [proof.id] : [];
+    return JSON.stringify({ text, citations });
+  });
+  const translate = registerMockHandler((request) => request.system === TRANSLATE_PROMPT_V1, (request) => {
+    const input = JSON.parse(request.messages.at(-1)?.content ?? "{}") as { fields?: Array<{ path: string; text: string }> };
+    return JSON.stringify({ fields: input.fields ?? [] });
+  });
+  return () => { chat(); translate(); };
 }

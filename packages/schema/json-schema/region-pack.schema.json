@@ -651,6 +651,16 @@
                 "type": "string"
               }
             },
+            "stopMessagesByLanguage": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "default": {}
+            },
             "source": {
               "type": "object",
               "properties": {

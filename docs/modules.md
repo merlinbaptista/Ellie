@@ -8,7 +8,7 @@
 | 4 | Prediction engine | Due dates, time-zone maths, regional minimums, confidence, reminders | ✅ |
 | 5 | Diagnosis engine | Symptom flows, safety rules, Bedrock adapter, diagnosis/resolution tools | ✅ |
 | 6 | Phone handoff & scheduling | SNS, EventBridge Scheduler, booking links, signed phone links | ✅ |
-| 7 | Phone fix page | Mobile page, steps, chat, booking, MCP Apps view | ⏳ |
+| 7 | Phone fix page | Mobile page, steps, chat, booking, MCP Apps view | ✅ |
 | 8 | Simulated Alexa+ web app | Browser voice, multi-intent, Echo Show cards, household switcher | ⏳ |
 | 9 | Privacy & trust | Knowledge and forget tools, consent, optional OAuth 2.1 + PKCE | ⏳ |
 | 10 | Demo & submission | Demo runner, time-travel scenarios, docs, schema extraction, Docker | ⏳ |
@@ -16,5 +16,7 @@
 Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
+Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.
+Module 7 follow-ups: the Module 6 follow-up commit is `2df8b37` (amended to include previously ignored server repository/key sources).
 
 Module 3 note: DynamoDB Local contract suite is available but was not run in the build environment because Docker is unavailable.

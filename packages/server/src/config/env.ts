@@ -79,7 +79,7 @@ const envSchema = z.object({
   PHONE_LINK_TTL_HOURS: positiveInt(72),
   SHORT_LINK_BASE_URL: z.preprocess(blankToUndefined, z.string().url().optional()),
   PHONE_SEND_LIMIT_PER_HOUR: positiveInt(10),
-  PHONE_PAGE_BASE_URL: z.preprocess(blankToUndefined, z.string().url().default("http://localhost:5174")),
+  PHONE_PAGE_BASE_URL: z.preprocess(blankToUndefined, z.string().url().optional()),
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),
   OAUTH_ISSUER_URL: optionalString,
