@@ -24,10 +24,11 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `afdcac6` | Module 6 phone handoff and scheduling |
 | `2df8b37` | Module 6 follow-ups |
 | `7abecef` | Module 7 phone page, chat and MCP Apps |
+| `334f0ce` | Module 7 follow-ups: CSP, axe checks, traceability, no-amend rule |
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
 Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.
-Module 7 follow-ups are being committed separately before Module 8 implementation.
+Module 7 follow-ups were committed separately as `334f0ce` before Module 8 implementation.
 
 Module 7 §0 traceability:
 - `ttlClock`: `packages/server/src/adapters/storage/types.ts` (`StoredRecord`) and `packages/server/src/data/keys.ts` (`ttlClockForKey`); contract test `supports put/get, sorted prefix queries, limits, pagination, TTL, and partition deletion` in `packages/server/test/storage.contract.test.ts`.
@@ -37,5 +38,7 @@ Module 7 §0 traceability:
 - Read-only AWS check: `scripts/aws-check.ts`, run with `npm run aws:check`.
 - Accessibility: five phone view states in `packages/phone/test/a11y.test.tsx`; axe reports no violations.
 - MCP Apps host rendering: external host not available in Module 7; Module 8 Host view will exercise the bundled resource and record the host bridge/action result.
+
+Module 8 follow-ups are being implemented in `docs/prompts/module-8.md` before the simulator work.
 
 Module 3 note: DynamoDB Local contract suite is available but was not run in the build environment because Docker is unavailable.

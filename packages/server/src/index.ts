@@ -34,6 +34,10 @@ const httpServer = app.listen(env.PORT, env.HOST, async () => {
   logger.info(`reminders  ${ctx.scheduler.name} · ${reminders} scheduled`);
   if (startupSeed) logger.info(`seed       ${startupSeed.households.map((household) => `${household.householdId} (${household.items} items, ${household.events} events)`).join(", ")}`);
   logger.info(`clock      ${ctx.clock.isFake() ? "fake" : "real"} (set ELLIE_FAKE_NOW to time-travel)`);
+  if (env.SIMULATOR_ENABLED) {
+    const router = env.SIM_ROUTER === "auto" && ctx.llm.name === "bedrock" ? "LLM (Bedrock)" : env.SIM_ROUTER === "llm" ? "LLM" : "deterministic";
+    logger.info(`simulator  http://${env.HOST}:${env.PORT}/sim/  (router: ${router})`);
+  }
 });
 
 let shuttingDown = false;

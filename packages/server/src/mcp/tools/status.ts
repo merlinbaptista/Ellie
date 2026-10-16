@@ -31,6 +31,7 @@ export async function statusData(ctx: AppContext) {
     version: ctx.version,
     specVersion: "2025-11-25",
     uptimeSec: Math.floor((Date.now() - ctx.startedAt.getTime()) / 1000),
+    clockNow: ctx.clock.now().toISOString(),
     activeMcpSessions: activeSessionCount(),
     drivers,
     regions,

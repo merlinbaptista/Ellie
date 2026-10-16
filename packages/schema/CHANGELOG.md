@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.0 — 2026-10-16
+- Add browser-safe request and response schemas for the Alexa+ simulator protocol.
+
 ## 1.5.0 — 2026-10-20
 - Add browser-safe phone chat request/response and chat message schemas.
 - Add phone UI language and translation metadata, and allow chat actions.

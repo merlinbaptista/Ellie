@@ -73,6 +73,14 @@ from history, and hands fixes/bookings to the phone.
 ## Git history rules
 - Every requested fix or module completion gets a new commit. Never amend a commit or rewrite history.
 
+## Simulator rules (Module 8+)
+- The simulator calls Ellie only through a real MCP client over Streamable HTTP. Never import domain code into the orchestrator's call path.
+- Safety check runs on the whole utterance before any routing; a hit runs only diagnose and returns the stop message.
+- Routers choose tools and args only. Spoken words always come from Ellie's tool results.
+- One question per reply; extra follow-ups are queued.
+- Never send phone numbers, email or names to the router LLM.
+- Every fix is a new commit; never amend or rewrite history.
+
 ## Phone page & UI rules (Module 7+)
 - Shared rendering lives in `@ellie/ui`; the phone page, MCP App view and simulator all use it. Never render HTML from data.
 - Tokens: read once from `?t`, keep in sessionStorage, send as Bearer, strip from the URL. Never log them.

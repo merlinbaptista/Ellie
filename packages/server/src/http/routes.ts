@@ -3,10 +3,13 @@ import type { AppContext } from "../context.js";
 import { statusData } from "../mcp/tools/status.js";
 import { registerShortLinkRoutes } from "../links/shortLinks.js";
 import { registerPhoneApi } from "./phoneApi.js";
-import { registerStaticPhone } from "./static.js";
+import { registerStaticPhone, registerStaticSimulator } from "./static.js";
+import { registerSimulatorApi } from "../simulator/api.js";
 
 export function registerHttpRoutes(app: Express, ctx: AppContext): void {
   registerStaticPhone(app);
+  registerStaticSimulator(app, ctx.env.SIMULATOR_ENABLED && (ctx.env.NODE_ENV !== "production" || Boolean(ctx.env.SIM_ACCESS_CODE && ctx.env.SIM_ACCESS_CODE.length >= 12)), ctx.env.SIM_ACCESS_CODE, ctx.env.NODE_ENV === "production");
+  registerSimulatorApi(app, ctx);
   registerShortLinkRoutes(app, ctx);
   registerPhoneApi(app, ctx);
   app.get("/health", (_req: Request, res: Response) => {
@@ -14,7 +17,7 @@ export function registerHttpRoutes(app: Express, ctx: AppContext): void {
   });
 
   app.get("/api/status", async (_req: Request, res: Response, next) => {
-    try { res.json(await statusData(ctx)); } catch (error) { next(error); }
+     try { res.json({ ...await statusData(ctx), production: ctx.env.NODE_ENV === "production" }); } catch (error) { next(error); }
   });
 
   app.get("/api/outbox", async (req: Request, res: Response, next) => {

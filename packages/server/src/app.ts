@@ -13,7 +13,7 @@ export function createApp(ctx: AppContext): express.Express {
   app.use(cors({
     origin: [...new Set([...ctx.env.CORS_ORIGINS, ...(ctx.env.PHONE_PAGE_BASE_URL ? [new URL(ctx.env.PHONE_PAGE_BASE_URL).origin] : [])])],
     exposedHeaders: ["Mcp-Session-Id"],
-    allowedHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id", "Mcp-Protocol-Version", "Last-Event-ID"],
+    allowedHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id", "Mcp-Protocol-Version", "Last-Event-ID", "X-Sim-Access-Code"],
   }));
   app.use((req: Request, res: Response, next: NextFunction) => {
     const requestId = req.header("x-request-id") || randomUUID();

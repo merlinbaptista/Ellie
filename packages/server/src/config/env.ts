@@ -80,6 +80,11 @@ const envSchema = z.object({
   SHORT_LINK_BASE_URL: z.preprocess(blankToUndefined, z.string().url().optional()),
   PHONE_SEND_LIMIT_PER_HOUR: positiveInt(10),
   PHONE_PAGE_BASE_URL: z.preprocess(blankToUndefined, z.string().url().optional()),
+  SIMULATOR_ENABLED: bool(false),
+  SIM_ACCESS_CODE: optionalString,
+  SIM_ROUTER: z.preprocess(blankToUndefined, z.enum(["auto", "mock", "llm"]).default("auto")),
+  SIM_ROUTER_TIMEOUT_MS: positiveInt(1500, 30_000),
+  SIM_MAX_TOOL_CALLS: positiveInt(4, 10),
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),
   OAUTH_ISSUER_URL: optionalString,
@@ -101,8 +106,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error("Invalid environment configuration");
   }
   const result = parsed.data;
+  if (blankToUndefined(source.SIMULATOR_ENABLED) === undefined) result.SIMULATOR_ENABLED = result.NODE_ENV !== "production";
   if (result.NODE_ENV === "production" && (result.LINK_SIGNING_SECRET === "change-me-in-production" || result.LINK_SIGNING_SECRET.length < 32)) {
     throw new Error("LINK_SIGNING_SECRET must be at least 32 characters in production");
+  }
+  if (result.NODE_ENV === "production" && result.SIMULATOR_ENABLED && (result.SIM_ACCESS_CODE?.length ?? 0) < 12) {
+    throw new Error("SIM_ACCESS_CODE must be at least 12 characters when the production simulator is enabled");
   }
   return result;
 }

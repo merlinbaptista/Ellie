@@ -1,0 +1,4 @@
+.card-stack > .ellie-card {
+  background: var(--ellie-surface);
+  color: var(--ellie-ink);
+}

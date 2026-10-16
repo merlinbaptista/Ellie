@@ -131,6 +131,16 @@ Chat answers only questions about the current repair, cites the supplied diagnos
 
 When the single-file card is built, supported hosts can render `ui://ellie/card.html` inline for due, prediction, history, diagnosis, and phone handoff tools. Text speech and structured results remain unchanged for Alexa+ and hosts without Apps support. The MCP Apps server helpers currently require MCP SDK v2, so Ellie registers the HTML resource and metadata directly on its MCP SDK v1 server; the compact embedded client remains under 150 KB.
 
+## Demo with the simulator
+
+Run `npm run dev` and open [http://127.0.0.1:8787/sim/](http://127.0.0.1:8787/sim/) in Chrome or Edge. The simulator opens on the seeded Bengaluru household; use the phrase chips to rehearse the two-intent change-and-diagnosis flow, follow-ups, phone handoff, and resolution. Voice recognition is browser-provided and may require microphone permission; typing and phrase chips always work. `npm run dev:all` runs the API, phone page and simulator Vite servers together for hot reload.
+
+At a 1440 × 900 desktop viewport, the Echo Show and phone panels sit side by side. Select **The cylinder's changed and the purifier is beeping again** to see `log_event` followed by `diagnose`; the mock rehearsal returned two cards and took 104 ms total on the server (28 ms and 69 ms for the tool calls). Use the follow-up and phone-action chips to continue the same conversation. The screenshot capture could not be saved from this VS Code browser session; verify the layout in Chrome or Edge at 1440 × 900 when preparing external demo material.
+
+Routing uses the deterministic rules by default. Set `SIM_ROUTER=llm` to request Bedrock tool use, or keep `auto` to use Bedrock when the LLM driver resolves to it and fall back to deterministic routing on an error or timeout. The router only selects validated tools and arguments; spoken words come from MCP tool results. In production, the simulator is disabled unless `SIMULATOR_ENABLED=true` and `SIM_ACCESS_CODE` is at least 12 characters. Enter the code in the simulator unlock form; it is kept in session storage and sent in `x-sim-access-code` headers.
+
+The **Host view** toggle loads the same `ui://ellie/card.html` resource used by MCP Apps inside a sandboxed iframe and compares it with the shared native card. Its local host bridge initializes the view and routes card tool actions back through simulator turns. A manual Lighthouse accessibility score is optional; automated axe checks cover the phone states and simulator main screen.
+
 ## Go live on AWS
 
 1. Set `LINK_SIGNING_SECRET` to at least 32 random characters and `NODE_ENV=production`.
