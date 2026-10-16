@@ -20,9 +20,9 @@
       "kind": "appliance", "displayName": "water purifier", "aliases": ["purifier", "ro", "water purifier", "aquaguard", "kent"], "icon": "💧",
       "recurring": { "action": "serviced", "defaultIntervalDays": 180, "source": { "note": "Starter water-purifier service interval", "verified": false } },
       "components": [
-        { "key": "sediment_filter", "displayName": "sediment filter", "defaultIntervalDays": 180, "source": { "note": "Starter sediment filter interval", "verified": false } },
-        { "key": "carbon_filter", "displayName": "carbon filter", "defaultIntervalDays": 180, "source": { "note": "Starter carbon filter interval", "verified": false } },
-        { "key": "ro_membrane", "displayName": "RO membrane", "defaultIntervalDays": 730, "source": { "note": "Starter RO membrane interval", "verified": false } }
+        { "key": "sediment_filter", "displayName": "sediment filter", "defaultIntervalDays": 180, "aliases": ["filter", "sediment filter", "pre filter", "prefilter"], "source": { "note": "Starter sediment filter interval", "verified": false } },
+        { "key": "carbon_filter", "displayName": "carbon filter", "defaultIntervalDays": 180, "aliases": ["carbon filter", "taste filter"], "source": { "note": "Starter carbon filter interval", "verified": false } },
+        { "key": "ro_membrane", "displayName": "RO membrane", "defaultIntervalDays": 730, "aliases": ["membrane", "ro membrane"], "source": { "note": "Starter RO membrane interval", "verified": false } }
       ],
       "symptoms": [
         { "key": "beeping", "aliases": ["beeping", "alarm beeping"], "questions": [{ "id": "tank_light", "text": "Is the tank-full light on?", "answers": ["yes", "no", "not sure"] }, { "id": "water_flow", "text": "Is water flowing?", "answers": ["yes", "no", "not sure"] }], "likelyCauses": [{ "key": "tank_sensor", "description": "The tank-full sensor may be active", "diy": false }, { "key": "filter_due", "description": "A filter may be overdue", "relatedComponent": "sediment_filter", "diy": false }, { "key": "membrane_clogged", "description": "The membrane may be clogged", "relatedComponent": "ro_membrane", "diy": false }] },
@@ -41,7 +41,7 @@
     "air_conditioner": {
       "kind": "appliance", "displayName": "air conditioner", "aliases": ["ac", "air conditioner", "aircon"], "icon": "❄️",
       "recurring": { "action": "serviced", "defaultIntervalDays": 365, "preferredMonths": [2, 3], "source": { "note": "Starter annual air-conditioner service interval", "verified": false } },
-      "components": [{ "key": "ac_filter", "displayName": "AC filter", "defaultIntervalDays": 30, "source": { "note": "Starter AC filter interval", "verified": false } }],
+      "components": [{ "key": "ac_filter", "displayName": "AC filter", "defaultIntervalDays": 30, "aliases": ["filter", "ac filter", "air filter"], "source": { "note": "Starter AC filter interval", "verified": false } }],
       "symptoms": [{ "key": "not_cooling", "aliases": ["not cooling", "no cooling"] }, { "key": "water_dripping", "aliases": ["water dripping", "dripping water"] }],
       "questionsOnAdd": []
     },

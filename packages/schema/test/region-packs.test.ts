@@ -39,5 +39,8 @@ describe("built-in region packs", () => {
     const invalid = structuredClone(BUILTIN_REGION_PACKS[0]) as { safety: { stopMessages: Record<string, string> } };
     invalid.safety.stopMessages.unknown = "Call {number}";
     expect(RegionPack.safeParse(invalid).success).toBe(false);
+    const collision = structuredClone(BUILTIN_REGION_PACKS[1]) as { catalog: Record<string, { components?: Array<{ aliases: string[] }> }> };
+    collision.catalog.ro_purifier!.components![1]!.aliases = ["sediment filter"];
+    expect(RegionPack.safeParse(collision).success).toBe(false);
   });
 });

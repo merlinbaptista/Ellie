@@ -35,3 +35,11 @@ from history, and hands fixes/bookings to the phone.
 - Item resolution order: id/catalogKey → household alias → existing items → region catalog → custom item. Learn aliases.
 - Seed data uses day offsets from an anchor; never hard-code “today”.
 - Phone numbers are stored only with consent and masked in responses and logs.
+
+## Prediction rules (Module 4+)
+- `src/prediction/*` is pure: no storage, clock, logger or `Date.now()`. Pass `todayLocal` and `computedAt` in.
+- Household history beats region defaults. Region rules (lead time, buffer, minimum booking gap, preferred months) come only from region packs and are recorded in `rulesApplied` with a human description.
+- Status is computed live from stored dates and today's local date; never trust a stored status.
+- Never predict or remind for components with no history.
+- Reminder jobs have deterministic IDs and are upserted; the fire handler rechecks for staleness before sending.
+- Speak at most one prediction sentence per tool response.

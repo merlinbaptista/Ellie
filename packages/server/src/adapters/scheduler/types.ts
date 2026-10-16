@@ -2,7 +2,7 @@ export interface ScheduledJob {
   id: string;
   runAtUtc: string;
   timeZone: string;
-  payload: { kind: "reminder" | "follow_up" | "delivery_check"; householdId: string; itemId?: string; message: string };
+  payload: { kind: "reminder" | "follow_up" | "delivery_check"; householdId: string; itemId?: string; component?: string; lastEventLocal?: string | null; message: string };
 }
 export type JobHandler = (job: ScheduledJob) => Promise<void>;
 export interface SchedulerAdapter {

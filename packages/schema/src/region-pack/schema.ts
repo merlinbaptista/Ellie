@@ -26,7 +26,7 @@ export const CatalogEntry = z.object({
   aliases: z.array(z.string().toLowerCase()).min(1),
   icon: z.string().optional(),
   recurring: Recurring.optional(),
-  components: z.array(z.object({ key: z.string(), displayName: z.string(), defaultIntervalDays: z.number().int().positive(), source: zSourceRef }).strict()).default([]),
+  components: z.array(z.object({ key: z.string().regex(/^[a-z0-9_]+$/), displayName: z.string(), defaultIntervalDays: z.number().int().positive(), aliases: z.array(z.string().toLowerCase()).default([]), source: zSourceRef }).strict()).default([]),
   symptoms: z.array(Symptom).default([]),
   defaultProviderKey: z.string().optional(),
   manualSearchHint: z.string().optional(),
@@ -92,6 +92,16 @@ export const RegionPack = RegionPackBase.superRefine((pack, ctx) => {
   }
   const aliases = new Map<string, string>();
   for (const [catalogKey, entry] of Object.entries(pack.catalog)) {
+    const componentAliases = new Map<string, string>();
+    for (const component of entry.components) {
+      for (const alias of component.aliases) {
+        const normalized = alias.trim().toLowerCase();
+        const previousComponent = componentAliases.get(normalized);
+        if (previousComponent && previousComponent !== component.key) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "components"], message: `Component alias collision "${normalized}" between ${previousComponent} and ${component.key}` });
+        } else componentAliases.set(normalized, component.key);
+      }
+    }
     if (entry.defaultProviderKey && !(entry.defaultProviderKey in pack.providers)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "defaultProviderKey"], message: `Unknown provider: ${entry.defaultProviderKey}` });
     }

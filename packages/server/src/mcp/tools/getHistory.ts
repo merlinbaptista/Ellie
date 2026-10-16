@@ -4,6 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AppContext } from "../../context.js";
 import { getTimeline, intervalStats } from "../../domain/history.js";
 import { speechList } from "@ellie/schema";
+import { recomputeItem } from "../../domain/predictions.js";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
 
@@ -33,6 +34,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       const match = !item && args.item ? matchCatalog(args.item, pack)[0] : undefined;
       const itemId = item?.itemId ?? (args.item ? "__unmatched_item__" : undefined);
       const timeline = await getTimeline(householdId, { itemId, period: args.period, types: args.types as EventType[] | undefined }, ctx);
+      const prediction = item ? await recomputeItem(ctx, householdId, item.itemId) : undefined;
       const itemEvents = itemId ? timeline.filter((entry) => entry.itemId === itemId) : [];
       const action = pack.catalog[item?.catalogKey ?? match?.catalogKey ?? ""]?.recurring?.action;
       const today = toLocalDate(ctx.clock.now().toISOString(), household?.timeZone ?? pack.locale.defaultTimeZone);
@@ -62,10 +64,13 @@ export function register(server: McpServer, ctx: AppContext): void {
           timeline: timeline.slice(0, 50),
           stats,
           ...(item ? { item, warranty: warrantyStatus(item, today) } : {}),
+          ...(prediction ? { prediction } : {}),
         },
         card: {
           title: item ? `${pack.catalog[item.catalogKey]?.icon ?? ""} ${item.name}`.trim() : "Home history",
-          subtitle: stats?.averageDays !== null && stats?.averageDays !== undefined ? `Average interval: ${Math.round(stats.averageDays)} days` : undefined,
+          subtitle: prediction?.main?.nextDueLocal
+            ? `Next due ${prediction.main.nextDueLocal} · ${prediction.main.confidence} confidence`
+            : stats?.averageDays !== null && stats?.averageDays !== undefined ? `Average interval: ${Math.round(stats.averageDays)} days` : undefined,
           items: timeline.slice(0, 8).map((entry) => ({ label: `${entry.icon ?? ""} ${entry.itemName}`.trim(), value: `${entry.type} · ${entry.localDate} · ${entry.when}`, status: entry.type === "symptom" ? "warning" as const : "info" as const })),
         },
       });

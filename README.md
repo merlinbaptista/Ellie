@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 3: household memory**
+**Status: Module 4: predictions and reminders**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -88,6 +88,14 @@ npm run seed:reset
 ### AWS DynamoDB
 
 Deploy `infra/dynamodb-table.yaml` (or use `npm run db:create`), grant the policy in `infra/iam-policy-dynamodb.json`, and set `AWS_REGION`, `DYNAMODB_TABLE_NAME`, and either `AWS_PROFILE` or the standard AWS access-key environment variables. Remove `DYNAMODB_ENDPOINT` when switching from DynamoDB Local. The storage driver selects DynamoDB automatically when these values are present.
+
+## Predictions
+
+`predict_next` estimates recurring intervals from household events first, then falls back to the region catalog. Prediction rules apply delivery lead time, safety buffers, booking minimums, preferred service months, and a sanity clamp; each applied shift is included in the structured prediction. Confidence reflects interval count, consistency, and approximate dates. Components such as purifier filters are predicted only after an event tags that component.
+
+`due_this_week` gives a household briefing. Reminder jobs use the local scheduler, are upserted by stable IDs, and are rechecked for stale history before an outbox message is sent. In development, rehearse reminders with MCP `ellie_dev_time_travel` or `POST /api/dev/time-travel`.
+
+Prediction bases are household average, one observed interval, component default, region default, or user override. Status is computed live as `ok`, `due_soon`, `due`, `overdue`, or `unknown`.
 
 ## Verification
 

@@ -5,7 +5,6 @@ import { toolResponse } from "../result.js";
 import { getRecentTimings, withTiming } from "../withTiming.js";
 
 export async function statusData(ctx: AppContext) {
-  const health = await ctx.storage.healthCheck();
   const timings = getRecentTimings().map((entry) => entry.ms).sort((a, b) => a - b);
   const p50 = timings.length ? timings[Math.floor((timings.length - 1) * 0.5)] : 0;
   const max = timings.length ? Math.max(...timings) : 0;
@@ -18,6 +17,11 @@ export async function statusData(ctx: AppContext) {
   const regions = ctx.regions.list().map(({ packId, version }) => ({ packId, version, unverifiedCount: ctx.regions.unverifiedFacts(packId).length }));
   const memoryHealth = await ctx.storage.healthCheck();
   const householdCount = await ctx.repositories.households.count();
+  const households = await ctx.repositories.households.list();
+  let predictionCount = 0;
+  let scheduledReminders = 0;
+  for (const household of households) predictionCount += (await ctx.repositories.predictions.listForHousehold(household.householdId)).length;
+  scheduledReminders = (await ctx.scheduler.list()).filter((job) => job.payload.kind === "reminder").length;
   return {
     version: ctx.version,
     specVersion: "2025-11-25",
@@ -26,7 +30,8 @@ export async function statusData(ctx: AppContext) {
     drivers,
     regions,
     memory: { implementation: ctx.drivers.storage.implementation, households: householdCount, healthy: memoryHealth.ok },
-    storageHealth: health,
+    predictions: { stored: predictionCount, scheduledReminders },
+    storageHealth: memoryHealth,
     recentToolTimings: { count: timings.length, p50, max },
     clockMode: ctx.clock.isFake() ? "fake" : "real",
   };

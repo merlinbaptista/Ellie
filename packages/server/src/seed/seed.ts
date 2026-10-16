@@ -91,14 +91,14 @@ export async function seedDemo(ctx: AppContext, options: SeedOptions = {}): Prom
       if (itemSpec.itemName) await ctx.repositories.aliases.put(spec.householdId, itemSpec.itemName, itemSpec.itemId, now);
     }
 
-    const eventSpecs: Array<{ itemId: string; type: "changed" | "serviced" | "symptom" | "booked" | "delivered" | "cost"; offset?: number; localDate?: string; suffix: string; notes?: string; cost?: number; symptom?: { key: string; description?: string }; relatedEventId?: string }> = [];
+    const eventSpecs: Array<{ itemId: string; type: "changed" | "serviced" | "symptom" | "booked" | "delivered" | "cost"; component?: string; offset?: number; localDate?: string; suffix: string; notes?: string; cost?: number; symptom?: { key: string; description?: string }; relatedEventId?: string }> = [];
     if (spec.householdId === "demo-blr") {
       [-38, -76, -115, -152, -190].forEach((offset, index) => eventSpecs.push({ itemId: "itm_seed-blr-lpg", type: "changed", offset, suffix: `lpg-${String(index + 1).padStart(2, "0")}` }));
       eventSpecs.push({ itemId: "itm_seed-blr-lpg", type: "booked", offset: -42, suffix: "lpg-booked" });
       eventSpecs.push({ itemId: "itm_seed-blr-lpg", type: "delivered", offset: -39, suffix: "lpg-delivered", relatedEventId: `evt_seed-blr-lpg-booked` });
-      eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "serviced", offset: -270, suffix: "ro-service" });
+      eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "serviced", component: "sediment_filter", offset: -270, suffix: "ro-service", notes: "filter changed" });
       eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "symptom", localDate: "2026-03-14", suffix: "ro-beep", notes: "tank-full light on", symptom: { key: "beeping", description: "beeping" } });
-      eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "serviced", localDate: "2026-03-16", suffix: "ro-membrane", notes: "membrane replaced by technician" });
+      eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "serviced", component: "ro_membrane", localDate: "2026-03-16", suffix: "ro-membrane", notes: "membrane replaced by technician" });
       eventSpecs.push({ itemId: "itm_seed-blr-ro", type: "cost", localDate: "2026-03-16", suffix: "ro-cost", cost: 2400 });
       eventSpecs.push({ itemId: "itm_seed-blr-battery", type: "serviced", offset: -50, suffix: "battery-service" });
       eventSpecs.push({ itemId: "itm_seed-blr-ac", type: "serviced", offset: -200, suffix: "ac-service" });
@@ -120,6 +120,7 @@ export async function seedDemo(ctx: AppContext, options: SeedOptions = {}): Prom
         eventId: id,
         householdId: spec.householdId,
         itemId: eventSpec.itemId,
+        ...(eventSpec.component ? { component: eventSpec.component } : {}),
         type: eventSpec.type,
         timestamp: localDateToUtc(localDate, spec.timeZone),
         localDate,
@@ -134,6 +135,8 @@ export async function seedDemo(ctx: AppContext, options: SeedOptions = {}): Prom
       });
       await ctx.repositories.events.put(parsed);
     }
+    const { recomputeHousehold } = await import("../domain/predictions.js");
+    await recomputeHousehold(ctx, spec.householdId);
     const summaryEvents = await ctx.repositories.events.list(spec.householdId);
     const latestChange = summaryEvents.filter((event) => event.type === "changed" || event.type === "serviced").sort((a, b) => b.localDate.localeCompare(a.localDate))[0]?.localDate ?? null;
     summaries.push({ householdId: spec.householdId, anchor, items: items.length, events: eventSpecs.length, lastChange: latestChange });

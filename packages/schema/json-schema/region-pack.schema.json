@@ -269,7 +269,8 @@
                   "type": "object",
                   "properties": {
                     "key": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "^[a-z0-9_]+$"
                     },
                     "displayName": {
                       "type": "string"
@@ -277,6 +278,13 @@
                     "defaultIntervalDays": {
                       "type": "integer",
                       "exclusiveMinimum": 0
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "default": []
                     },
                     "source": {
                       "type": "object",

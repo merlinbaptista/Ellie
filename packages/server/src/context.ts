@@ -17,6 +17,7 @@ import { logger as rootLogger } from "./lib/logger.js";
 import type { RegionRegistry } from "@ellie/schema";
 import { createServerRegionRegistry } from "./regions/registry.js";
 import { createRepositories, type Repositories } from "./data/index.js";
+import { handleReminderFire } from "./domain/reminders.js";
 
 export interface AppContext {
   env: Env;
@@ -46,7 +47,7 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
   const storage = overrides.storage ?? await createStorage(drivers.storage, env, clock, log);
   const regions = overrides.regions ?? await createServerRegionRegistry(log, env.REGION_PACKS_DIR);
   const repositories = overrides.repositories ?? createRepositories(storage, clock);
-  return {
+  const context: AppContext = {
     env,
     drivers,
     clock,
@@ -60,4 +61,6 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
     startedAt: overrides.startedAt ?? new Date(),
     version: overrides.version ?? "0.1.0",
   };
+  context.scheduler.onFire((job) => handleReminderFire(job, context));
+  return context;
 }

@@ -2,6 +2,7 @@ import { Household, missingHouseholdFields, type SetupHouseholdInput } from "@el
 import type { AppContext } from "../context.js";
 import type { HouseholdRecord } from "../data/householdRepo.js";
 import { ValidationError } from "../lib/errors.js";
+import { recomputeHousehold } from "./predictions.js";
 
 export interface HouseholdSetupResult {
   household: HouseholdRecord;
@@ -126,6 +127,7 @@ export async function setupHousehold(input: SetupHouseholdInput, ctx: AppContext
   if (!validated.success) throw new ValidationError(validated.error.message);
   const saved = await ctx.repositories.households.put(validated.data);
   const switched = old.country && old.country !== country;
+  if (switched) await recomputeHousehold(ctx, id);
   return {
     household: saved,
     missing: missingOptions(saved, pack),

@@ -34,10 +34,12 @@ describe("persisted entities", () => {
   it("enforces event-specific fields and parses prediction/resolution records", () => {
     expect(HomeEvent.safeParse({ ...event, type: "symptom" }).success).toBe(false);
     expect(HomeEvent.safeParse({ ...event, type: "symptom", symptom: { key: "beeping" } }).success).toBe(true);
+    expect(HomeEvent.safeParse({ ...event, type: "changed", component: "sediment_filter" }).success).toBe(true);
+    expect(HomeEvent.safeParse({ ...event, type: "cost", component: "sediment_filter", cost: { amount: 5, currency: "INR" } }).success).toBe(false);
     expect(HomeEvent.safeParse({ ...event, type: "cost" }).success).toBe(false);
     expect(HomeEvent.safeParse({ ...event, type: "cost", cost: { amount: 25, currency: "INR" } }).success).toBe(true);
     expect(HomeEvent.safeParse({ ...event, type: "booked" }).success).toBe(false);
-    const prediction = { schemaVersion: 1, householdId: "demo-blr", itemId: "itm_abc-123", nextDueLocal: "2026-11-25", nextDueUtc: at, remindOnLocal: "2026-11-20", basis: "region_default", intervalDays: 40, sampleSize: 0, rulesApplied: [], confidence: "low", computedAt: at };
+    const prediction = { schemaVersion: 1, householdId: "demo-blr", itemId: "itm_abc-123", nextDueLocal: "2026-11-25", nextDueUtc: at, remindOnLocal: "2026-11-20", bookingOpensLocal: "2026-10-03", lastEventLocal: "2026-10-16", daysUntilDue: 40, status: "ok", explanation: "usually 40 days", basis: "region_default", intervalDays: 40, sampleSize: 0, rulesApplied: [], confidence: "low", computedAt: at };
     expect(Prediction.safeParse(prediction).success).toBe(true);
     expect(Resolution.safeParse({ schemaVersion: 1, resolutionId: "res_abc-123", householdId: "demo-blr", itemId: "itm_abc-123", symptomKey: "beeping", cause: "sensor", fix: "reset", confirmedBy: "voice", localDate: "2026-10-16", supportingEventIds: ["evt_abc-123"], createdAt: at }).success).toBe(true);
   });

@@ -32,6 +32,16 @@ export function matchSymptom(text: string, entry: CatalogEntry): { key: string; 
   const best = found[0];
   return best ? { key: best.key, score: best.score, matchedAlias: best.alias } : null;
 }
+export function matchComponent(text: string, entry: CatalogEntry): { key: string; score: number } | null {
+  const matches = entry.components.flatMap((component, index) => {
+    const aliases = [...component.aliases, component.displayName];
+    const best = aliases.map((alias) => ({ alias, score: scoreAlias(text, alias) }))
+      .sort((left, right) => right.score - left.score || right.alias.length - left.alias.length)[0];
+    return best && best.score >= 0.6 ? [{ key: component.key, score: best.score, index, aliasLength: best.alias.length }] : [];
+  }).sort((left, right) => right.score - left.score || right.aliasLength - left.aliasLength || left.index - right.index);
+  const best = matches[0];
+  return best ? { key: best.key, score: best.score } : null;
+}
 export function detectEventType(fragment: string): EventType | null {
   const text = normalize(fragment);
   if (/\b(changed|replaced|new|refilled|swapped)\b/.test(text)) return "changed";

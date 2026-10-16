@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { HomeEvent, addDays, localDateToUtc, matchSymptom, newId, parseRelativeDate, toLocalDate, type HomeEvent as HomeEventType, type LogEventInput } from "@ellie/schema";
+import { HomeEvent, addDays, localDateToUtc, matchComponent, matchSymptom, newId, parseRelativeDate, toLocalDate, type HomeEvent as HomeEventType, type LogEventInput } from "@ellie/schema";
 import { fillTemplate } from "@ellie/schema";
 import type { AppContext } from "../context.js";
 import type { HouseholdRecord } from "../data/householdRepo.js";
@@ -43,6 +43,8 @@ export async function logEvent(input: LogEventInput, ctx: AppContext): Promise<L
 
   const entry = pack.catalog[item.catalogKey];
   const recurring = entry?.recurring;
+  const componentMatch = input.component && entry ? matchComponent(input.component, entry) : null;
+  if (input.component && !componentMatch) throw new ValidationError("Unknown item component", "Which part do you mean: filter or membrane?");
   const existingEvents = await ctx.repositories.events.list(householdId, item.itemId);
   const hasPreviousAction = existingEvents.some((event) => event.type === recurring?.action);
   const askedField = `${item.itemId}:previousWhen`;
@@ -89,6 +91,7 @@ export async function logEvent(input: LogEventInput, ctx: AppContext): Promise<L
     eventId: newId("evt"),
     householdId,
     itemId: item.itemId,
+    ...(componentMatch ? { component: componentMatch.key } : {}),
     type,
     timestamp: eventTimestamp,
     localDate: date,

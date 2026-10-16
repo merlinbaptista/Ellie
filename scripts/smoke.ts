@@ -7,7 +7,7 @@ try {
   await client.connect(new StreamableHTTPClientTransport(url));
   const tools = await client.listTools();
   console.log("Tools:", tools.tools.map((tool) => tool.name).join(", "));
-  const required = ["ellie_ping", "ellie_status", "ellie_region_info", "setup_household", "log_event", "get_history"];
+  const required = ["ellie_ping", "ellie_status", "ellie_region_info", "setup_household", "log_event", "get_history", "predict_next", "due_this_week", "ellie_dev_time_travel"];
   for (const name of required) {
     if (!tools.tools.some((tool) => tool.name === name)) throw new Error(`Missing tool: ${name}`);
   }
@@ -33,6 +33,12 @@ try {
   const history = await client.callTool({ name: "get_history", arguments: { householdId: "demo-blr", item: "gas" } });
   if (history.isError) throw new Error("get_history returned an error");
   console.log("Memory:", history.content[0]?.text ?? "");
+  const prediction = await client.callTool({ name: "predict_next", arguments: { householdId: "demo-blr", item: "gas" } });
+  if (prediction.isError) throw new Error("predict_next returned an error");
+  console.log("Prediction:", prediction.content[0]?.text ?? "");
+  const due = await client.callTool({ name: "due_this_week", arguments: { householdId: "demo-blr" } });
+  if (due.isError) throw new Error("due_this_week returned an error");
+  console.log("Due:", due.content[0]?.text ?? "");
 } finally {
   await client.close();
 }
