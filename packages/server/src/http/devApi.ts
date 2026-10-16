@@ -109,27 +109,22 @@ export function registerDevApi(app: Express, ctx: AppContext): void {
       res.json({ entries, generatedForLocal: today });
     } catch (error) { next(error); }
   });
-  app.post("/api/dev/time-travel", async (req, res, next) => {
-    if (!enabled(ctx)) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
+  app.get("/api/households/:id/diagnoses/:diagnosisId", async (req, res, next) => {
     try {
-      const { days, to, reset } = req.body ?? {};
-      const count = Number(days !== undefined) + Number(to !== undefined) + Number(reset === true);
-      if (count !== 1 || (days !== undefined && (!Number.isInteger(days) || days < -400 || days > 400)) || (to !== undefined && typeof to !== "string")) {
-        res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Provide exactly one valid days, to, or reset value" } });
-        return;
-      }
-      if (reset) ctx.clock.set(null);
-      else if (days !== undefined) ctx.clock.set(new Date(ctx.clock.now().getTime() + days * 86_400_000).toISOString());
-      else {
-        const parsed = new Date(to);
-        if (Number.isNaN(parsed.getTime())) { res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "to must be an ISO date or date-time" } }); return; }
-        const isDate = /^\d{4}-\d{2}-\d{2}$/.test(to);
-        const household = await ctx.repositories.households.get(ctx.env.DEFAULT_HOUSEHOLD_ID);
-        ctx.clock.set(isDate ? localDateToUtc(to, household?.timeZone ?? "UTC", 9) : parsed.toISOString());
-      }
-      const firedJobs = await ctx.scheduler.tick?.() ?? 0;
-      const outbox = await ctx.notifier.listOutbox?.(undefined, 3) ?? [];
-      res.json({ now: ctx.clock.now().toISOString(), firedJobs, outbox });
+      const diagnosis = await ctx.repositories.diagnoses.get(req.params.id!, req.params.diagnosisId!);
+      if (!diagnosis) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Diagnosis not found" } }); return; }
+      res.json(diagnosis);
+    } catch (error) { next(error); }
+  });
+  app.get("/api/households/:id/resolutions", async (req, res, next) => {
+    try {
+      const household = await ctx.repositories.households.get(req.params.id!);
+      if (!household) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Household not found" } }); return; }
+      const phrase = typeof req.query.item === "string" ? req.query.item : undefined;
+      const items = await ctx.repositories.items.list(household.householdId);
+      const alias = phrase ? await ctx.repositories.aliases.get(household.householdId, phrase) : null;
+      const item = alias ? items.find((candidate) => candidate.itemId === alias.itemId) : phrase ? items.find((candidate) => candidate.name.toLowerCase() === phrase.toLowerCase() || candidate.catalogKey === phrase) : undefined;
+      res.json(await ctx.repositories.resolutions.list(household.householdId, phrase ? item?.itemId ?? "__unknown_item__" : undefined));
     } catch (error) { next(error); }
   });
   app.get("/api/schedule", async (req, res, next) => {

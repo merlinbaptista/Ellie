@@ -36,8 +36,8 @@ export function resolveDrivers(env: Env): Record<ServiceName, DriverDecision> {
       aws: env.DYNAMODB_ENDPOINT ? "dynamodb-local" : "dynamodb",
     },
     llm: {
-      keys: ["AWS_REGION", "BEDROCK_MODEL_ID", ...credentialsMissing(env)],
-      ready: Boolean(env.AWS_REGION && env.BEDROCK_MODEL_ID && hasCredentials(env)),
+      keys: ["AWS_REGION", "BEDROCK_MODEL_ID"],
+      ready: Boolean(env.AWS_REGION && env.BEDROCK_MODEL_ID),
       mock: "mock-llm",
       aws: "bedrock",
     },
@@ -80,7 +80,10 @@ export function resolveDrivers(env: Env): Record<ServiceName, DriverDecision> {
       requested,
       resolved,
       implementation: resolved === "aws" ? requirement.aws : requirement.mock,
-      reason: resolved === "aws" ? (service === "storage" && env.DYNAMODB_ENDPOINT ? `DynamoDB Local at ${env.DYNAMODB_ENDPOINT}` : "AWS requirements are configured") : `Needs ${missingKeys.join(", ")}`,
+      reason: resolved === "aws"
+        ? service === "storage" && env.DYNAMODB_ENDPOINT ? `DynamoDB Local at ${env.DYNAMODB_ENDPOINT}`
+          : service === "llm" ? `Bedrock model ${env.BEDROCK_MODEL_ID}` : "AWS requirements are configured"
+        : `Needs ${missingKeys.join(", ")}`,
       missingKeys,
     };
   }

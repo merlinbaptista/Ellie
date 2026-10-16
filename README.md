@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 4: predictions and reminders**
+**Status: Module 5: diagnosis engine**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -32,7 +32,7 @@ The server connection is configured in [.vscode/mcp.json](.vscode/mcp.json). Sta
 
 ## Demo mode vs AWS mode
 
-Each service uses mock mode by default. With `auto`, AWS is selected only when all required values are configured. Module 1 still uses mocks for AWS-resolved services because real AWS adapters arrive in later modules.
+Each service uses mock mode by default. With `auto`, AWS is selected only when all required values are configured. DynamoDB and Bedrock have live adapters; notification and scheduling use mocks until Module 6.
 
 | Service | AWS requirements | Mock implementation |
 |---|---|---|
@@ -41,7 +41,7 @@ Each service uses mock mode by default. With `auto`, AWS is selected only when a
 | notifier | `AWS_REGION`, credentials, `SNS_TOPIC_ARN` or `SNS_SMS_ENABLED=true` | console-outbox |
 | scheduler | `AWS_REGION`, `EVENTBRIDGE_TARGET_ARN`, `EVENTBRIDGE_ROLE_ARN`, credentials | local-timer |
 
-Credentials are `AWS_PROFILE` or both `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
+AWS services use the AWS SDK default credential chain (`AWS_PROFILE`, shared SSO/credentials, environment credentials, or workload roles). Bedrock auto-selection requires `AWS_REGION` and `BEDROCK_MODEL_ID`; actual credentials are resolved by the SDK when Converse is called. DynamoDB auto-selection also requires its table and explicit profile or environment credentials unless using DynamoDB Local.
 
 ## Project structure
 
@@ -96,6 +96,12 @@ Deploy `infra/dynamodb-table.yaml` (or use `npm run db:create`), grant the polic
 `due_this_week` gives a household briefing. Reminder jobs use the local scheduler, are upserted by stable IDs, and are rechecked for stale history before an outbox message is sent. In development, rehearse reminders with MCP `ellie_dev_time_travel` or `POST /api/dev/time-travel`.
 
 Prediction bases are household average, one observed interval, component default, region default, or user override. Status is computed live as `ok`, `due_soon`, `due`, `overdue`, or `unknown`.
+
+## Diagnosis
+
+`diagnose` checks safety before item creation, then combines symptom history, component predictions, prior resolutions and warranty evidence. It asks at most one useful follow-up at a time. DIY steps and professional-only guidance come from region packs; safety-stop responses never include repair steps. `log_resolution` records the cause and fix, adds the appropriate service/change and cost events, and recomputes predictions.
+
+The LLM may rank only the deterministic candidate list and explain cited evidence. Invalid citations, invented causes, uncited dates/numbers, or a low-confidence ranking fall back to deterministic speech. The voice path returns after `LLM_VOICE_TIMEOUT_MS` (350 ms by default); a separate bounded background call can refine the saved explanation. With `AWS_REGION`, `BEDROCK_MODEL_ID`, and credentials configured, `LLM_DRIVER=auto` selects Bedrock Converse. Credentials use the AWS SDK default provider chain; see [infra/iam-policy-bedrock.json](infra/iam-policy-bedrock.json). Guardrails are optional via `BEDROCK_GUARDRAIL_ID` and `BEDROCK_GUARDRAIL_VERSION`.
 
 ## Verification
 

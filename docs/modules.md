@@ -6,7 +6,7 @@
 | 2 | Home-event schema & region packs | `@ellie/schema`: Zod types and IN/US/UK/default packs | ✅ |
 | 3 | Household memory | Repositories, DynamoDB adapter, household/event tools, Bengaluru + Texas seed data | ✅ |
 | 4 | Prediction engine | Due dates, time-zone maths, regional minimums, confidence, reminders | ✅ |
-| 5 | Diagnosis engine | Symptom flows, safety rules, Bedrock adapter, diagnosis/resolution tools | ⏳ |
+| 5 | Diagnosis engine | Symptom flows, safety rules, Bedrock adapter, diagnosis/resolution tools | ✅ |
 | 6 | Phone handoff & scheduling | SNS, EventBridge Scheduler, booking links, signed phone links | ⏳ |
 | 7 | Phone fix page | Mobile page, steps, chat, booking, MCP Apps view | ⏳ |
 | 8 | Simulated Alexa+ web app | Browser voice, multi-intent, Echo Show cards, household switcher | ⏳ |

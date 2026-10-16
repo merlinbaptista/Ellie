@@ -381,6 +381,100 @@
                           },
                           "diy": {
                             "type": "boolean"
+                          },
+                          "fix": {
+                            "type": "object",
+                            "properties": {
+                              "summary": {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              "steps": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "maxLength": 200
+                                },
+                                "maxItems": 8,
+                                "default": []
+                              },
+                              "partsNeeded": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "maxLength": 60
+                                },
+                                "default": []
+                              },
+                              "timeMinutes": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "callProIf": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "maxLength": 160
+                                },
+                                "default": []
+                              },
+                              "warrantyRelevant": {
+                                "type": "boolean",
+                                "default": false
+                              },
+                              "source": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "format": "uri"
+                                  },
+                                  "note": {
+                                    "type": "string",
+                                    "maxLength": 300
+                                  },
+                                  "verified": {
+                                    "type": "boolean"
+                                  },
+                                  "checkedOn": {
+                                    "type": "string",
+                                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                                  }
+                                },
+                                "required": [
+                                  "note",
+                                  "verified"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "summary",
+                              "source"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "evidenceHints": {
+                            "type": "object",
+                            "properties": {
+                              "componentOverdue": {
+                                "type": "string"
+                              },
+                              "answers": {
+                                "type": "object",
+                                "additionalProperties": {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "type": "number"
+                                  }
+                                },
+                                "default": {}
+                              }
+                            },
+                            "additionalProperties": false,
+                            "default": {
+                              "answers": {}
+                            }
                           }
                         },
                         "required": [
@@ -401,6 +495,10 @@
                         "fire",
                         "carbon_monoxide"
                       ]
+                    },
+                    "followUpOnly": {
+                      "type": "boolean",
+                      "default": false
                     }
                   },
                   "required": [

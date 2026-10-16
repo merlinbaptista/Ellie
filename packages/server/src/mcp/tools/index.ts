@@ -9,6 +9,8 @@ import { register as registerGetHistory } from "./getHistory.js";
 import { register as registerPredictNext } from "./predictNext.js";
 import { register as registerDueThisWeek } from "./dueThisWeek.js";
 import { register as registerDevTimeTravel } from "./devTimeTravel.js";
+import { register as registerDiagnose } from "./diagnose.js";
+import { register as registerLogResolution } from "./logResolution.js";
 
 export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerPing(server, ctx);
@@ -20,4 +22,6 @@ export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerPredictNext(server, ctx);
   registerDueThisWeek(server, ctx);
   registerDevTimeTravel(server, ctx);
+  registerDiagnose(server, ctx);
+  registerLogResolution(server, ctx);
 }

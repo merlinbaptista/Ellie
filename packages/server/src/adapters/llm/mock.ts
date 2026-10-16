@@ -1,7 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type { LlmAdapter, LlmRequest, LlmResponse } from "./types.js";
 
-type MockHandler = { match: (req: LlmRequest) => boolean; respond: (req: LlmRequest) => string };
+type MockHandler = { match: (req: LlmRequest) => boolean; respond: (req: LlmRequest) => string | Promise<string> };
 const handlers: MockHandler[] = [];
 
 export function registerMockHandler(match: MockHandler["match"], respond: MockHandler["respond"]): () => void {
@@ -17,13 +17,14 @@ export function clearMockHandlers(): void { handlers.length = 0; }
 
 export class MockLlm implements LlmAdapter {
   readonly name = "mock-llm";
+  static testDelayMs: number | undefined;
   async complete(req: LlmRequest): Promise<LlmResponse> {
     const started = performance.now();
-    await delay(30 + Math.floor(Math.random() * 51));
+    await delay(MockLlm.testDelayMs ?? 30 + Math.floor(Math.random() * 51), undefined, { signal: req.signal });
     const handler = handlers.find((candidate) => candidate.match(req));
     const lastMessage = req.messages.at(-1)?.content ?? "";
     const text = handler
-      ? handler.respond(req)
+      ? await handler.respond(req)
       : req.responseFormat === "json"
         ? JSON.stringify({ mock: true, echo: lastMessage.slice(0, 200) })
         : `(mock) ${lastMessage}`;

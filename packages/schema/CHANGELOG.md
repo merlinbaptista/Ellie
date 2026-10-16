@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 - 2026-10-18
+
+- Added diagnosis evidence, candidate, fix-plan and diagnosis session schemas.
+- Added source-backed repair instructions and evidence hints to region-pack causes.
+- Extended diagnose and log-resolution tool contracts.
+
 ## 1.2.0 - 2026-10-18
 
 - Added event component tags, region-pack component aliases, and component matching.

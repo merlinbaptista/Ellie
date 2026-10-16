@@ -1,4 +1,4 @@
-import type { HomeEvent, Item, Prediction } from "@ellie/schema";
+import type { Diagnosis, HomeEvent, Item, Prediction, Resolution } from "@ellie/schema";
 import type { HouseholdRecord } from "../data/householdRepo.js";
 import type { HouseholdAlias } from "../data/aliasRepo.js";
 import type { AppContext } from "../context.js";
@@ -10,6 +10,8 @@ export interface HouseholdSnapshot {
   eventsByItem: Map<string, HomeEvent[]>;
   predictions: Prediction[];
   aliases: HouseholdAlias[];
+  resolutions: Resolution[];
+  diagnoses: Diagnosis[];
 }
 export async function loadHouseholdSnapshot(householdId: string, ctx: AppContext): Promise<HouseholdSnapshot> {
   const rows = await ctx.storage.query(householdPk(householdId));
@@ -29,5 +31,7 @@ export async function loadHouseholdSnapshot(householdId: string, ctx: AppContext
     eventsByItem,
     predictions: rows.filter((row) => row.type === "prediction").map((row) => row.data as unknown as Prediction),
     aliases: rows.filter((row) => row.type === "alias").map((row) => row.data as unknown as HouseholdAlias),
+    resolutions: rows.filter((row) => row.type === "resolution").map((row) => row.data as unknown as Resolution),
+    diagnoses: rows.filter((row) => row.type === "diagnosis").map((row) => row.data as unknown as Diagnosis),
   };
 }

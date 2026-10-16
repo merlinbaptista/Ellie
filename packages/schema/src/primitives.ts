@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const IdPrefix = { household: "hh", item: "itm", event: "evt", prediction: "prd", resolution: "res" } as const;
+export const IdPrefix = { household: "hh", item: "itm", event: "evt", prediction: "prd", resolution: "res", diagnosis: "dgn" } as const;
 export const zId = (prefix: string) => z.string().regex(new RegExp(`^${prefix}_[a-z0-9-]{3,64}$`));
 export const zHouseholdId = z.string().regex(/^(hh_[a-z0-9-]{3,64}|demo-[a-z0-9-]{2,32})$/);
 export const zItemId = zId("itm");

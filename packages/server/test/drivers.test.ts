@@ -14,7 +14,7 @@ describe("driver resolution", () => {
     expect(drivers.notifier.implementation).toBe("console-outbox");
     expect(drivers.scheduler.implementation).toBe("local-timer");
     expect(drivers.storage.missingKeys).toEqual(["AWS_REGION", "DYNAMODB_TABLE_NAME", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
-    expect(drivers.llm.missingKeys).toEqual(["AWS_REGION", "BEDROCK_MODEL_ID", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
+    expect(drivers.llm.missingKeys).toEqual(["AWS_REGION", "BEDROCK_MODEL_ID"]);
     expect(drivers.notifier.missingKeys).toEqual(["AWS_REGION", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY", "SNS_TOPIC_ARN or SNS_SMS_ENABLED"]);
     expect(drivers.scheduler.missingKeys).toEqual(["AWS_REGION", "EVENTBRIDGE_TARGET_ARN", "EVENTBRIDGE_ROLE_ARN", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
   });
@@ -22,6 +22,13 @@ describe("driver resolution", () => {
   it("uses AWS when storage requirements and profile credentials are present", () => {
     const env = loadEnv({ AWS_REGION: "ap-south-1", AWS_PROFILE: "default", DYNAMODB_TABLE_NAME: "ellie" });
     expect(resolveDrivers(env).storage.resolved).toBe("aws");
+  });
+
+  it("selects Bedrock Converse and delegates credentials to the AWS default chain", () => {
+    const env = loadEnv({ AWS_REGION: "us-east-1", BEDROCK_MODEL_ID: "provider-profile-id" });
+    const llm = resolveDrivers(env).llm;
+    expect(llm.resolved).toBe("aws");
+    expect(llm.implementation).toBe("bedrock");
   });
 
   it("selects DynamoDB Local from endpoint and table without AWS credentials", () => {

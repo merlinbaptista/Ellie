@@ -25,24 +25,57 @@
         { "key": "ro_membrane", "displayName": "RO membrane", "defaultIntervalDays": 730, "aliases": ["membrane", "ro membrane"], "source": { "note": "Starter RO membrane interval", "verified": false } }
       ],
       "symptoms": [
-        { "key": "beeping", "aliases": ["beeping", "alarm beeping"], "questions": [{ "id": "tank_light", "text": "Is the tank-full light on?", "answers": ["yes", "no", "not sure"] }, { "id": "water_flow", "text": "Is water flowing?", "answers": ["yes", "no", "not sure"] }], "likelyCauses": [{ "key": "tank_sensor", "description": "The tank-full sensor may be active", "diy": false }, { "key": "filter_due", "description": "A filter may be overdue", "relatedComponent": "sediment_filter", "diy": false }, { "key": "membrane_clogged", "description": "The membrane may be clogged", "relatedComponent": "ro_membrane", "diy": false }] },
-        { "key": "no_water", "aliases": ["no water", "water stopped"], "likelyCauses": [{ "key": "no_inlet", "description": "Inlet water may be off", "diy": false }, { "key": "membrane_clogged", "description": "The membrane may be clogged", "relatedComponent": "ro_membrane", "diy": false }, { "key": "pump_fault", "description": "The pump may need service", "diy": false }] },
-        { "key": "leaking", "aliases": ["leaking", "leak", "water leak"], "safety": "water_near_power", "likelyCauses": [{ "key": "possible_leak", "description": "A water connection may be leaking", "diy": false }] },
-        { "key": "bad_taste", "aliases": ["bad taste", "tastes strange"], "likelyCauses": [{ "key": "carbon_due", "description": "The carbon filter may be overdue", "relatedComponent": "carbon_filter", "diy": false }] }
+        {
+          "key": "beeping", "aliases": ["beeping", "alarm beeping"],
+          "questions": [
+            { "id": "tank_full_light", "text": "Is the tank-full light on?", "answers": ["yes", "no", "not sure"] },
+            { "id": "water_flowing", "text": "Is water coming out of the tap?", "answers": ["yes", "no", "not sure"] }
+          ],
+          "likelyCauses": [
+            { "key": "filter_overdue", "description": "The sediment filter may be overdue", "relatedComponent": "sediment_filter", "diy": true, "evidenceHints": { "componentOverdue": "sediment_filter", "answers": { "water_flowing": { "no": 0.2 } } }, "fix": { "summary": "Replace the sediment filter", "steps": ["Switch off and unplug the purifier.", "Close the inlet valve.", "Unscrew the filter housing with a cloth below it.", "Swap in the filter cartridge.", "Hand-tighten the housing, open the inlet, and plug the purifier back in.", "Run water for two minutes and discard it."], "partsNeeded": ["sediment filter cartridge"], "timeMinutes": 15, "callProIf": ["It still beeps after the new filter", "Water leaks from the housing"], "warrantyRelevant": false, "source": { "note": "Starter DIY filter replacement steps; verify against the appliance manual", "verified": false } } },
+            { "key": "tank_full_sensor", "description": "The tank-full sensor may need a reset", "diy": true, "evidenceHints": { "answers": { "tank_full_light": { "yes": 0.4, "no": -0.3 } } }, "fix": { "summary": "Reset the tank-full sensor", "steps": ["Unplug the purifier for two minutes.", "Draw a glass of water from the tap.", "Plug the purifier back in and check the light."], "partsNeeded": [], "timeMinutes": 3, "callProIf": ["The alarm continues after the reset"], "warrantyRelevant": false, "source": { "note": "Starter sensor reset steps; verify against the appliance manual", "verified": false } } },
+            { "key": "membrane_clogged", "description": "The RO membrane may need a technician", "relatedComponent": "ro_membrane", "diy": false, "evidenceHints": { "answers": { "water_flowing": { "no": 0.3 } } }, "fix": { "summary": "Have a technician inspect the RO membrane", "steps": [], "partsNeeded": ["RO membrane"], "callProIf": ["Water flow remains low after filter service"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } }
+          ]
+        },
+        {
+          "key": "no_water", "aliases": ["no water", "water stopped"],
+          "questions": [{ "id": "inlet_open", "text": "Is the inlet tap under the sink open?", "answers": ["yes", "no", "not sure"] }],
+          "likelyCauses": [
+            { "key": "no_inlet_water", "description": "The inlet tap may be closed", "diy": true, "evidenceHints": { "answers": { "inlet_open": { "yes": -0.4, "no": 0.4 } } }, "fix": { "summary": "Check the inlet tap", "steps": ["Check that the inlet tap under the sink is open."], "partsNeeded": [], "callProIf": ["The tap is open but water still does not flow"], "warrantyRelevant": false, "source": { "note": "Starter inlet check", "verified": false } } },
+            { "key": "filter_overdue", "description": "A filter may be overdue", "relatedComponent": "sediment_filter", "diy": true, "evidenceHints": { "componentOverdue": "sediment_filter" }, "fix": { "summary": "Replace the sediment filter", "steps": ["Switch off and unplug the purifier.", "Replace the sediment filter cartridge and check for leaks."], "partsNeeded": ["sediment filter cartridge"], "timeMinutes": 15, "callProIf": ["Water still does not flow after replacement"], "warrantyRelevant": false, "source": { "note": "Starter filter replacement guidance", "verified": false } } },
+            { "key": "membrane_clogged", "description": "The membrane may need a technician", "relatedComponent": "ro_membrane", "diy": false, "fix": { "summary": "Have a technician inspect the RO membrane", "steps": [], "partsNeeded": ["RO membrane"], "callProIf": ["No water flows after inlet and filter checks"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } },
+            { "key": "pump_fault", "description": "The pump may need service", "diy": false, "fix": { "summary": "Have a technician inspect the pump", "steps": [], "partsNeeded": [], "callProIf": ["The pump is noisy or the purifier remains without water"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } }
+          ]
+        },
+        { "key": "leaking", "aliases": ["leaking", "leak", "water leak"], "safety": "water_near_power", "likelyCauses": [{ "key": "possible_leak", "description": "A water connection may be leaking", "diy": false, "fix": { "summary": "Keep away and call a technician", "steps": [], "partsNeeded": [], "callProIf": ["Water is near electrical equipment"], "warrantyRelevant": true, "source": { "note": "Starter safety-first professional guidance", "verified": false } } }] },
+        { "key": "bad_taste", "aliases": ["bad taste", "tastes strange"], "likelyCauses": [{ "key": "carbon_filter_overdue", "description": "The carbon filter may be overdue", "relatedComponent": "carbon_filter", "diy": true, "evidenceHints": { "componentOverdue": "carbon_filter" }, "fix": { "summary": "Replace the carbon filter", "steps": ["Switch off and unplug the purifier.", "Replace the carbon filter cartridge.", "Run and discard water as directed by the manual."], "partsNeeded": ["carbon filter cartridge"], "timeMinutes": 15, "callProIf": ["The taste remains after replacement"], "warrantyRelevant": false, "source": { "note": "Starter filter replacement guidance", "verified": false } } }] }
       ],
       "questionsOnAdd": ["brand", "lastChangeDate"]
     },
     "inverter_battery": {
       "kind": "appliance", "displayName": "inverter battery", "aliases": ["inverter", "battery", "inverter battery"], "icon": "🔋",
       "recurring": { "action": "serviced", "defaultIntervalDays": 60, "source": { "note": "Starter inverter battery maintenance interval", "verified": false } },
-      "symptoms": [{ "key": "not_charging", "aliases": ["not charging", "battery not charging"] }, { "key": "burning_smell", "aliases": ["burning smell", "smell of burning"], "safety": "electrical", "likelyCauses": [{ "key": "electrical_fault", "description": "An electrical fault may be present", "diy": false }] }],
+      "symptoms": [
+        { "key": "not_charging", "aliases": ["not charging", "battery not charging"], "likelyCauses": [
+          { "key": "low_water_level", "description": "Battery water may be low", "diy": true, "fix": { "summary": "Check battery water level", "steps": ["Switch off the inverter and mains supply.", "Check the level indicator and top up only with distilled water if the manual permits."], "partsNeeded": ["distilled water"], "callProIf": ["The level is low but you are unsure how to top it up"], "warrantyRelevant": false, "source": { "note": "Starter inverter maintenance guidance; follow the battery manual", "verified": false } } },
+          { "key": "loose_terminal", "description": "A terminal may be loose", "diy": true, "fix": { "summary": "Have the connection checked safely", "steps": ["Switch off mains power before inspecting the inverter.", "Do not touch exposed conductors; ask a technician if a terminal is loose."], "partsNeeded": [], "callProIf": ["A cable is damaged or a terminal is hot"], "warrantyRelevant": false, "source": { "note": "Starter electrical caution guidance", "verified": false } } },
+          { "key": "battery_end_of_life", "description": "The battery may need professional testing", "diy": false, "fix": { "summary": "Have a technician test the battery", "steps": [], "partsNeeded": [], "callProIf": ["The battery still will not charge after basic checks"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } }
+        ] },
+        { "key": "burning_smell", "aliases": ["burning smell", "smell of burning"], "safety": "electrical", "likelyCauses": [{ "key": "electrical_fault", "description": "An electrical fault may be present", "diy": false }] }
+      ],
       "questionsOnAdd": []
     },
     "air_conditioner": {
       "kind": "appliance", "displayName": "air conditioner", "aliases": ["ac", "air conditioner", "aircon"], "icon": "❄️",
       "recurring": { "action": "serviced", "defaultIntervalDays": 365, "preferredMonths": [2, 3], "source": { "note": "Starter annual air-conditioner service interval", "verified": false } },
       "components": [{ "key": "ac_filter", "displayName": "AC filter", "defaultIntervalDays": 30, "aliases": ["filter", "ac filter", "air filter"], "source": { "note": "Starter AC filter interval", "verified": false } }],
-      "symptoms": [{ "key": "not_cooling", "aliases": ["not cooling", "no cooling"] }, { "key": "water_dripping", "aliases": ["water dripping", "dripping water"] }],
+      "symptoms": [
+        { "key": "not_cooling", "aliases": ["not cooling", "no cooling"], "likelyCauses": [
+          { "key": "ac_filter_dirty", "description": "The AC filter may be dirty", "relatedComponent": "ac_filter", "diy": true, "evidenceHints": { "componentOverdue": "ac_filter" }, "fix": { "summary": "Clean the AC filter", "steps": ["Switch off the AC.", "Remove and clean the filter according to the manual.", "Let it dry fully before reinstalling."], "partsNeeded": [], "timeMinutes": 20, "callProIf": ["The AC still does not cool after cleaning"], "warrantyRelevant": false, "source": { "note": "Starter filter cleaning guidance; follow the unit manual", "verified": false } } },
+          { "key": "low_gas", "description": "The refrigerant may need professional inspection", "diy": false, "fix": { "summary": "Have an AC technician inspect the refrigerant system", "steps": [], "partsNeeded": [], "callProIf": ["Cooling remains weak after filter cleaning"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } }
+        ] },
+        { "key": "water_dripping", "aliases": ["water dripping", "dripping water"], "likelyCauses": [{ "key": "drain_blocked", "description": "The condensate drain may be blocked", "diy": false, "fix": { "summary": "Have a technician inspect the drain", "steps": [], "partsNeeded": [], "callProIf": ["Water is near electrical equipment"], "warrantyRelevant": true, "source": { "note": "Starter professional diagnosis guidance", "verified": false } } }] }
+      ],
       "questionsOnAdd": []
     },
     "electricity_bill": {
@@ -60,8 +93,8 @@
     "generalEmergency": "112", "numbers": { "gas": "1906", "fire": "101" },
     "stopMessages": {
       "gas": "Close the cylinder regulator only if it is safe, don't touch switches, open windows, and call {number}.",
-      "electrical": "Do not touch the appliance. Move away and call {number} for professional help.",
-      "water_near_power": "Stay clear of the water and electrical equipment. Call {number} for help.",
+      "electrical": "If you can do so safely, switch off power at the breaker. Move away and call a qualified professional at {number}.",
+      "water_near_power": "Stay clear of the water. If you can switch off power without going near it, do so; call a qualified professional at {number}.",
       "fire": "Leave the building and call {number} from a safe place.",
       "carbon_monoxide": "Leave the building immediately and call {number} from outside."
     },

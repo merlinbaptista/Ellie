@@ -3,13 +3,35 @@ import { Channel, DateOrder, EventType, ItemKind, SafetyCategory, TempUnit, Volu
 import { zCountry, zCurrency, zLanguageTag, zRegionCode, zSourceRef, zTimeZone } from "../primitives.js";
 
 const Question = z.object({ id: z.string(), text: z.string(), answers: z.array(z.string()).min(2) }).strict();
-const LikelyCause = z.object({ key: z.string(), description: z.string(), relatedComponent: z.string().optional(), diy: z.boolean() }).strict();
+const Fix = z.object({
+  summary: z.string().max(120),
+  steps: z.array(z.string().max(200)).max(8).default([]),
+  partsNeeded: z.array(z.string().max(60)).default([]),
+  timeMinutes: z.number().int().positive().optional(),
+  callProIf: z.array(z.string().max(160)).default([]),
+  warrantyRelevant: z.boolean().default(false),
+  source: zSourceRef,
+}).strict();
+const LikelyCause = z.object({
+  key: z.string(),
+  description: z.string(),
+  relatedComponent: z.string().optional(),
+  diy: z.boolean(),
+  fix: Fix.optional(),
+  evidenceHints: z.object({
+    componentOverdue: z.string().optional(),
+    answers: z.record(z.string(), z.record(z.string(), z.number())).default({}),
+  }).strict().default({ answers: {} }),
+}).strict().superRefine((cause, ctx) => {
+  if (!cause.diy && cause.fix?.steps.length) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["fix", "steps"], message: "Non-DIY causes cannot include steps" });
+});
 const Symptom = z.object({
   key: z.string(),
   aliases: z.array(z.string().toLowerCase()).min(1),
   questions: z.array(Question).default([]),
   likelyCauses: z.array(LikelyCause).default([]),
   safety: SafetyCategory.optional(),
+  followUpOnly: z.boolean().default(false),
 }).strict();
 const Recurring = z.object({
   action: EventType,
@@ -115,7 +137,15 @@ export const RegionPack = RegionPackBase.superRefine((pack, ctx) => {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "recurring", "minDaysBetweenBookings"], message: "Minimum booking gap cannot exceed default interval" });
     }
     entry.symptoms.forEach((symptom, index) => {
-      if (symptom.safety && symptom.likelyCauses.some((cause) => cause.diy)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "symptoms", index, "likelyCauses"], message: "Safety symptoms cannot include DIY causes" });
+      if (symptom.safety && symptom.likelyCauses.some((cause) => cause.diy || cause.fix?.steps.length)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "symptoms", index, "likelyCauses"], message: "Safety symptoms cannot include DIY causes or steps" });
+      for (const [causeIndex, cause] of symptom.likelyCauses.entries()) {
+        if (cause.evidenceHints.componentOverdue && !entry.components.some((component) => component.key === cause.evidenceHints.componentOverdue)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "symptoms", index, "likelyCauses", causeIndex, "evidenceHints", "componentOverdue"], message: `Unknown component ${cause.evidenceHints.componentOverdue}` });
+        }
+        for (const questionId of Object.keys(cause.evidenceHints.answers)) {
+          if (!symptom.questions.some((question) => question.id === questionId)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["catalog", catalogKey, "symptoms", index, "likelyCauses", causeIndex, "evidenceHints", "answers", questionId], message: `Unknown symptom question ${questionId}` });
+        }
+      }
     });
   }
 });

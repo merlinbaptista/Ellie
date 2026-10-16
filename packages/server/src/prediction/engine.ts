@@ -72,6 +72,9 @@ export function computePrediction(input: PredictionInput): PredictionRecord {
   } else if (sampleSize >= 2 && estimates.estimate !== null) {
     basis = "household_average";
     intervalDays = estimates.estimate;
+  } else if (sampleSize === 1 && input.component && defaultInterval && estimates.intervalsDays[0]! > defaultInterval) {
+    basis = "component_default";
+    intervalDays = defaultInterval;
   } else if (sampleSize === 1) {
     basis = "single_interval";
     intervalDays = estimates.intervalsDays[0]!;

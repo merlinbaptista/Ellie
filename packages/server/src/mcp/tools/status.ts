@@ -3,6 +3,7 @@ import type { AppContext } from "../../context.js";
 import { activeSessionCount } from "../transport.js";
 import { toolResponse } from "../result.js";
 import { getRecentTimings, withTiming } from "../withTiming.js";
+import { getLlmDiagnostics } from "../../diagnosis/llmRanker.js";
 
 export async function statusData(ctx: AppContext) {
   const timings = getRecentTimings().map((entry) => entry.ms).sort((a, b) => a - b);
@@ -16,6 +17,7 @@ export async function statusData(ctx: AppContext) {
   }]));
   const regions = ctx.regions.list().map(({ packId, version }) => ({ packId, version, unverifiedCount: ctx.regions.unverifiedFacts(packId).length }));
   const memoryHealth = await ctx.storage.healthCheck();
+  const llmDiagnostics = getLlmDiagnostics();
   const householdCount = await ctx.repositories.households.count();
   const households = await ctx.repositories.households.list();
   let predictionCount = 0;
@@ -31,6 +33,12 @@ export async function statusData(ctx: AppContext) {
     regions,
     memory: { implementation: ctx.drivers.storage.implementation, households: householdCount, healthy: memoryHealth.ok },
     predictions: { stored: predictionCount, scheduledReminders },
+    llm: {
+      implementation: ctx.llm.name,
+      ...(ctx.llm.name === "bedrock" ? { model: ctx.env.BEDROCK_MODEL_ID } : {}),
+      lastLatencyMs: llmDiagnostics.lastLatencyMs,
+      fallbacks24h: llmDiagnostics.fallbacks24h,
+    },
     storageHealth: memoryHealth,
     recentToolTimings: { count: timings.length, p50, max },
     clockMode: ctx.clock.isFake() ? "fake" : "real",

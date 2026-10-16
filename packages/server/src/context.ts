@@ -18,6 +18,7 @@ import type { RegionRegistry } from "@ellie/schema";
 import { createServerRegionRegistry } from "./regions/registry.js";
 import { createRepositories, type Repositories } from "./data/index.js";
 import { handleReminderFire } from "./domain/reminders.js";
+import { registerDiagnosisMockHandler } from "./llm/mockHandlers.js";
 
 export interface AppContext {
   env: Env;
@@ -40,7 +41,7 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
   const clock = overrides.clock ?? createClock(env.ELLIE_FAKE_NOW);
   const log = overrides.logger ?? rootLogger;
   for (const [service, decision] of Object.entries(drivers)) {
-    if (decision.resolved === "aws" && service !== "storage") {
+    if (decision.resolved === "aws" && service !== "storage" && service !== "llm") {
       log.warn(`${service}: AWS adapter arrives in Module ${({ storage: 3, llm: 5, notifier: 6, scheduler: 6 } as Record<string, number>)[service]} — using mock for now`);
     }
   }
@@ -53,7 +54,7 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
     clock,
     logger: log,
     storage,
-    llm: overrides.llm ?? createLlm(drivers.llm),
+    llm: overrides.llm ?? createLlm(drivers.llm, env, log),
     notifier: overrides.notifier ?? createNotifier(drivers.notifier, storage, clock),
     scheduler: overrides.scheduler ?? createScheduler(drivers.scheduler, storage, clock),
     regions,
@@ -62,5 +63,6 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
     version: overrides.version ?? "0.1.0",
   };
   context.scheduler.onFire((job) => handleReminderFire(job, context));
+  registerDiagnosisMockHandler();
   return context;
 }

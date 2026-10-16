@@ -43,3 +43,12 @@ from history, and hands fixes/bookings to the phone.
 - Never predict or remind for components with no history.
 - Reminder jobs have deterministic IDs and are upserted; the fire handler rechecks for staleness before sending.
 - Speak at most one prediction sentence per tool response.
+
+## Diagnosis rules (Module 5+)
+- Safety classification runs before item creation, follow-up questions, DIY guidance, or LLM calls. Safety-stop responses must not contain fix steps.
+- Diagnosis evidence and candidate scores are deterministic; the LLM may only rank provided cause keys and explain provided evidence IDs.
+- Reject invented causes, invalid or missing citations, uncited factual dates/numbers, and unsafe or low-confidence rankings; use deterministic speech instead.
+- Never send household IDs, contact details, region, or household-specific item names to Bedrock. Use the region catalog display name.
+- Keep diagnosis sessions for the configured TTL and ask only a question whose answer can change the leading cause.
+- Fix plans and regional safety facts belong in region-pack JSON with a `source`; never add repair intervals or emergency numbers in server logic.
+- Record confirmed fixes through `log_resolution`; component changes or service events must trigger live prediction recomputation.

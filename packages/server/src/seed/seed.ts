@@ -1,4 +1,4 @@
-import { HomeEvent, Item, addDays, localDateToUtc, toLocalDate } from "@ellie/schema";
+import { HomeEvent, Item, Resolution, addDays, localDateToUtc, toLocalDate } from "@ellie/schema";
 import type { AppContext } from "../context.js";
 import { householdIndexPk, householdIndexSk, householdPk } from "../data/keys.js";
 import type { HouseholdRecord } from "../data/householdRepo.js";
@@ -134,6 +134,26 @@ export async function seedDemo(ctx: AppContext, options: SeedOptions = {}): Prom
         ...(eventSpec.relatedEventId ? { relatedEventId: eventSpec.relatedEventId } : {}),
       });
       await ctx.repositories.events.put(parsed);
+    }
+    if (spec.householdId === "demo-blr") {
+      const resolution = Resolution.parse({
+        schemaVersion: 1,
+        resolutionId: "res_seed-blr-ro-01",
+        householdId: "demo-blr",
+        itemId: "itm_seed-blr-ro",
+        symptomKey: "beeping",
+        causeKey: "membrane_clogged",
+        component: "ro_membrane",
+        cause: "Membrane clogged",
+        fix: "Membrane replaced by technician",
+        cost: { amount: 2400, currency: "INR" },
+        confirmedBy: "phone",
+        byWhom: "technician",
+        localDate: "2026-03-16",
+        supportingEventIds: ["evt_seed-blr-ro-beep"],
+        createdAt: localDateToUtc("2026-03-16", spec.timeZone),
+      });
+      await ctx.repositories.resolutions.put(resolution);
     }
     const { recomputeHousehold } = await import("../domain/predictions.js");
     await recomputeHousehold(ctx, spec.householdId);

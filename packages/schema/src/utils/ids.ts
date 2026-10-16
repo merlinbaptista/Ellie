@@ -1,4 +1,4 @@
-export type IdKind = "hh" | "itm" | "evt" | "prd" | "res";
+export type IdKind = "hh" | "itm" | "evt" | "prd" | "res" | "dgn";
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
 function randomBase36(length: number): string {
   const bytes = new Uint8Array(length);

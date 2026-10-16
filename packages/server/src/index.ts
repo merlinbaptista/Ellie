@@ -19,7 +19,9 @@ const httpServer = app.listen(env.PORT, env.HOST, async () => {
   logger.info(`Ellie MCP server v${ctx.version} · spec 2025-11-25 · http://${env.HOST}:${env.PORT}/mcp`);
   for (const service of Object.values(ctx.drivers)) {
     const active = service.resolved === "aws" ? "mock (AWS adapter pending)" : "mock";
-    const label = service.service === "storage" && service.resolved === "aws"
+    const label = service.service === "llm" && service.resolved === "aws"
+      ? `aws bedrock (${env.BEDROCK_MODEL_ID})`
+      : service.service === "storage" && service.resolved === "aws"
       ? `aws ${service.implementation} (${env.DYNAMODB_TABLE_NAME}${env.AWS_REGION ? `, ${env.AWS_REGION}` : `, ${env.DYNAMODB_ENDPOINT}`})`
       : `${active.padEnd(27)} ${service.implementation} (${service.reason})`;
     logger.info(`${service.service.padEnd(10)} ${label}`);

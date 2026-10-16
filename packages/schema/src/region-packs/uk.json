@@ -14,8 +14,8 @@
     "generalEmergency": "999", "numbers": { "gas": "0800 111 999" },
     "stopMessages": {
       "gas": "Leave the area, avoid switches and flames, and call {number} from a safe place.",
-      "electrical": "Do not touch the appliance. Move away and call {number} for professional help.",
-      "water_near_power": "Stay clear of the water and electrical equipment. Call {number} for help.",
+      "electrical": "If you can do so safely, switch off power at the breaker. Move away and call a qualified professional at {number}.",
+      "water_near_power": "Stay clear of the water. If you can switch off power without going near it, do so; call a qualified professional at {number}.",
       "fire": "Leave the building and call {number} from a safe place.",
       "carbon_monoxide": "Leave the building immediately and call {number} from outside."
     },
