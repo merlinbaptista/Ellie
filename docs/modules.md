@@ -13,4 +13,6 @@
 | 9 | Privacy & trust | Knowledge and forget tools, consent, optional OAuth 2.1 + PKCE | ⏳ |
 | 10 | Demo & submission | Demo runner, time-travel scenarios, docs, schema extraction, Docker | ⏳ |
 
+Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
+
 Module 3 note: DynamoDB Local contract suite is available but was not run in the build environment because Docker is unavailable.

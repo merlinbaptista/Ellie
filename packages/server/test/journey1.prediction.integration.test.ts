@@ -1,22 +1,19 @@
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
-import { closeAllSessions } from "../src/mcp/transport.js";
 import { seedDemo } from "../src/seed/seed.js";
 import { createTestContext } from "./helpers.js";
-
-const servers: Array<{ close: () => void }> = [];
-afterEach(async () => { await closeAllSessions(); for (const server of servers.splice(0)) server.close(); });
+import { registerIntegrationCleanup } from "./integrationCleanup.js";
 
 describe("prediction Journey 1", () => {
   it("predicts, schedules, fires, and exposes the booking reminder", async () => {
     const ctx = await createTestContext("2026-10-16T03:30:00.000Z");
     await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
     const server = createApp(ctx).listen(0, "127.0.0.1");
-    servers.push({ close: () => server.close() });
+    registerIntegrationCleanup(server, ctx);
     await once(server, "listening");
     const address = server.address() as AddressInfo;
     const base = `http://127.0.0.1:${address.port}`;
@@ -50,6 +47,6 @@ describe("prediction Journey 1", () => {
       const dueApi = await fetch(`${base}/api/households/demo-blr/due?days=7`).then((response) => response.json()) as { generatedForLocal: string; entries: unknown[] };
       expect(dueApi.generatedForLocal).toBe("2026-10-16");
       expect(Array.isArray(dueApi.entries)).toBe(true);
-    } finally { await client.close(); (ctx.scheduler as { close?: () => void }).close?.(); }
+    } finally { await client.close(); }
   });
 });

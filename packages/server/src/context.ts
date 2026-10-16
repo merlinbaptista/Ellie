@@ -37,14 +37,9 @@ export interface AppContext {
 
 export async function buildContext(overrides: Partial<AppContext> = {}): Promise<AppContext> {
   const env = overrides.env ?? getEnv();
-  const drivers = overrides.drivers ?? resolveDrivers(env);
+  const drivers = overrides.drivers ?? await resolveDrivers(env);
   const clock = overrides.clock ?? createClock(env.ELLIE_FAKE_NOW);
   const log = overrides.logger ?? rootLogger;
-  for (const [service, decision] of Object.entries(drivers)) {
-    if (decision.resolved === "aws" && service !== "storage" && service !== "llm") {
-      log.warn(`${service}: AWS adapter arrives in Module ${({ storage: 3, llm: 5, notifier: 6, scheduler: 6 } as Record<string, number>)[service]} — using mock for now`);
-    }
-  }
   const storage = overrides.storage ?? await createStorage(drivers.storage, env, clock, log);
   const regions = overrides.regions ?? await createServerRegionRegistry(log, env.REGION_PACKS_DIR);
   const repositories = overrides.repositories ?? createRepositories(storage, clock);

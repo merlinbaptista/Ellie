@@ -5,9 +5,10 @@ import { buildContext } from "./context.js";
 import { logger } from "./lib/logger.js";
 import { closeAllSessions } from "./mcp/transport.js";
 import { seedDemo } from "./seed/seed.js";
+import { flushBackgroundWork } from "./diagnosis/llmRanker.js";
 
 const env = loadEnv();
-const drivers = resolveDrivers(env);
+const drivers = await resolveDrivers(env);
 const ctx = await buildContext({ env, drivers });
 let startupSeed: Awaited<ReturnType<typeof seedDemo>> | undefined;
 if (env.SEED_ON_START) {
@@ -18,7 +19,7 @@ const app = createApp(ctx);
 const httpServer = app.listen(env.PORT, env.HOST, async () => {
   logger.info(`Ellie MCP server v${ctx.version} · spec 2025-11-25 · http://${env.HOST}:${env.PORT}/mcp`);
   for (const service of Object.values(ctx.drivers)) {
-    const active = service.resolved === "aws" ? "mock (AWS adapter pending)" : "mock";
+    const active = service.resolved === "aws" ? "aws" : "mock";
     const label = service.service === "llm" && service.resolved === "aws"
       ? `aws bedrock (${env.BEDROCK_MODEL_ID})`
       : service.service === "storage" && service.resolved === "aws"
@@ -43,6 +44,7 @@ async function shutdown(): Promise<void> {
   timeout.unref();
   httpServer.close(async () => {
     await closeAllSessions();
+    await flushBackgroundWork();
     const storage = ctx.storage as typeof ctx.storage & { flush?: () => Promise<void> };
     await storage.flush?.();
     const scheduler = ctx.scheduler as typeof ctx.scheduler & { close?: () => void };

@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
@@ -8,20 +8,14 @@ import { buildContext } from "../src/context.js";
 import { loadEnv } from "../src/config/env.js";
 import { createClock } from "../src/lib/clock.js";
 import { createMemoryStorage } from "../src/adapters/storage/memory.js";
-import { closeAllSessions } from "../src/mcp/transport.js";
-
-const resources: Array<{ close: () => void }> = [];
-afterEach(async () => {
-  await closeAllSessions();
-  for (const resource of resources.splice(0)) resource.close();
-});
+import { registerIntegrationCleanup } from "./integrationCleanup.js";
 
 describe("MCP HTTP integration", () => {
   it("serves tools and health over Streamable HTTP and rejects unknown sessions", async () => {
     const env = loadEnv({ NODE_ENV: "test", MOCK_STORAGE_MODE: "memory" });
     const ctx = await buildContext({ env, clock: createClock("2026-01-01T00:00:00.000Z"), storage: createMemoryStorage(createClock("2026-01-01T00:00:00.000Z")) });
     const server = createApp(ctx).listen(0, "127.0.0.1");
-    resources.push({ close: () => server.close() });
+    registerIntegrationCleanup(server, ctx);
     await once(server, "listening");
     const address = server.address() as AddressInfo;
     const baseUrl = `http://127.0.0.1:${address.port}`;
@@ -45,7 +39,6 @@ describe("MCP HTTP integration", () => {
       expect(unknown.status).toBe(400);
     } finally {
       await client.close();
-      (ctx.scheduler as { close?: () => void }).close?.();
     }
   });
 });

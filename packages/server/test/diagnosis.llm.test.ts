@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { MockLlm, clearMockHandlers, registerMockHandler } from "../src/adapters/llm/mock.js";
-import { validateLlmDiagnosis, rankDiagnosis } from "../src/diagnosis/llmRanker.js";
+import { flushBackgroundWork, validateLlmDiagnosis, rankDiagnosis } from "../src/diagnosis/llmRanker.js";
 import { createTestContext } from "./helpers.js";
 import type { Candidate, Evidence } from "@ellie/schema";
 
@@ -12,7 +12,7 @@ const evidence: Evidence[] = [
   { evidenceId: "ev_overdue_sediment_filter", kind: "component_overdue", text: "Sediment filter is about 3 months overdue", weight: 0.45, causeKeys: ["filter_overdue"] },
   { evidenceId: "ev_warranty", kind: "warranty", text: "Warranty valid until 20 December 2026", weight: 0, causeKeys: [] },
 ];
-afterEach(() => { clearMockHandlers(); MockLlm.testDelayMs = undefined; });
+afterEach(async () => { await flushBackgroundWork(); clearMockHandlers(); MockLlm.testDelayMs = undefined; });
 
 describe("diagnosis LLM constraints", () => {
   it("rejects invented causes and uncited dates, appends omitted valid candidates", () => {
@@ -46,7 +46,7 @@ describe("diagnosis LLM constraints", () => {
     const result = await rankDiagnosis({ ctx, householdId: "hh_timeout-1", item: "water purifier", symptomKey: "beeping", language: "en-IN", candidates, evidence, onBackgroundResult: (value) => { refined.push(value.explanation); } });
     expect(performance.now() - start).toBeLessThan(500);
     expect(result.source).toBe("deterministic");
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await flushBackgroundWork();
     expect(refined.length).toBe(1);
   });
 });

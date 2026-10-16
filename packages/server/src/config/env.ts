@@ -71,6 +71,7 @@ const envSchema = z.object({
   EVENTBRIDGE_SCHEDULE_GROUP: defaultString("ellie"),
   EVENTBRIDGE_TARGET_ARN: optionalString,
   EVENTBRIDGE_ROLE_ARN: optionalString,
+  SCHEDULER_QUEUE_URL: optionalString,
   PHONE_PAGE_BASE_URL: z.preprocess(blankToUndefined, z.string().url().default("http://localhost:5174")),
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),

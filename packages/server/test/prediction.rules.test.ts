@@ -26,6 +26,7 @@ describe("prediction regional rules", () => {
     expect(preferred.nextDueLocal).toBe("2027-03-01");
     const acOutsidePreferredMonths = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-05-10", intervalDays: 365, leadTimeDays: 0, safetyBufferDays: 0, preferredMonths: [2, 3] });
     expect(acOutsidePreferredMonths.nextDueLocal).toBe("2027-03-01");
+    expect(acOutsidePreferredMonths.rulesApplied.some((rule) => rule.ruleId === "preferred_months")).toBe(true);
     expect(preferred.rulesApplied.at(-1)?.ruleId).toBe("preferred_months");
     const today = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-08-01", intervalDays: 40, leadTimeDays: 10, safetyBufferDays: 10 });
     expect(today.remindOnLocal).toBe("2026-10-16");

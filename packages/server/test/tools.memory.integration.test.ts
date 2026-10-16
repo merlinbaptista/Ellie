@@ -1,18 +1,12 @@
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
 import { seedDemo } from "../src/seed/seed.js";
-import { closeAllSessions } from "../src/mcp/transport.js";
 import { addHousehold, createTestContext } from "./helpers.js";
-
-const servers: Array<{ close: () => void }> = [];
-afterEach(async () => {
-  await closeAllSessions();
-  for (const server of servers.splice(0)) server.close();
-});
+import { registerIntegrationCleanup } from "./integrationCleanup.js";
 
 describe("household memory tools", () => {
   it("completes the follow-up journey, reads seeded history, and rejects a full address", async () => {
@@ -20,7 +14,7 @@ describe("household memory tools", () => {
     await addHousehold(ctx, "hh_test-1", "IN");
     await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
     const server = createApp(ctx).listen(0, "127.0.0.1");
-    servers.push({ close: () => server.close() });
+    registerIntegrationCleanup(server, ctx);
     await once(server, "listening");
     const address = server.address() as AddressInfo;
     const client = new Client({ name: "memory-integration", version: "0.1.0" });
@@ -58,7 +52,6 @@ describe("household memory tools", () => {
       expect((confirmed.structuredContent as { followUp?: { field: string } }).followUp?.field).toBe("region");
     } finally {
       await client.close();
-      (ctx.scheduler as { close?: () => void }).close?.();
     }
   });
 });

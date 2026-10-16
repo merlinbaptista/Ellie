@@ -1,22 +1,19 @@
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
-import { closeAllSessions } from "../src/mcp/transport.js";
 import { seedDemo } from "../src/seed/seed.js";
 import { createTestContext } from "./helpers.js";
-
-const servers: Array<{ close: () => void }> = [];
-afterEach(async () => { await closeAllSessions(); for (const server of servers.splice(0)) server.close(); });
+import { registerIntegrationCleanup } from "./integrationCleanup.js";
 
 describe("diagnosis Journey 2", () => {
   it("diagnoses the overdue filter with cited history, logs the fix, and stops for gas safety", async () => {
     const ctx = await createTestContext("2026-10-16T03:30:00.000Z");
     await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
     const server = createApp(ctx).listen(0, "127.0.0.1");
-    servers.push({ close: () => server.close() });
+    registerIntegrationCleanup(server, ctx);
     await once(server, "listening");
     const address = server.address() as AddressInfo;
     const client = new Client({ name: "diagnosis-journey", version: "1.0.0" });
@@ -43,6 +40,6 @@ describe("diagnosis Journey 2", () => {
       expect(safety.safety?.emergencyNumber).toBe("1906");
       expect(safety.followUp).toBeUndefined();
       expect(safety.data.fixPlan).toBeUndefined();
-    } finally { await client.close(); (ctx.scheduler as { close?: () => void }).close?.(); }
+    } finally { await client.close(); }
   });
 });

@@ -9,7 +9,12 @@ export interface RankedDiagnosis { ranking: string[]; explanation: string; cited
 const monthPattern = /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/gi;
 const numericPattern = /\d+|[$£€₹]/g;
 const fallbackTimes: number[] = [];
+const backgroundWork = new Set<Promise<void>>();
 let lastLlmLatencyMs = 0;
+export async function flushBackgroundWork(): Promise<void> {
+  await Promise.allSettled([...backgroundWork]);
+}
+
 export function getLlmDiagnostics(now = Date.now()): { lastLatencyMs: number; fallbacks24h: number } {
   while (fallbackTimes.length && fallbackTimes[0]! < now - 24 * 60 * 60 * 1000) fallbackTimes.shift();
   return { lastLatencyMs: lastLlmLatencyMs, fallbacks24h: fallbackTimes.length };
@@ -85,11 +90,14 @@ export async function rankDiagnosis(input: {
       voiceController.abort();
       const backgroundController = new AbortController();
       const backgroundTimer = setTimeout(() => backgroundController.abort(), input.ctx.env.LLM_BACKGROUND_TIMEOUT_MS);
-      void request(backgroundController.signal).then(async (result) => {
+      let work: Promise<void>;
+      work = request(backgroundController.signal).then(async (result) => {
         lastLlmLatencyMs = result.latencyMs;
         const validated = validateLlmDiagnosis(result.text, input.candidates, input.evidence);
         await input.onBackgroundResult?.({ ranking: validated.ranking, explanation: validated.explanation, citedEvidenceIds: validated.citations, source: "llm", model: result.model, latencyMs: result.latencyMs });
       }).catch((backgroundError) => input.ctx.logger.warn({ tool: "diagnose", fallbackReason: backgroundError instanceof Error ? backgroundError.message : "background_error" }, "llm.background_refinement_failed")).finally(() => clearTimeout(backgroundTimer));
+      backgroundWork.add(work);
+      void work.finally(() => backgroundWork.delete(work));
     } else {
       voiceController.abort();
     }
