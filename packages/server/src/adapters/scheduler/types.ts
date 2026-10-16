@@ -12,4 +12,6 @@ export interface SchedulerAdapter {
   list(householdId?: string): Promise<ScheduledJob[]>;
   onFire(handler: JobHandler): void;
   tick?(): Promise<number>;
+  healthCheck?(): Promise<{ ok: boolean; scheduled: number; queueDepth?: number }>;
+  close?(): void | Promise<void>;
 }

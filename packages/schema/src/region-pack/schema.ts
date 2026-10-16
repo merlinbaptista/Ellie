@@ -57,6 +57,7 @@ export const CatalogEntry = z.object({
 export type CatalogEntry = z.infer<typeof CatalogEntry>;
 export const Provider = z.object({
   name: z.string(),
+  aliases: z.array(z.string()).default([]),
   appliesTo: z.array(z.string()).min(1),
   channel: Channel,
   to: z.string().optional(),

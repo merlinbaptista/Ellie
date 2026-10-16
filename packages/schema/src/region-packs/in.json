@@ -85,9 +85,9 @@
     }
   },
   "providers": {
-    "indane": { "name": "Indane", "appliesTo": ["lpg_cylinder"], "channel": "whatsapp", "to": "917588888824", "urlTemplate": "https://wa.me/{to}?text={text}", "messageTemplate": "REFILL", "requiresRegisteredPhone": true, "source": { "note": "Indane WhatsApp booking: send REFILL from registered number", "verified": false } },
-    "bharatgas": { "name": "Bharat Gas", "appliesTo": ["lpg_cylinder"], "channel": "app", "notes": "Add official booking channel before demo", "source": { "note": "Provider entry awaiting official booking channel verification", "verified": false } },
-    "hp_gas": { "name": "HP Gas", "appliesTo": ["lpg_cylinder"], "channel": "none", "notes": "Add official booking channel before demo", "source": { "note": "Provider entry awaiting official booking channel verification", "verified": false } }
+    "indane": { "name": "Indane", "aliases": ["Indian Oil", "IOCL"], "appliesTo": ["lpg_cylinder"], "channel": "whatsapp", "to": "917588888824", "urlTemplate": "https://wa.me/{to}?text={text}", "messageTemplate": "REFILL", "requiresRegisteredPhone": true, "source": { "note": "Indane WhatsApp booking: send REFILL from registered number", "verified": false } },
+    "bharatgas": { "name": "Bharat Gas", "aliases": ["Bharatgas", "BPCL"], "appliesTo": ["lpg_cylinder"], "channel": "app", "notes": "Add official booking channel before demo", "source": { "note": "Provider entry awaiting official booking channel verification", "verified": false } },
+    "hp_gas": { "name": "HP Gas", "aliases": ["HPCL", "Hindustan Petroleum"], "appliesTo": ["lpg_cylinder"], "channel": "none", "notes": "Add official booking channel before demo", "source": { "note": "Provider entry awaiting official booking channel verification", "verified": false } }
   },
   "safety": {
     "generalEmergency": "112", "numbers": { "gas": "1906", "fire": "101" },

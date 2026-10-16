@@ -90,8 +90,7 @@ export async function rankDiagnosis(input: {
       voiceController.abort();
       const backgroundController = new AbortController();
       const backgroundTimer = setTimeout(() => backgroundController.abort(), input.ctx.env.LLM_BACKGROUND_TIMEOUT_MS);
-      let work: Promise<void>;
-      work = request(backgroundController.signal).then(async (result) => {
+      const work = request(backgroundController.signal).then(async (result) => {
         lastLlmLatencyMs = result.latencyMs;
         const validated = validateLlmDiagnosis(result.text, input.candidates, input.evidence);
         await input.onBackgroundResult?.({ ranking: validated.ranking, explanation: validated.explanation, citedEvidenceIds: validated.citations, source: "llm", model: result.model, latencyMs: result.latencyMs });

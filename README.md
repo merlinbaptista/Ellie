@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 5: diagnosis engine**
+**Status: Module 6: phone handoff and AWS scheduling**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -38,8 +38,8 @@ Each service uses mock mode by default. With `auto`, AWS is selected only when a
 |---|---|---|
 | storage | `AWS_REGION`, `DYNAMODB_TABLE_NAME`, credentials | file-store (or memory-store) |
 | llm | `AWS_REGION`, `BEDROCK_MODEL_ID`, credentials | mock-llm |
-| notifier | `AWS_REGION`, credentials, `SNS_TOPIC_ARN` or `SNS_SMS_ENABLED=true` | console-outbox |
-| scheduler | `AWS_REGION`, `EVENTBRIDGE_TARGET_ARN`, `EVENTBRIDGE_ROLE_ARN`, credentials | local-timer |
+| notifier | `AWS_REGION`, SDK credentials, `SNS_TOPIC_ARN` or `SNS_SMS_ENABLED=true` | console-outbox |
+| scheduler | `AWS_REGION`, SDK credentials, `EVENTBRIDGE_TARGET_ARN`, `EVENTBRIDGE_ROLE_ARN`, `SCHEDULER_QUEUE_URL` | local-timer |
 
 AWS services use the AWS SDK default credential chain (`AWS_PROFILE`, shared SSO/credentials, environment credentials, or workload roles). Bedrock auto-selection requires `AWS_REGION` and `BEDROCK_MODEL_ID`; actual credentials are resolved by the SDK when Converse is called. DynamoDB auto-selection also requires its table and explicit profile or environment credentials unless using DynamoDB Local.
 
@@ -102,6 +102,25 @@ Prediction bases are household average, one observed interval, component default
 `diagnose` checks safety before item creation, then combines symptom history, component predictions, prior resolutions and warranty evidence. It asks at most one useful follow-up at a time. DIY steps and professional-only guidance come from region packs; safety-stop responses never include repair steps. `log_resolution` records the cause and fix, adds the appropriate service/change and cost events, and recomputes predictions.
 
 The LLM may rank only the deterministic candidate list and explain cited evidence. Invalid citations, invented causes, uncited dates/numbers, or a low-confidence ranking fall back to deterministic speech. The voice path returns after `LLM_VOICE_TIMEOUT_MS` (350 ms by default); a separate bounded background call can refine the saved explanation. With `AWS_REGION`, `BEDROCK_MODEL_ID`, and credentials configured, `LLM_DRIVER=auto` selects Bedrock Converse. Credentials use the AWS SDK default provider chain; see [infra/iam-policy-bedrock.json](infra/iam-policy-bedrock.json). Guardrails are optional via `BEDROCK_GUARDRAIL_ID` and `BEDROCK_GUARDRAIL_VERSION`.
+
+## Phone handoff
+
+`send_to_phone` sends a consented fix, booking guide, or due summary with a short expiring link. Links use HMAC signatures and wall-clock expiry; SMS contains one GSM-7 link and is limited to 160 characters. The `/p/:token` server-rendered page is the fallback until the Module 7 phone page is configured. The phone API rebuilds the view live and accepts token-scoped `fixed`, `not_fixed`, and `booked` actions.
+
+Flow: Alexa → `send_to_phone` → SMS/email → `/l/code` → phone guide → token-authenticated action.
+
+Booking uses the saved household provider. A new item in a multi-provider region asks once; one-provider regions use their provider. The India starter list includes Indane's WhatsApp `REFILL` action and requires the registered phone number.
+
+## Go live on AWS
+
+1. Set `LINK_SIGNING_SECRET` to at least 32 random characters and `NODE_ENV=production`.
+2. Set `ELLIE_PUBLIC_BASE_URL` to a public HTTPS origin. Set up DynamoDB using the Module 3 stack.
+3. Deploy `infra/ellie-messaging.yaml`, optionally setting `AlertEmail`, then run `npm run aws:env -- --stack ellie-messaging` and add the printed values to `.env`.
+4. Attach `infra/iam-policy-messaging.json` after replacing its topic, role, and queue ARN placeholders.
+5. New AWS accounts are in the SNS SMS sandbox; only verified destinations can receive SMS. India SMS generally requires DLT entity/template IDs (`SNS_SMS_ENTITY_ID`, `SNS_SMS_TEMPLATE_ID`). Topic-to-email subscription is the simplest demo path.
+6. For a real reminder, use `POST /api/dev/schedule-test` in a non-production deployment and confirm the EventBridge schedule sends into SQS and reaches Ellie. The poller needs outbound AWS access; no public callback URL is required.
+
+The messaging policy grants `sns:Publish` on `*` only for direct SMS because SNS has no per-phone-number resource ARN. Topic publishing remains restricted to the configured topic ARN.
 
 ## Verification
 

@@ -11,6 +11,7 @@ import { register as registerDueThisWeek } from "./dueThisWeek.js";
 import { register as registerDevTimeTravel } from "./devTimeTravel.js";
 import { register as registerDiagnose } from "./diagnose.js";
 import { register as registerLogResolution } from "./logResolution.js";
+import { register as registerSendToPhone } from "./sendToPhone.js";
 
 export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerPing(server, ctx);
@@ -24,4 +25,5 @@ export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerDevTimeTravel(server, ctx);
   registerDiagnose(server, ctx);
   registerLogResolution(server, ctx);
+  registerSendToPhone(server, ctx);
 }

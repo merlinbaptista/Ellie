@@ -7,6 +7,7 @@ export * from "./event.js";
 export * from "./prediction.js";
 export * from "./resolution.js";
 export * from "./diagnosis.js";
+export * from "./phone.js";
 export * from "./contracts.js";
 export * from "./region-pack/schema.js";
 export * from "./region-pack/merge.js";

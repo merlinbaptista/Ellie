@@ -17,6 +17,7 @@ describe("prediction Journey 1", () => {
     await once(server, "listening");
     const address = server.address() as AddressInfo;
     const base = `http://127.0.0.1:${address.port}`;
+    ctx.env.ELLIE_PUBLIC_BASE_URL = base;
     const client = new Client({ name: "prediction-journey", version: "1.0.0" });
     try {
       await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
@@ -37,7 +38,12 @@ describe("prediction Journey 1", () => {
       expect(travelData.data.firedJobs).toBe(1);
       const outbox = await fetch(`${base}/api/outbox?householdId=demo-blr`).then((response) => response.json()) as Array<{ body: string; link?: string }>;
       expect(outbox[0]?.body).toContain("gas cylinder");
-      expect(outbox[0]?.link).toContain("wa.me/917588888824");
+      expect(outbox[0]?.link).toMatch(/\/l\/[23456789abcdefghjkmnpqrstuvwxyz]{8}$/);
+      const shortResponse = await fetch(outbox[0]!.link!, { redirect: "manual" });
+      expect(shortResponse.status).toBe(302);
+      const pageResponse = await fetch(new URL(shortResponse.headers.get("location")!, base));
+      expect(pageResponse.status).toBe(200);
+      expect(await pageResponse.text()).toContain("https://wa.me/917588888824?text=REFILL");
       const schedule = await fetch(`${base}/api/schedule?householdId=demo-blr`).then((response) => response.json()) as Array<{ id: string }>;
       expect(schedule.some((job) => job.id.includes(data.data.mostUrgent.itemId))).toBe(false);
       const apiTravel = await fetch(`${base}/api/dev/time-travel`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ reset: true }) });

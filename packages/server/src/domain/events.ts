@@ -9,6 +9,7 @@ import { resolveItem } from "./items.js";
 import { defaultPreviousWhen } from "./speech.js";
 import { markAsked, savePending, type PlannedQuestion } from "./followups.js";
 import { ValidationError } from "../lib/errors.js";
+import { selectProvider } from "./providers.js";
 
 export interface LogEventOutcome {
   household: HouseholdRecord;
@@ -31,7 +32,15 @@ export async function logEvent(input: LogEventInput, ctx: AppContext): Promise<L
   const household = await getOrCreateHousehold(householdId, ctx);
   const pack = ctx.regions.get(household.regionPackId || "DEFAULT");
   const resolved = await resolveItem(household, input.item, input, ctx);
-  const item = resolved.item;
+  let item = resolved.item;
+  if (input.type === "booked") {
+    if (resolved.created && Object.values(pack.providers).filter((provider) => provider.appliesTo.includes(item.catalogKey)).length > 1) {
+      item = await ctx.repositories.items.put({ ...item, providerKey: undefined });
+    }
+    const selection = await selectProvider(ctx, { household, item, supplied: input.provider, tool: "log_event", retryArgs: { ...input, householdId } });
+    item = selection.item;
+    if (selection.followUp) return { household, item, deduped: false, followUp: selection.followUp };
+  }
   const timezone = household.timeZone ?? pack.locale.defaultTimeZone;
   const now = ctx.clock.now();
   const nowIso = now.toISOString();
@@ -97,7 +106,7 @@ export async function logEvent(input: LogEventInput, ctx: AppContext): Promise<L
     localDate: date,
     dateIsApproximate: isApproximate,
     recordedAt: nowIso,
-    source: "voice",
+    source: input.source ?? "voice",
     ...(notes ?? input.notes ? { notes: notes ?? input.notes } : {}),
     ...(type === "cost" || input.type === "cost" ? { cost: { amount: input.cost ?? 0, currency: household.units?.currency ?? pack.units.currency } } : {}),
     ...(type === "symptom" || input.type === "symptom" ? { symptom: { key: symptomMatch?.key ?? "other", description: input.symptom } } : {}),

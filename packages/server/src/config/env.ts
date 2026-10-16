@@ -68,10 +68,17 @@ const envSchema = z.object({
   SNS_TOPIC_ARN: optionalString,
   SNS_SMS_ENABLED: bool(false),
   SNS_SMS_SENDER_ID: optionalString,
+  SNS_SMS_ENTITY_ID: optionalString,
+  SNS_SMS_TEMPLATE_ID: optionalString,
+  SNS_SMS_TYPE: z.preprocess(blankToUndefined, z.enum(["Promotional", "Transactional", "CriticalTransaction"]).default("Transactional")),
   EVENTBRIDGE_SCHEDULE_GROUP: defaultString("ellie"),
   EVENTBRIDGE_TARGET_ARN: optionalString,
   EVENTBRIDGE_ROLE_ARN: optionalString,
   SCHEDULER_QUEUE_URL: optionalString,
+  SCHEDULER_POLL_WAIT_SEC: positiveInt(20, 20),
+  PHONE_LINK_TTL_HOURS: positiveInt(72),
+  SHORT_LINK_BASE_URL: z.preprocess(blankToUndefined, z.string().url().optional()),
+  PHONE_SEND_LIMIT_PER_HOUR: positiveInt(10),
   PHONE_PAGE_BASE_URL: z.preprocess(blankToUndefined, z.string().url().default("http://localhost:5174")),
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),
@@ -93,7 +100,11 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     process.exitCode = 1;
     throw new Error("Invalid environment configuration");
   }
-  return parsed.data;
+  const result = parsed.data;
+  if (result.NODE_ENV === "production" && (result.LINK_SIGNING_SECRET === "change-me-in-production" || result.LINK_SIGNING_SECRET.length < 32)) {
+    throw new Error("LINK_SIGNING_SECRET must be at least 32 characters in production");
+  }
+  return result;
 }
 
 let cached: Env | undefined;

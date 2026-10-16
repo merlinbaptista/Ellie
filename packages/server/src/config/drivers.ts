@@ -18,10 +18,15 @@ const hasCredentials = (env: Env) => Boolean(
 );
 
 export async function resolveDrivers(env: Env): Promise<Record<ServiceName, DriverDecision>> {
-  const needsCredentialProbe = !hasCredentials(env) && Boolean(env.AWS_REGION && (
-    env.BEDROCK_MODEL_ID || env.SNS_TOPIC_ARN || env.SNS_SMS_ENABLED ||
-    env.EVENTBRIDGE_TARGET_ARN || env.EVENTBRIDGE_ROLE_ARN || env.SCHEDULER_QUEUE_URL
-  ));
+  const requestedServices = { llm: env.LLM_DRIVER, notifier: env.NOTIFY_DRIVER, scheduler: env.SCHEDULER_DRIVER };
+  const needsCredentialProbe = !hasCredentials(env) && Boolean(
+    requestedServices.llm === "aws" || requestedServices.notifier === "aws" || requestedServices.scheduler === "aws" ||
+    (env.AWS_REGION && (
+      (requestedServices.llm === "auto" && env.BEDROCK_MODEL_ID) ||
+      (requestedServices.notifier === "auto" && (env.SNS_TOPIC_ARN || env.SNS_SMS_ENABLED)) ||
+      (requestedServices.scheduler === "auto" && env.EVENTBRIDGE_TARGET_ARN && env.EVENTBRIDGE_ROLE_ARN && env.SCHEDULER_QUEUE_URL)
+    ))
+  );
   const credentialsAvailable = hasCredentials(env) || (needsCredentialProbe && await probeAwsCredentials());
   const credentialKeys = needsCredentialProbe && !credentialsAvailable ? ["No AWS credentials found by the SDK chain"] : [];
   const notifierCredentialKeys = credentialsAvailable ? [] : credentialKeys.length ? credentialKeys : ["AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"];
@@ -47,7 +52,7 @@ export async function resolveDrivers(env: Env): Promise<Record<ServiceName, Driv
       aws: "sns",
     },
     scheduler: {
-      keys: ["AWS_REGION", "EVENTBRIDGE_TARGET_ARN", "EVENTBRIDGE_ROLE_ARN", ...notifierCredentialKeys],
+      keys: ["AWS_REGION", "EVENTBRIDGE_TARGET_ARN", "EVENTBRIDGE_ROLE_ARN", "SCHEDULER_QUEUE_URL", ...notifierCredentialKeys],
       ready: Boolean(env.AWS_REGION && env.EVENTBRIDGE_TARGET_ARN && env.EVENTBRIDGE_ROLE_ARN && env.SCHEDULER_QUEUE_URL && credentialsAvailable),
       mock: "local-timer",
       aws: "eventbridge",
@@ -66,7 +71,8 @@ export async function resolveDrivers(env: Env): Promise<Record<ServiceName, Driv
     const requested = switches[service];
     const missingKeys = requirement.keys.filter((key) => {
       if (service === "storage" && key === "DYNAMODB_TABLE_NAME") return !env.DYNAMODB_TABLE_NAME;
-      if (key === "SNS_TOPIC_ARN or SNS_SMS_ENABLED") return !env.SNS_TOPIC_ARN && !env.SNS_SMS_ENABLED;
+      if (key === "SNS_TOPIC_ARN or SNS_SMS_ENABLED") return !env.SNS_TOPIC_ARN && !(env.SNS_SMS_ENABLED && env.SNS_SMS_TYPE);
+      if (key === "SCHEDULER_QUEUE_URL") return !env.SCHEDULER_QUEUE_URL;
       if (key.startsWith("AWS_PROFILE or")) return !hasCredentials(env);
       if (key === "No AWS credentials found by the SDK chain") return !credentialsAvailable;
       return !env[key as keyof Env];

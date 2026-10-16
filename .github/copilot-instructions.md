@@ -52,3 +52,11 @@ from history, and hands fixes/bookings to the phone.
 - Keep diagnosis sessions for the configured TTL and ask only a question whose answer can change the leading cause.
 - Fix plans and regional safety facts belong in region-pack JSON with a `source`; never add repair intervals or emergency numbers in server logic.
 - Record confirmed fixes through `log_resolution`; component changes or service events must trigger live prediction recomputation.
+
+## Phone & scheduling rules (Module 6+)
+- Never send anything without stored consent. Mask contacts everywhere; never put tokens in logs or tool data.
+- Phone content is a `PhoneView` built server-side; links are signed (HMAC), short, and expire on wall-clock time.
+- SMS text must be GSM-7 only, at most 160 characters, with one link.
+- The `SCHEDULE` mirror is the source of truth; EventBridge only triggers. Every fire checks the `FIRED` marker and staleness.
+- Phone API routes are token-scoped to one household and idempotent per action.
+- Ask for the provider once, at the first booking; one-provider regions never ask.

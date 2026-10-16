@@ -47,8 +47,8 @@ async function shutdown(): Promise<void> {
     await flushBackgroundWork();
     const storage = ctx.storage as typeof ctx.storage & { flush?: () => Promise<void> };
     await storage.flush?.();
-    const scheduler = ctx.scheduler as typeof ctx.scheduler & { close?: () => void };
-    scheduler.close?.();
+    await ctx.scheduler.close?.();
+    await ctx.notifier.close?.();
     clearTimeout(timeout);
     process.exit(0);
   });

@@ -18,7 +18,7 @@ function mostUrgent(predictions: Prediction[]): Prediction | null {
   return [...predictions].sort((left, right) => urgency(left) - urgency(right) || left.daysUntilDue - right.daysUntilDue)[0] ?? null;
 }
 
-export async function recomputeItem(ctx: AppContext, householdId: string, itemId: string, options: { schedule?: boolean } = {}): Promise<ItemPredictions> {
+export async function recomputeItem(ctx: AppContext, householdId: string, itemId: string, options: { schedule?: boolean; windowDays?: number } = {}): Promise<ItemPredictions> {
   const snapshot = await loadHouseholdSnapshot(householdId, ctx);
   const item = snapshot.items.find((candidate) => candidate.itemId === itemId);
   if (!item) throw new Error(`Unknown item ${itemId} in household ${householdId}`);
@@ -37,6 +37,7 @@ export async function recomputeItem(ctx: AppContext, householdId: string, itemId
     timeZone,
     todayLocal,
     computedAt: ctx.clock.now().toISOString(),
+    ...(options.windowDays ? { windowDays: options.windowDays } : {}),
   };
   const main = computePrediction(common);
   const components: Prediction[] = [];

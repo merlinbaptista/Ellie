@@ -44,6 +44,7 @@ export function register(server: McpServer, ctx: AppContext): void {
           ],
           actions: [
             ...(result.diagnosis.fixPlan?.manualUrl ? [{ label: "Manual", url: result.diagnosis.fixPlan.manualUrl }] : []),
+            ...(result.diagnosis.fixPlan ? [{ label: "Steps on phone", tool: "send_to_phone", args: { householdId: result.diagnosis.householdId, item: result.item.name, contentType: "fix", diagnosisId: result.diagnosis.diagnosisId } }] : []),
             { label: "It's fixed", tool: "log_resolution", args: { householdId: result.diagnosis.householdId, item: result.item.name, diagnosisId: result.diagnosis.diagnosisId, causeKey: result.diagnosis.candidates[0]?.causeKey } },
           ],
         },

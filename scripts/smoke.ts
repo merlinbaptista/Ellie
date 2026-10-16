@@ -7,7 +7,7 @@ try {
   await client.connect(new StreamableHTTPClientTransport(url));
   const tools = await client.listTools();
   console.log("Tools:", tools.tools.map((tool) => tool.name).join(", "));
-  const required = ["ellie_ping", "ellie_status", "ellie_region_info", "setup_household", "log_event", "get_history", "predict_next", "due_this_week", "diagnose", "log_resolution", "ellie_dev_time_travel"];
+  const required = ["ellie_ping", "ellie_status", "ellie_region_info", "setup_household", "log_event", "get_history", "predict_next", "due_this_week", "diagnose", "log_resolution", "send_to_phone", "ellie_dev_time_travel"];
   for (const name of required) {
     if (!tools.tools.some((tool) => tool.name === name)) throw new Error(`Missing tool: ${name}`);
   }

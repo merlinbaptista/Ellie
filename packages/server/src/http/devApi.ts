@@ -20,6 +20,28 @@ interface DueApiEntry {
   reason: string;
 }
 export function registerDevApi(app: Express, ctx: AppContext): void {
+  app.post("/api/dev/schedule-test", async (_req, res, next) => {
+    if (ctx.env.NODE_ENV === "production") { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
+    try {
+      const household = await ctx.repositories.households.get("demo-blr");
+      const item = (await ctx.repositories.items.list("demo-blr")).find((candidate) => candidate.catalogKey === "lpg_cylinder");
+      if (!household || !item) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Seeded gas cylinder is unavailable" } }); return; }
+      const pack = ctx.regions.get(household.regionPackId ?? "IN");
+      const prediction = await recomputeHousehold(ctx, "demo-blr", { schedule: false });
+      const main = prediction.find((entry) => entry.item.itemId === item.itemId)?.main;
+      if (!main) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Prediction is unavailable" } }); return; }
+      const runAt = new Date(ctx.clock.now().getTime() + 2 * 60_000);
+      const reminderAt = toLocalDate(runAt.toISOString(), household.timeZone ?? pack.locale.defaultTimeZone);
+      const job = {
+        id: `schedule-test:${item.itemId}`,
+        runAtUtc: runAt.toISOString(),
+        timeZone: household.timeZone ?? pack.locale.defaultTimeZone,
+        payload: { kind: "reminder" as const, householdId: "demo-blr", itemId: item.itemId, lastEventLocal: main.lastEventLocal, message: `Test reminder for ${item.name} at ${reminderAt}` },
+      };
+      await ctx.scheduler.schedule(job);
+      res.json({ ok: true, jobId: job.id, runAtUtc: runAt.toISOString() });
+    } catch (error) { next(error); }
+  });
   app.use("/api/households", (_req: Request, res: Response, next: NextFunction) => {
     if (!enabled(ctx)) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
     next();

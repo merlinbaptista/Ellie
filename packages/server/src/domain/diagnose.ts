@@ -48,7 +48,9 @@ export async function diagnose(ctx: AppContext, input: DiagnoseInput): Promise<D
     const diagnosisId = input.diagnosisId ?? newSortableId("dgn", ctx.clock.now());
     const diagnosis = Diagnosis.parse({
       diagnosisId, householdId, itemId: logged.item.itemId, symptomKey: safety.symptomKey ?? "safety_stop", status: "safety_stop",
+      safetyCategory: safety.category, safetyEmergencyNumber: safety.emergencyNumber,
       candidates: [], evidence: [], answers: {}, createdAt: now, updatedAt: now,
+      explanation: { text: safety.message, citedEvidenceIds: [], source: "deterministic" },
     });
     await ctx.repositories.diagnoses.put(householdId, diagnosis, ctx.env.DIAGNOSIS_SESSION_TTL_HOURS);
     return { diagnosis, item: logged.item, speech: safety.message, safety: { level: "stop", message: safety.message, emergencyNumber: safety.emergencyNumber } };

@@ -551,6 +551,13 @@
               "name": {
                 "type": "string"
               },
+              "aliases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
               "appliesTo": {
                 "type": "array",
                 "items": {

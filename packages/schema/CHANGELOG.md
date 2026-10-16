@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0 — 2026-10-19
+- Add browser-safe phone-link payload, phone action, and phone view schemas.
+- Add phone handoff channel/diagnosis arguments and supplier details to tool contracts.
+
 ## 1.3.0 - 2026-10-18
 
 - Added diagnosis evidence, candidate, fix-plan and diagnosis session schemas.

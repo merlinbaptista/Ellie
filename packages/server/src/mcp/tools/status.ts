@@ -4,6 +4,7 @@ import { activeSessionCount } from "../transport.js";
 import { toolResponse } from "../result.js";
 import { getRecentTimings, withTiming } from "../withTiming.js";
 import { getLlmDiagnostics } from "../../diagnosis/llmRanker.js";
+import { linkPk } from "../../data/keys.js";
 
 export async function statusData(ctx: AppContext) {
   const timings = getRecentTimings().map((entry) => entry.ms).sort((a, b) => a - b);
@@ -18,6 +19,7 @@ export async function statusData(ctx: AppContext) {
   const regions = ctx.regions.list().map(({ packId, version }) => ({ packId, version, unverifiedCount: ctx.regions.unverifiedFacts(packId).length }));
   const memoryHealth = await ctx.storage.healthCheck();
   const llmDiagnostics = getLlmDiagnostics();
+  const schedulerHealth = ctx.scheduler.healthCheck ? await ctx.scheduler.healthCheck() : undefined;
   const householdCount = await ctx.repositories.households.count();
   const households = await ctx.repositories.households.list();
   let predictionCount = 0;
@@ -39,6 +41,9 @@ export async function statusData(ctx: AppContext) {
       lastLatencyMs: llmDiagnostics.lastLatencyMs,
       fallbacks24h: llmDiagnostics.fallbacks24h,
     },
+    notifier: { implementation: ctx.notifier.name, smsEnabled: ctx.env.SNS_SMS_ENABLED, ...(ctx.env.SNS_TOPIC_ARN ? { topic: ctx.env.SNS_TOPIC_ARN } : {}) },
+    scheduler: { implementation: ctx.scheduler.name, scheduled: schedulerHealth?.scheduled ?? (await ctx.scheduler.list()).length, ...(schedulerHealth?.queueDepth !== undefined ? { queueDepth: schedulerHealth.queueDepth } : {}) },
+    links: { activeShortLinks: (await ctx.storage.query(linkPk())).filter((row) => row.type === "phone-short-link").length },
     storageHealth: memoryHealth,
     recentToolTimings: { count: timings.length, p50, max },
     clockMode: ctx.clock.isFake() ? "fake" : "real",

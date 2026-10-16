@@ -12,4 +12,5 @@ export interface NotifierAdapter {
   readonly name: string;
   send(msg: OutboundMessage): Promise<SendResult>;
   listOutbox?(householdId?: string, limit?: number): Promise<Array<OutboundMessage & SendResult & { sentAt: string }>>;
+  close?(): void | Promise<void>;
 }

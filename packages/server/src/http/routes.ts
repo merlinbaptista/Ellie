@@ -1,8 +1,12 @@
 import type { Express, Request, Response } from "express";
 import type { AppContext } from "../context.js";
 import { statusData } from "../mcp/tools/status.js";
+import { registerShortLinkRoutes } from "../links/shortLinks.js";
+import { registerPhoneApi } from "./phoneApi.js";
 
 export function registerHttpRoutes(app: Express, ctx: AppContext): void {
+  registerShortLinkRoutes(app, ctx);
+  registerPhoneApi(app, ctx);
   app.get("/health", (_req: Request, res: Response) => {
     res.json({ ok: true, version: ctx.version, uptimeSec: Math.floor((Date.now() - ctx.startedAt.getTime()) / 1000) });
   });
@@ -12,6 +16,7 @@ export function registerHttpRoutes(app: Express, ctx: AppContext): void {
   });
 
   app.get("/api/outbox", async (req: Request, res: Response, next) => {
+    if (ctx.env.NODE_ENV === "production") { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
     try {
       if (!ctx.notifier.listOutbox) {
         res.status(501).json({ error: { code: "NOT_IMPLEMENTED", message: "Outbox is not available" } });

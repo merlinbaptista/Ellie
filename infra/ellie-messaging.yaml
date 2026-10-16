@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Ellie SNS messaging and EventBridge Scheduler to SQS for self-hosted deployments
+Parameters:
+  AlertEmail:
+    Type: String
+    Default: ''
+    Description: Optional email subscription for household update topics
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, '']]
+Resources:
+  EllieTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ellie-household-updates
+  EllieEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+      TopicArn: !Ref EllieTopic
+  EllieSchedulerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ellie-scheduler-dlq
+      MessageRetentionPeriod: 1209600
+  EllieSchedulerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ellie-scheduler
+      VisibilityTimeout: 60
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt EllieSchedulerDLQ.Arn
+        maxReceiveCount: 5
+  EllieQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref EllieSchedulerQueue]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt EllieSchedulerQueue.Arn
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+  EllieScheduleGroup:
+    Type: AWS::Scheduler::ScheduleGroup
+    Properties:
+      Name: ellie
+  EllieSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ellie-eventbridge-to-sqs
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: SendSchedulesToQueue
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt EllieSchedulerQueue.Arn
+Outputs:
+  SNS_TOPIC_ARN:
+    Value: !Ref EllieTopic
+  EVENTBRIDGE_TARGET_ARN:
+    Value: !GetAtt EllieSchedulerQueue.Arn
+  EVENTBRIDGE_ROLE_ARN:
+    Value: !GetAtt EllieSchedulerRole.Arn
+  SCHEDULER_QUEUE_URL:
+    Value: !Ref EllieSchedulerQueue
+  EVENTBRIDGE_SCHEDULE_GROUP:
+    Value: !Ref EllieScheduleGroup

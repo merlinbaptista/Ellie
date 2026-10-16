@@ -22,6 +22,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "smoke": "tsx scripts/smoke.ts",
+    "aws:env": "tsx scripts/print-env-from-stack.ts",
     "inspector": "npx @modelcontextprotocol/inspector"
   },
   "devDependencies": {

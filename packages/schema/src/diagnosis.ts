@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { zEventId, zHouseholdId, zIsoUtc, zItemId, zLocalDate } from "./primitives.js";
+import { SafetyCategory } from "./enums.js";
 
 export const EvidenceKind = z.enum([
   "component_overdue", "item_overdue", "same_symptom_before", "prior_resolution",
@@ -46,7 +47,9 @@ export const Diagnosis = z.object({
   householdId: zHouseholdId,
   itemId: zItemId,
   symptomKey: z.string(),
-  status: z.enum(["needs_answer", "diagnosed", "safety_stop", "unknown_symptom"]),
+  status: z.enum(["needs_answer", "diagnosed", "needs_pro", "safety_stop", "unknown_symptom"]),
+  safetyCategory: SafetyCategory.optional(),
+  safetyEmergencyNumber: z.string().optional(),
   candidates: z.array(Candidate),
   evidence: z.array(Evidence),
   answers: z.record(z.string(), z.string()).default({}),

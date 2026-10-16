@@ -18,7 +18,7 @@ describe("driver resolution", () => {
     expect(drivers.storage.missingKeys).toEqual(["AWS_REGION", "DYNAMODB_TABLE_NAME", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
     expect(drivers.llm.missingKeys).toEqual(["AWS_REGION", "BEDROCK_MODEL_ID"]);
     expect(drivers.notifier.missingKeys).toEqual(["AWS_REGION", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY", "SNS_TOPIC_ARN or SNS_SMS_ENABLED"]);
-    expect(drivers.scheduler.missingKeys).toEqual(["AWS_REGION", "EVENTBRIDGE_TARGET_ARN", "EVENTBRIDGE_ROLE_ARN", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
+    expect(drivers.scheduler.missingKeys).toEqual(["AWS_REGION", "EVENTBRIDGE_TARGET_ARN", "EVENTBRIDGE_ROLE_ARN", "SCHEDULER_QUEUE_URL", "AWS_PROFILE or AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY"]);
   });
 
   it("uses AWS when storage requirements and profile credentials are present", async () => {

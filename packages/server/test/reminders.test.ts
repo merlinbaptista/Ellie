@@ -28,7 +28,8 @@ describe("local reminders", () => {
     ctx.clock.set("2026-11-18T03:35:00.000Z");
     await handleReminderFire({ id, runAtUtc: "2026-11-18T03:30:00.000Z", timeZone: "Asia/Kolkata", payload: { kind: "reminder", householdId: "demo-blr", itemId: gas.itemId, lastEventLocal: "2026-10-16", message: "Reminder" } }, ctx);
     const outbox = await ctx.notifier.listOutbox?.("demo-blr");
-    expect(outbox?.[0]?.link).toBe("https://wa.me/917588888824?text=REFILL");
+    expect(outbox?.[0]?.link).toContain("/l/");
+    expect(outbox?.[0]?.body.length).toBeLessThanOrEqual(160);
     expect(outbox?.[0]?.body).toContain("gas cylinder");
     expect(prediction.nextDueLocal).toBe("2026-11-23");
   });

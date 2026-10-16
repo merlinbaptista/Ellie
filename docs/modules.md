@@ -7,7 +7,7 @@
 | 3 | Household memory | Repositories, DynamoDB adapter, household/event tools, Bengaluru + Texas seed data | ✅ |
 | 4 | Prediction engine | Due dates, time-zone maths, regional minimums, confidence, reminders | ✅ |
 | 5 | Diagnosis engine | Symptom flows, safety rules, Bedrock adapter, diagnosis/resolution tools | ✅ |
-| 6 | Phone handoff & scheduling | SNS, EventBridge Scheduler, booking links, signed phone links | ⏳ |
+| 6 | Phone handoff & scheduling | SNS, EventBridge Scheduler, booking links, signed phone links | ✅ |
 | 7 | Phone fix page | Mobile page, steps, chat, booking, MCP Apps view | ⏳ |
 | 8 | Simulated Alexa+ web app | Browser voice, multi-intent, Echo Show cards, household switcher | ⏳ |
 | 9 | Privacy & trust | Knowledge and forget tools, consent, optional OAuth 2.1 + PKCE | ⏳ |
