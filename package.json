@@ -1,0 +1,27 @@
+{
+  "name": "ellie",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "npm run dev -w @ellie/server",
+    "build": "npm run build -w @ellie/server",
+    "start": "npm run start -w @ellie/server",
+    "test": "npm run test -w @ellie/server",
+    "typecheck": "npm run typecheck -w @ellie/server",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "smoke": "tsx scripts/smoke.ts",
+    "inspector": "npx @modelcontextprotocol/inspector"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "globals": "^15",
+    "prettier": "^3",
+    "tsx": "^4",
+    "typescript": "^5.6",
+    "typescript-eslint": "^8"
+  }
+}
