@@ -480,7 +480,7 @@ Go through §8 rows 1–14 in order, **by voice**, with the Bengaluru household 
 - [x] Phone panel shows the outbox and opens the phone page in a same-origin frame
 - [x] Household switcher, time controls, reseed, timeline, dev drawer, Host view
 - [x] Served at `/sim/` (one process); gated in production with an access code
-- [ ] §8 rows match; no axe violations; bundle ≤ 200 KB; all tests green
+- [ ] §8 rows match; live voice rehearsal and Bedrock routing completed manually; no axe violations; bundle ≤ 200 KB; all tests green
 - [x] Docs, Copilot rules and friction log updated; commit: `git commit -m "Module 8: simulated Alexa+ web app"`
 
 ## 13. Out of scope for Module 8
