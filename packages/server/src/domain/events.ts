@@ -3,7 +3,7 @@ import { HomeEvent, addDays, localDateToUtc, matchComponent, matchSymptom, newId
 import { fillTemplate } from "@ellie/schema";
 import type { AppContext } from "../context.js";
 import type { HouseholdRecord } from "../data/householdRepo.js";
-import { dedupeSk, householdPk } from "../data/keys.js";
+import { dedupeSk, householdPk, ttlClockForKey } from "../data/keys.js";
 import { getOrCreateHousehold, resolveHouseholdId } from "./households.js";
 import { resolveItem } from "./items.js";
 import { defaultPreviousWhen } from "./speech.js";
@@ -143,6 +143,7 @@ export async function logEvent(input: LogEventInput, ctx: AppContext): Promise<L
 
   await ctx.repositories.events.put(event);
   const dedupeTtl = Math.floor(now.getTime() / 1000) + ctx.env.EVENT_DEDUPE_WINDOW_SEC;
-  await ctx.storage.put({ pk: householdPk(householdId), sk: markerKey, type: "event-dedupe", data: { event }, ttl: dedupeTtl });
+  const markerPk = householdPk(householdId);
+  await ctx.storage.put({ pk: markerPk, sk: markerKey, type: "event-dedupe", data: { event }, ttlClock: ttlClockForKey(markerPk, markerKey), ttl: dedupeTtl });
   return { household, item, event, ...(previousEvent ? { previousEvent } : {}), deduped: false, created: resolved.created, custom: resolved.custom, ...(safety ? { safety } : {}) };
 }

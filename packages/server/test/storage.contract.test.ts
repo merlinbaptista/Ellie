@@ -29,6 +29,13 @@ function contract(name: string, make: (clock: ReturnType<typeof createClock>) =>
       clock.set("2026-01-01T00:01:00.000Z");
       expect(await storage.get("HH#contract", "TTL#expired")).toBeNull();
       expect((await storage.query("HH#contract", { skPrefix: "TTL#" })).length).toBe(0);
+      const appTtl = Math.floor(clock.now().getTime() / 1000) + 30 * 24 * 60 * 60;
+      const wallTtl = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+      await storage.put({ pk: "TTL#clock", sk: "app", type: "ttl-test", data: {}, ttlClock: "app", ttl: appTtl });
+      await storage.put({ pk: "TTL#clock", sk: "wall", type: "ttl-test", data: {}, ttlClock: "wall", ttl: wallTtl });
+      clock.set("2026-02-01T00:01:00.000Z");
+      expect(await storage.get("TTL#clock", "app")).toBeNull();
+      expect(await storage.get("TTL#clock", "wall")).not.toBeNull();
       expect((await storage.healthCheck()).ok).toBe(true);
       expect(await storage.deletePartition("HH#contract")).toBe(150);
       expect(await storage.query("HH#contract")).toEqual([]);

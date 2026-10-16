@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1 — 2026-10-16
+- Add optional structured safety category and emergency number to diagnosis records.
+
 ## 1.4.0 — 2026-10-19
 - Add browser-safe phone-link payload, phone action, and phone view schemas.
 - Add phone handoff channel/diagnosis arguments and supplier details to tool contracts.

@@ -67,7 +67,9 @@ export class DynamoDbStorage implements StorageAdapter {
   }
 
   private expired(record: StoredRecord | undefined): boolean {
-    return Boolean(record?.ttl !== undefined && record.ttl < Math.floor(this.clock.now().getTime() / 1000));
+    if (record?.ttl === undefined) return false;
+    const nowSeconds = record.ttlClock === "wall" ? Math.floor(Date.now() / 1000) : Math.floor(this.clock.now().getTime() / 1000);
+    return record.ttl < nowSeconds;
   }
 
   async get(pk: string, sk: string): Promise<StoredRecord | null> {

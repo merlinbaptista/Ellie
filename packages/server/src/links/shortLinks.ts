@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import type { Express, Request, Response, NextFunction } from "express";
 import type { AppContext } from "../context.js";
 import { verifyPhoneLink } from "./sign.js";
-import { linkPk, shortLinkSk } from "../data/keys.js";
+import { linkPk, shortLinkSk, ttlClockForKey } from "../data/keys.js";
 
 const alphabet = "23456789abcdefghjkmnpqrstuvwxyz";
 export interface ShortLinkRecord { token: string; householdId: string; kind: "fix" | "booking" | "summary"; createdAt: string }
@@ -16,7 +16,9 @@ export async function createShortLink(ctx: AppContext, input: { token: string; h
     const code = makeCode();
     if (await ctx.storage.get(linkPk(), shortLinkSk(code))) continue;
     const record: ShortLinkRecord = { token: input.token, householdId: input.householdId, kind: input.kind, createdAt: ctx.clock.now().toISOString() };
-    await ctx.storage.put({ pk: linkPk(), sk: shortLinkSk(code), type: "phone-short-link", data: { ...record }, ttl: input.exp });
+    const pk = linkPk();
+    const sk = shortLinkSk(code);
+    await ctx.storage.put({ pk, sk, type: "phone-short-link", data: { ...record }, ttlClock: ttlClockForKey(pk, sk), ttl: input.exp });
     const base = ctx.env.SHORT_LINK_BASE_URL ?? ctx.env.ELLIE_PUBLIC_BASE_URL;
     return { code, url: `${base.replace(/\/$/, "")}/l/${code}` };
   }

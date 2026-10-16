@@ -6,6 +6,7 @@ export interface StoredRecord {
   createdAt: string;
   updatedAt: string;
   ttl?: number;
+  ttlClock?: "app" | "wall";
 }
 export interface QueryOptions {
   skPrefix?: string;

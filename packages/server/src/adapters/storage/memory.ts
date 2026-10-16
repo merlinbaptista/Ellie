@@ -10,8 +10,7 @@ export class MemoryStorage implements StorageAdapter {
   constructor(private readonly clock: Clock) {}
 
   private isExpired(record: StoredRecord): boolean {
-    const wallClockTtl = record.type === "phone-short-link" || record.type === "phone-action" || record.type === "scheduled-job-fired";
-    const nowSeconds = wallClockTtl ? Math.floor(Date.now() / 1000) : Math.floor(this.clock.now().getTime() / 1000);
+    const nowSeconds = record.ttlClock === "wall" ? Math.floor(Date.now() / 1000) : Math.floor(this.clock.now().getTime() / 1000);
     return record.ttl !== undefined && record.ttl < nowSeconds;
   }
 

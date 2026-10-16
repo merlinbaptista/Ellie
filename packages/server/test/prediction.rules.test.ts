@@ -18,15 +18,21 @@ describe("prediction regional rules", () => {
     expect(booked.bookingOpensLocal).toBe("2026-11-04");
   });
 
-  it("moves preferred service into a preferred month and clamps reminders out of the past", () => {
+  it("keeps March 30 AC service due date in March without shifting preferred months", () => {
     const acAlreadyInMarch = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-03-30", intervalDays: 365, leadTimeDays: 0, safetyBufferDays: 0, preferredMonths: [2, 3] });
     expect(acAlreadyInMarch.nextDueLocal).toBe("2027-03-30");
     expect(acAlreadyInMarch.rulesApplied.some((rule) => rule.ruleId === "preferred_months")).toBe(false);
-    const preferred = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-04-15", intervalDays: 365, leadTimeDays: 0, safetyBufferDays: 0, preferredMonths: [2, 3] });
-    expect(preferred.nextDueLocal).toBe("2027-03-01");
+  });
+
+  it("shifts May 10 AC service to March 1 and records the preferred-month rule", () => {
     const acOutsidePreferredMonths = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-05-10", intervalDays: 365, leadTimeDays: 0, safetyBufferDays: 0, preferredMonths: [2, 3] });
     expect(acOutsidePreferredMonths.nextDueLocal).toBe("2027-03-01");
     expect(acOutsidePreferredMonths.rulesApplied.some((rule) => rule.ruleId === "preferred_months")).toBe(true);
+  });
+
+  it("moves preferred service into a preferred month and clamps reminders out of the past", () => {
+    const preferred = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-04-15", intervalDays: 365, leadTimeDays: 0, safetyBufferDays: 0, preferredMonths: [2, 3] });
+    expect(preferred.nextDueLocal).toBe("2027-03-01");
     expect(preferred.rulesApplied.at(-1)?.ruleId).toBe("preferred_months");
     const today = applyPredictionRules({ todayLocal: "2026-10-16", lastEventLocal: "2026-08-01", intervalDays: 40, leadTimeDays: 10, safetyBufferDays: 10 });
     expect(today.remindOnLocal).toBe("2026-10-16");

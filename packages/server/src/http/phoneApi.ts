@@ -9,7 +9,7 @@ import { buildPhoneView } from "../phone/views.js";
 import { renderPhonePage } from "../phone/fallbackPage.js";
 import { verifyPhoneLink, PhoneTokenError } from "../links/sign.js";
 import { allowRate } from "./rateLimit.js";
-import { linkPk, phoneActionSk } from "../data/keys.js";
+import { linkPk, phoneActionSk, ttlClockForKey } from "../data/keys.js";
 import { NotFoundError } from "../lib/errors.js";
 
 const expiredSpeech = "This link has expired. Ask Alexa to send it again.";
@@ -97,7 +97,8 @@ export function registerPhoneApi(app: Express, ctx: AppContext): void {
           result = { ok: true, view: "call_a_professional" };
         }
       }
-      await ctx.storage.put({ pk: linkPk(), sk: dedupeSk, type: "phone-action", data: { result }, ttl: Math.floor(Date.now() / 1000) + ctx.env.PHONE_LINK_TTL_HOURS * 3600 });
+      const actionPk = linkPk();
+      await ctx.storage.put({ pk: actionPk, sk: dedupeSk, type: "phone-action", data: { result }, ttlClock: ttlClockForKey(actionPk, dedupeSk), ttl: Math.floor(Date.now() / 1000) + ctx.env.PHONE_LINK_TTL_HOURS * 3600 });
       if (req.is("application/x-www-form-urlencoded")) res.redirect(303, `/p/${encodeURIComponent(token)}?done=${action}`);
       else res.json(result);
     } catch (error) {

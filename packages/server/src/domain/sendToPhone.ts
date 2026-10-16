@@ -8,7 +8,7 @@ import { buildPhoneView } from "../phone/views.js";
 import { buildEmailMessage, buildSmsMessage } from "../phone/messages.js";
 import { logEvent } from "./events.js";
 import { selectProvider } from "./providers.js";
-import { linkPk, phoneSendPrefix, phoneSendSk } from "../data/keys.js";
+import { linkPk, phoneSendPrefix, phoneSendSk, ttlClockForKey } from "../data/keys.js";
 import { recomputeItem } from "./predictions.js";
 import { formatSmsDate } from "../phone/messages.js";
 
@@ -92,7 +92,9 @@ export async function sendToPhone(ctx: AppContext, input: SendToPhoneInput): Pro
     : buildEmailMessage(view, short.url).body;
   const email = channel === "email" ? buildEmailMessage(view, short.url) : undefined;
   const outbound = await ctx.notifier.send({ householdId, channel, to: recipient, ...(email ? { subject: email.subject } : {}), body, link: short.url, kind: input.contentType });
-  await ctx.storage.put({ pk: linkPk(), sk: phoneSendSk(dedupeId, nowEpoch, newId("evt")), type: "phone-send", data: { sentAtEpoch: nowEpoch, code: short.code, channel, status: outbound.status }, ttl: nowEpoch + 3600 });
+  const sendPk = linkPk();
+  const sendSk = phoneSendSk(dedupeId, nowEpoch, newId("evt"));
+  await ctx.storage.put({ pk: sendPk, sk: sendSk, type: "phone-send", data: { sentAtEpoch: nowEpoch, code: short.code, channel, status: outbound.status }, ttlClock: ttlClockForKey(sendPk, sendSk), ttl: nowEpoch + 3600 });
   const noteItem = item ?? items[0];
   if (noteItem) await logEvent({ householdId, item: noteItem.name, type: "note", source: "system", notes: `Sent ${input.contentType} to phone` }, ctx);
   const label = channel === "sms" ? `your phone ${maskedContact(recipient)}` : `your email ${maskedContact(recipient)}`;

@@ -15,4 +15,6 @@
 
 Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
 
+Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
+
 Module 3 note: DynamoDB Local contract suite is available but was not run in the build environment because Docker is unavailable.
