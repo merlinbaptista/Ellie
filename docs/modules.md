@@ -9,7 +9,7 @@
 | 5 | Diagnosis engine | Symptom flows, safety rules, Bedrock adapter, diagnosis/resolution tools | ✅ |
 | 6 | Phone handoff & scheduling | SNS, EventBridge Scheduler, booking links, signed phone links | ✅ |
 | 7 | Phone fix page | Mobile page, steps, chat, booking, MCP Apps view | ✅ |
-| 8 | Simulated Alexa+ web app | Browser voice, multi-intent, Echo Show cards, household switcher | ⏳ |
+| 8 | Simulated Alexa+ web app | Browser voice, multi-intent, Echo Show cards, household switcher | ✅ |
 | 9 | Privacy & trust | Knowledge and forget tools, consent, optional OAuth 2.1 + PKCE | ⏳ |
 | 10 | Demo & submission | Demo runner, time-travel scenarios, docs, schema extraction, Docker | ⏳ |
 
@@ -25,6 +25,7 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `2df8b37` | Module 6 follow-ups |
 | `7abecef` | Module 7 phone page, chat and MCP Apps |
 | `334f0ce` | Module 7 follow-ups: CSP, axe checks, traceability, no-amend rule |
+| `9035db5` | Module 8 simulated Alexa+ web app |
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
 Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.
@@ -39,6 +40,6 @@ Module 7 §0 traceability:
 - Accessibility: five phone view states in `packages/phone/test/a11y.test.tsx`; axe reports no violations.
 - MCP Apps host rendering: external host not available in Module 7; Module 8 Host view will exercise the bundled resource and record the host bridge/action result.
 
-Module 8 follow-ups are being implemented in `docs/prompts/module-8.md` before the simulator work.
+Module 8 implementation committed as `9035db5`; schema 1.6.0, simulator, MCP loopback orchestration, tests, and Host view are covered by `docs/prompts/module-8.md`.
 
 Module 3 note: DynamoDB Local contract suite is available but was not run in the build environment because Docker is unavailable.
