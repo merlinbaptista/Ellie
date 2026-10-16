@@ -117,6 +117,8 @@ Build everything with `npm run build`; run the API and Vite page together with `
 
 The shared `@ellie/ui` package renders phone views and MCP cards. Phone chat is available only for non-safety fix guides, runs the safety gate first, and answers from diagnosis evidence/fix-plan context. Chat is disabled after a safety hit. With mock drivers, labels localize to English, Hindi, Kannada, Tamil, and Spanish while repair content remains in English. Hindi, Kannada, Tamil, and Spanish starter labels are marked `reviewed: false` and need native-speaker review.
 
+For an optional manual accessibility score, run Lighthouse in Chrome's mobile emulation against a signed phone link; automated axe checks cover the Fix, Booking, Summary, Error, and safety-only views.
+
 Phone summary preview at 390 × 844:
 
 ![Ellie phone summary page](docs/phone-summary-390x844.png)

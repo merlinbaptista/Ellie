@@ -20,7 +20,7 @@ describe("static phone page", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(response.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
+    expect(response.headers.get("content-security-policy")).toContain("frame-ancestors 'self'");
     expect(await response.text()).toContain("Ellie");
     const asset = await fetch(`${base}/phone/manifest.webmanifest`);
     expect(asset.status).toBe(200);

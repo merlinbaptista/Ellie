@@ -1,5 +1,7 @@
 # Ellie — Module 7: Phone Fix Page, Phone Chat & MCP Apps View
 
+> Correction: Module 6 follow-ups are `2df8b37`; `2993d55` is Module 5 follow-ups.
+
 > **How to use this file**
 > 1. Module 6 must be committed (`2df8b37` follow-ups + `afdcac6` Module 6; 23 schema + 94 server tests green).
 > 2. Save this file as `docs/prompts/module-7.md`.

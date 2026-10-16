@@ -10,7 +10,7 @@ export function registerStaticPhone(app: Express): boolean {
   app.use("/phone", (req, res, next) => {
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'");
+    res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'self'");
     if (req.path === "/" || req.path.endsWith(".html")) res.setHeader("Cache-Control", "no-store");
     else if (/\.[a-f0-9]{8,}\./i.test(req.path)) res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     next();

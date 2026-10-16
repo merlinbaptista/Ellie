@@ -70,6 +70,9 @@ from history, and hands fixes/bookings to the phone.
 - Record TTL clock is chosen in `data/keys.ts` (`ttlClock`), never inside storage adapters.
 - MCP Apps are additive: text and `structuredContent` remain complete for hosts without UI.
 
+## Git history rules
+- Every requested fix or module completion gets a new commit. Never amend a commit or rewrite history.
+
 ## Phone page & UI rules (Module 7+)
 - Shared rendering lives in `@ellie/ui`; the phone page, MCP App view and simulator all use it. Never render HTML from data.
 - Tokens: read once from `?t`, keep in sessionStorage, send as Bearer, strip from the URL. Never log them.
