@@ -22,6 +22,16 @@ describe("local date helpers", () => {
     expect(parseRelativeDate("a couple of weeks ago", "2026-10-16")?.localDate).toBe("2026-10-02");
     expect(parseRelativeDate("last week", "2026-10-16")?.localDate).toBe("2026-10-09");
     expect(parseRelativeDate("last month", "2026-10-16")?.localDate).toBe("2026-09-16");
+    expect(parseRelativeDate("last December", "2026-10-16")?.localDate).toBe("2025-12-01");
+    expect(parseRelativeDate("in March", "2026-10-16")?.localDate).toBe("2026-03-01");
+    expect(parseRelativeDate("this morning", "2026-10-16")?.localDate).toBe("2026-10-16");
+    expect(parseRelativeDate("two days back", "2026-10-16")?.localDate).toBe("2026-10-14");
+    expect(parseRelativeDate("14 March", "2026-10-16")?.localDate).toBe("2026-03-14");
+    expect(parseRelativeDate("March 14", "2026-10-16")?.localDate).toBe("2026-03-14");
+    expect(parseRelativeDate("14/03", "2026-10-16", { dateOrder: "DMY" })?.localDate).toBe("2026-03-14");
+    expect(parseRelativeDate("3/14", "2026-10-16", { dateOrder: "MDY" })?.localDate).toBe("2026-03-14");
+    expect(parseRelativeDate("till December next year", "2026-10-16", { allowFuture: true })?.localDate).toBe("2027-12-01");
+    expect(parseRelativeDate("2027-01-01", "2026-10-16")).toBeNull();
     expect(parseRelativeDate("today", "2026-10-16")?.approximate).toBe(false);
     expect(parseRelativeDate("2026-10-01", "2026-10-16")?.localDate).toBe("2026-10-01");
     expect(parseRelativeDate("sometime", "2026-10-16")).toBeNull();

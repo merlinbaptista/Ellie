@@ -24,6 +24,14 @@ describe("driver resolution", () => {
     expect(resolveDrivers(env).storage.resolved).toBe("aws");
   });
 
+  it("selects DynamoDB Local from endpoint and table without AWS credentials", () => {
+    const env = loadEnv({ DYNAMODB_ENDPOINT: "http://localhost:8000", DYNAMODB_TABLE_NAME: "ellie-main" });
+    const storage = resolveDrivers(env).storage;
+    expect(storage.resolved).toBe("aws");
+    expect(storage.implementation).toBe("dynamodb-local");
+    expect(storage.missingKeys).toEqual([]);
+  });
+
   it("accepts paired access keys, lets explicit mock override credentials, and requires SNS topic or SMS", () => {
     const env = loadEnv({ AWS_REGION: "us-east-1", AWS_ACCESS_KEY_ID: "id", AWS_SECRET_ACCESS_KEY: "secret", DYNAMODB_TABLE_NAME: "table", STORAGE_DRIVER: "mock" });
     expect(resolveDrivers(env).storage.resolved).toBe("mock");

@@ -9,8 +9,18 @@ export class MemoryStorage implements StorageAdapter {
 
   constructor(private readonly clock: Clock) {}
 
+  private isExpired(record: StoredRecord): boolean {
+    return record.ttl !== undefined && record.ttl < Math.floor(this.clock.now().getTime() / 1000);
+  }
+
   async get(pk: string, sk: string): Promise<StoredRecord | null> {
-    const record = this.partitions.get(pk)?.get(sk);
+    const partition = this.partitions.get(pk);
+    const record = partition?.get(sk);
+    if (record && this.isExpired(record)) {
+      partition?.delete(sk);
+      if (partition?.size === 0) this.partitions.delete(pk);
+      return null;
+    }
     return record ? structuredClone(record) : null;
   }
 
@@ -29,12 +39,15 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   async query(pk: string, opts: QueryOptions = {}): Promise<StoredRecord[]> {
-    let records = [...(this.partitions.get(pk)?.values() ?? [])]
+    const partition = this.partitions.get(pk);
+    const records = [...(partition?.values() ?? [])];
+    for (const record of records) if (this.isExpired(record)) partition?.delete(record.sk);
+    let visible = records.filter((record) => !this.isExpired(record))
       .filter((record) => !opts.skPrefix || record.sk.startsWith(opts.skPrefix))
       .sort((a, b) => a.sk.localeCompare(b.sk));
-    if (opts.descending) records.reverse();
-    if (opts.limit !== undefined) records = records.slice(0, Math.max(0, opts.limit));
-    return structuredClone(records);
+    if (opts.descending) visible.reverse();
+    if (opts.limit !== undefined) visible = visible.slice(0, Math.max(0, opts.limit));
+    return structuredClone(visible);
   }
 
   async delete(pk: string, sk: string): Promise<void> {

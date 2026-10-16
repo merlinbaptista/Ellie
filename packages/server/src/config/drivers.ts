@@ -28,10 +28,12 @@ const credentialsMissing = (env: Env) =>
 export function resolveDrivers(env: Env): Record<ServiceName, DriverDecision> {
   const requirements: Record<ServiceName, { keys: string[]; ready: boolean; mock: string; aws: string }> = {
     storage: {
-      keys: ["AWS_REGION", "DYNAMODB_TABLE_NAME", ...credentialsMissing(env)],
-      ready: Boolean(env.AWS_REGION && env.DYNAMODB_TABLE_NAME && hasCredentials(env)),
+      keys: env.DYNAMODB_ENDPOINT
+        ? ["DYNAMODB_TABLE_NAME"]
+        : ["AWS_REGION", "DYNAMODB_TABLE_NAME", ...credentialsMissing(env)],
+      ready: Boolean(env.DYNAMODB_TABLE_NAME && (env.DYNAMODB_ENDPOINT || (env.AWS_REGION && hasCredentials(env)))),
       mock: env.MOCK_STORAGE_MODE === "memory" ? "memory-store" : "file-store",
-      aws: "dynamodb",
+      aws: env.DYNAMODB_ENDPOINT ? "dynamodb-local" : "dynamodb",
     },
     llm: {
       keys: ["AWS_REGION", "BEDROCK_MODEL_ID", ...credentialsMissing(env)],
@@ -64,6 +66,7 @@ export function resolveDrivers(env: Env): Record<ServiceName, DriverDecision> {
     const requirement = requirements[service];
     const requested = switches[service];
     const missingKeys = requirement.keys.filter((key) => {
+      if (service === "storage" && key === "DYNAMODB_TABLE_NAME") return !env.DYNAMODB_TABLE_NAME;
       if (key === "SNS_TOPIC_ARN or SNS_SMS_ENABLED") return !env.SNS_TOPIC_ARN && !env.SNS_SMS_ENABLED;
       if (key.startsWith("AWS_PROFILE or")) return !hasCredentials(env);
       return !env[key as keyof Env];
@@ -77,7 +80,7 @@ export function resolveDrivers(env: Env): Record<ServiceName, DriverDecision> {
       requested,
       resolved,
       implementation: resolved === "aws" ? requirement.aws : requirement.mock,
-      reason: resolved === "aws" ? "AWS requirements are configured" : `Needs ${missingKeys.join(", ")}`,
+      reason: resolved === "aws" ? (service === "storage" && env.DYNAMODB_ENDPOINT ? `DynamoDB Local at ${env.DYNAMODB_ENDPOINT}` : "AWS requirements are configured") : `Needs ${missingKeys.join(", ")}`,
       missingKeys,
     };
   }

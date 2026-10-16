@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 1: foundation**
+**Status: Module 3: household memory**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -58,6 +58,36 @@ Credentials are `AWS_PROFILE` or both `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS
 ```powershell
 npm run validate:packs
 ```
+
+## Memory
+
+The server stores each household in a single DynamoDB table using `pk` and `sk`; the default local path is the persistent file store. Household, item, alias, event, pending-question, and dedupe keys are centralized in `packages/server/src/data/keys.ts`.
+
+The mock path seeds Bengaluru and Texas examples on startup when no demo households exist. Manage them explicitly with:
+
+```powershell
+npm run seed
+npm run seed:reset
+```
+
+### DynamoDB Local
+
+Docker is required for the optional local database:
+
+```powershell
+npm run db:local
+```
+
+Set `DYNAMODB_ENDPOINT=http://localhost:8000` and `DYNAMODB_TABLE_NAME=ellie-main` in `.env`, then create the table and seed it:
+
+```powershell
+npm run db:create
+npm run seed:reset
+```
+
+### AWS DynamoDB
+
+Deploy `infra/dynamodb-table.yaml` (or use `npm run db:create`), grant the policy in `infra/iam-policy-dynamodb.json`, and set `AWS_REGION`, `DYNAMODB_TABLE_NAME`, and either `AWS_PROFILE` or the standard AWS access-key environment variables. Remove `DYNAMODB_ENDPOINT` when switching from DynamoDB Local. The storage driver selects DynamoDB automatically when these values are present.
 
 ## Verification
 

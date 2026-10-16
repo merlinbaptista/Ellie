@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@ellie/schema": "*",
+    "@aws-sdk/client-dynamodb": "^3",
+    "@aws-sdk/lib-dynamodb": "^3",
+    "@smithy/node-http-handler": "^4",
     "@modelcontextprotocol/sdk": "^1",
     "cors": "^2.8.5",
     "dotenv": "^16",

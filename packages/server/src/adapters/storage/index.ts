@@ -7,6 +7,7 @@ import type { Clock } from "../../lib/clock.js";
 import { createFileStorage } from "./file.js";
 import { createMemoryStorage } from "./memory.js";
 import type { StorageAdapter } from "./types.js";
+import { DynamoDbStorage } from "./dynamodb.js";
 
 export async function createStorage(
   decision: DriverDecision,
@@ -14,8 +15,15 @@ export async function createStorage(
   clock: Clock,
   _logger: Logger,
 ): Promise<StorageAdapter> {
-  void decision;
-  void _logger;
+  if (decision.implementation === "dynamodb" || decision.implementation === "dynamodb-local") {
+    if (!env.DYNAMODB_TABLE_NAME) throw new Error("DYNAMODB_TABLE_NAME is required for DynamoDB storage");
+    return new DynamoDbStorage({
+      tableName: env.DYNAMODB_TABLE_NAME,
+      region: env.AWS_REGION,
+      endpoint: env.DYNAMODB_ENDPOINT,
+      local: decision.implementation === "dynamodb-local",
+    }, clock, _logger);
+  }
   if (env.MOCK_STORAGE_MODE === "memory") return createMemoryStorage(clock);
   const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../../");
   return createFileStorage(resolve(repositoryRoot, env.DATA_DIR), clock);

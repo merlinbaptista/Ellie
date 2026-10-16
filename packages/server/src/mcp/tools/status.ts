@@ -16,6 +16,8 @@ export async function statusData(ctx: AppContext) {
     missingKeys: decision.missingKeys,
   }]));
   const regions = ctx.regions.list().map(({ packId, version }) => ({ packId, version, unverifiedCount: ctx.regions.unverifiedFacts(packId).length }));
+  const memoryHealth = await ctx.storage.healthCheck();
+  const householdCount = await ctx.repositories.households.count();
   return {
     version: ctx.version,
     specVersion: "2025-11-25",
@@ -23,6 +25,7 @@ export async function statusData(ctx: AppContext) {
     activeMcpSessions: activeSessionCount(),
     drivers,
     regions,
+    memory: { implementation: ctx.drivers.storage.implementation, households: householdCount, healthy: memoryHealth.ok },
     storageHealth: health,
     recentToolTimings: { count: timings.length, p50, max },
     clockMode: ctx.clock.isFake() ? "fake" : "real",

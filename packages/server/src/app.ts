@@ -4,6 +4,7 @@ import cors from "cors";
 import type { AppContext } from "./context.js";
 import { registerHttpRoutes } from "./http/routes.js";
 import { handlePost, handleSessionRequest } from "./mcp/transport.js";
+import { registerDevApi } from "./http/devApi.js";
 
 export function createApp(ctx: AppContext): express.Express {
   const app = express();
@@ -35,6 +36,7 @@ export function createApp(ctx: AppContext): express.Express {
   app.get("/mcp", (req, res, next) => { void handleSessionRequest(req, res).catch(next); });
   app.delete("/mcp", (req, res, next) => { void handleSessionRequest(req, res).catch(next); });
   registerHttpRoutes(app, ctx);
+  registerDevApi(app, ctx);
   app.use((_req, res) => res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }));
   app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
     void next;

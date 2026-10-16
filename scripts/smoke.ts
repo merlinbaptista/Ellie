@@ -7,7 +7,7 @@ try {
   await client.connect(new StreamableHTTPClientTransport(url));
   const tools = await client.listTools();
   console.log("Tools:", tools.tools.map((tool) => tool.name).join(", "));
-  const required = ["ellie_ping", "ellie_status"];
+  const required = ["ellie_ping", "ellie_status", "ellie_region_info", "setup_household", "log_event", "get_history"];
   for (const name of required) {
     if (!tools.tools.some((tool) => tool.name === name)) throw new Error(`Missing tool: ${name}`);
   }
@@ -30,6 +30,9 @@ try {
   const pack = JSON.parse(String(regionPack.contents[0]?.text ?? "{}")) as { packId?: string };
   if (pack.packId !== "IN") throw new Error("India region pack resource is invalid");
   console.log("Resources: ellie://region-packs, ellie://region-packs/IN");
+  const history = await client.callTool({ name: "get_history", arguments: { householdId: "demo-blr", item: "gas" } });
+  if (history.isError) throw new Error("get_history returned an error");
+  console.log("Memory:", history.content[0]?.text ?? "");
 } finally {
   await client.close();
 }

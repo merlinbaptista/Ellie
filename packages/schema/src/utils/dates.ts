@@ -53,15 +53,58 @@ function amountFrom(text: string): number | undefined {
   if (/^\d+$/.test(token)) return Number(token);
   return numberWords[token === "a couple of" ? "couple" : token];
 }
-export function parseRelativeDate(phrase: string, todayLocal: string): { localDate: string; approximate: boolean } | null {
+export interface ParseRelativeDateOptions { allowFuture?: boolean; dateOrder?: DateOrder }
+const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+export function parseRelativeDate(phrase: string, todayLocal: string, options: ParseRelativeDateOptions = {}): { localDate: string; approximate: boolean } | null {
   const text = phrase.trim().toLowerCase();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return Number.isNaN(Date.parse(`${text}T00:00:00Z`)) ? null : { localDate: text, approximate: false };
+  const isFutureAllowed = options.allowFuture ?? false;
+  const checkedDate = (value: string): { localDate: string; approximate: boolean } | null => {
+    const timestamp = Date.parse(`${value}T00:00:00Z`);
+    if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== value) return null;
+    if (!isFutureAllowed && value > todayLocal) return null;
+    return { localDate: value, approximate: false };
+  };
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return checkedDate(text);
   if (text === "today") return { localDate: todayLocal, approximate: false };
+  if (text === "this morning") return { localDate: todayLocal, approximate: false };
   if (text === "yesterday") return { localDate: addDays(todayLocal, -1), approximate: false };
   if (text === "last week") return { localDate: addDays(todayLocal, -7), approximate: false };
   if (text === "last month") return { localDate: addDays(todayLocal, -30), approximate: false };
+  const thisYear = Number(todayLocal.slice(0, 4));
+  const monthIndex = (value: string) => monthNames.findIndex((month) => month.startsWith(value.toLowerCase()));
+  const monthYear = text.match(/^(?:(?:last|in)\s+)?([a-z]+)(?:\s+(next\s+year|\d{4}))?$/);
+  if (monthYear) {
+    const month = monthIndex(monthYear[1]!);
+    if (month >= 0) {
+      let year = monthYear[2]?.startsWith("next") ? thisYear + 1 : monthYear[2] ? Number(monthYear[2]) : thisYear;
+      const candidate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+      if (text.startsWith("last ") || (!isFutureAllowed && candidate > todayLocal)) year--;
+      const date = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+      return checkedDate(date);
+    }
+  }
+  const futureMonth = text.match(/^till\s+([a-z]+)\s+next\s+year$/);
+  if (futureMonth && isFutureAllowed) {
+    const month = monthIndex(futureMonth[1]!);
+    if (month >= 0) return checkedDate(`${thisYear + 1}-${String(month + 1).padStart(2, "0")}-01`);
+  }
+  const namedDate = text.match(/^(?:(\d{1,2})\s+([a-z]+)|([a-z]+)\s+(\d{1,2}))(?:,?\s+(\d{4}))?$/);
+  if (namedDate) {
+    const day = Number(namedDate[1] ?? namedDate[4]);
+    const month = monthIndex(namedDate[2] ?? namedDate[3]!);
+    if (month >= 0) return checkedDate(`${Number(namedDate[5] ?? thisYear)}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+  }
+  const numeric = text.match(/^(\d{1,2})[-/.](\d{1,2})(?:[-/.](\d{4}))?$/);
+  if (numeric) {
+    const first = Number(numeric[1]);
+    const second = Number(numeric[2]);
+    const order = options.dateOrder ?? "DMY";
+    const month = order === "MDY" ? first : second;
+    const day = order === "MDY" ? second : first;
+    return checkedDate(`${Number(numeric[3] ?? thisYear)}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+  }
   const approximate = /^(about|around|roughly)\s+/.test(text);
-  const normalized = text.replace(/^(about|around|roughly)\s+/, "");
+  const normalized = text.replace(/^(about|around|roughly)\s+/, "").replace(/\s+back$/, " ago");
   const match = normalized.match(/^(.+?)\s+(day|days|week|weeks|month|months)\s+ago$/);
   if (!match) return null;
   const amount = amountFrom(match[1]!);

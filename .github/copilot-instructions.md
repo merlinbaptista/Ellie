@@ -28,3 +28,10 @@ from history, and hands fixes/bookings to the phone.
 - Regional facts live only in region-pack JSON with a `source`. Never hard-code intervals, phone numbers or rules in server code.
 - Use `registry.vocabulary()` and pack units for any user-facing wording.
 - Dates: use `@ellie/schema` date helpers; store UTC, compute in household time zone.
+
+## Memory rules (Module 3+)
+- DynamoDB keys are built ONLY in `src/data/keys.ts`. Tools never touch storage directly: tools → domain → repositories → `StorageAdapter`.
+- Follow-ups go through `domain/followups.ts`: one per turn, max two per task, never re-ask (`askedFields`), always offer a default, include `retry`.
+- Item resolution order: id/catalogKey → household alias → existing items → region catalog → custom item. Learn aliases.
+- Seed data uses day offsets from an anchor; never hard-code “today”.
+- Phone numbers are stored only with consent and masked in responses and logs.

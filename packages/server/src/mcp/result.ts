@@ -11,7 +11,12 @@ export interface EllieResult<T = unknown> {
   speech: string;
   data?: T;
   card?: Card;
-  followUp?: { field: string; question: string; defaultValue?: string };
+  followUp?: {
+    field: string;
+    question: string;
+    defaultValue?: string;
+    retry?: { tool: string; argName: string; args: Record<string, unknown> };
+  };
   phone?: { url: string; kind: "fix" | "booking" | "summary" };
   safety?: { level: "none" | "caution" | "stop"; message?: string; emergencyNumber?: string };
 }
