@@ -472,16 +472,16 @@ Go through §8 rows 1–14 in order, **by voice**, with the Bengaluru household 
 ---
 
 ## 12. Definition of Done — Module 8
-- [ ] §0 follow-ups committed separately (commit history table, no-amend rule, Module 7 §0 traceability, axe tests, Host view verification)
-- [ ] `@ellie/schema` 1.6.0 simulator protocol (marked as not part of the OSS schema)
-- [ ] Orchestrator uses a real MCP client loopback; safety pre-check; multi-intent split; one question per reply with a queue; context args
-- [ ] Deterministic router passes the 30+ utterance table; Bedrock tool-use router with validation, redaction and fallback
-- [ ] Simulator UI: Echo Show frame, light bar, card stack, captions, push-to-talk voice with a text fallback, mute, barge-in
-- [ ] Phone panel shows the outbox and opens the phone page in a same-origin frame
-- [ ] Household switcher, time controls, reseed, timeline, dev drawer, Host view
-- [ ] Served at `/sim/` (one process); gated in production with an access code
+- [x] §0 follow-ups committed separately (commit history table, no-amend rule, Module 7 §0 traceability, axe tests, Host view verification)
+- [x] `@ellie/schema` 1.6.0 simulator protocol (marked as not part of the OSS schema)
+- [x] Orchestrator uses a real MCP client loopback; safety pre-check; multi-intent split; one question per reply with a queue; context args
+- [x] Deterministic router passes the 30+ utterance table; Bedrock tool-use router with validation, redaction and fallback
+- [x] Simulator UI: Echo Show frame, light bar, card stack, captions, push-to-talk voice with a text fallback, mute, barge-in
+- [x] Phone panel shows the outbox and opens the phone page in a same-origin frame
+- [x] Household switcher, time controls, reseed, timeline, dev drawer, Host view
+- [x] Served at `/sim/` (one process); gated in production with an access code
 - [ ] §8 rows match; no axe violations; bundle ≤ 200 KB; all tests green
-- [ ] Docs, Copilot rules and friction log updated; commit: `git commit -m "Module 8: simulated Alexa+ web app"`
+- [x] Docs, Copilot rules and friction log updated; commit: `git commit -m "Module 8: simulated Alexa+ web app"`
 
 ## 13. Out of scope for Module 8
 `what_do_you_know`, `forget_item`, consent records and OAuth (Module 9); the scripted demo runner, pack value verification, Docker, schema repo extraction and the final README polish (Module 10).
