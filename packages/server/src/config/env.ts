@@ -46,6 +46,7 @@ const envSchema = z.object({
   SCHEDULER_DRIVER: driver,
   MOCK_STORAGE_MODE: z.preprocess(blankToUndefined, z.enum(["file", "memory"]).default("file")),
   DATA_DIR: defaultString("./data"),
+  REGION_PACKS_DIR: optionalString,
   AWS_REGION: optionalString,
   AWS_PROFILE: optionalString,
   AWS_ACCESS_KEY_ID: optionalString,

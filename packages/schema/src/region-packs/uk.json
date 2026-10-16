@@ -1,0 +1,25 @@
+{
+  "$schema": "../../json-schema/region-pack.schema.json",
+  "packId": "UK", "version": "2026.10", "extends": "DEFAULT", "name": "United Kingdom", "countries": ["GB"],
+  "locale": { "defaultLanguage": "en-GB", "supportedLanguages": ["en-GB"], "defaultTimeZone": "Europe/London", "dateOrder": "DMY" },
+  "units": { "volume": "L", "temp": "C", "weight": "kg", "currency": "GBP" },
+  "seasons": [], "vocabulary": {},
+  "catalog": {
+    "gas_boiler": { "kind": "appliance", "displayName": "gas boiler", "aliases": ["boiler", "combi"], "icon": "♨️", "defaultProviderKey": "boiler_engineer", "recurring": { "action": "serviced", "defaultIntervalDays": 365, "source": { "note": "Starter annual boiler service interval", "verified": false } }, "questionsOnAdd": [] },
+    "heating_oil": { "kind": "supply", "displayName": "heating oil tank", "aliases": ["oil tank", "heating oil"], "icon": "🛢️", "recurring": { "action": "changed", "defaultIntervalDays": 180, "leadTimeDays": 10, "source": { "note": "Starter heating-oil refill interval", "verified": false } }, "questionsOnAdd": [] },
+    "co_alarm": { "kind": "safety_device", "displayName": "carbon monoxide alarm", "aliases": ["carbon monoxide alarm", "co alarm"], "icon": "⚠️", "recurring": { "action": "serviced", "defaultIntervalDays": 365, "source": { "note": "Starter annual CO alarm check interval", "verified": false } }, "symptoms": [{ "key": "alarm_sounding", "aliases": ["alarm sounding", "alarm going off"], "safety": "carbon_monoxide", "likelyCauses": [{ "key": "possible_co", "description": "Carbon monoxide may be present", "diy": false }] }], "questionsOnAdd": [] }
+  },
+  "providers": { "boiler_engineer": { "name": "Registered boiler engineer search", "appliesTo": ["gas_boiler"], "channel": "web", "urlTemplate": "https://www.google.com/search?q={query}", "notes": "Find a registered engineer", "source": { "note": "Starter engineer search URL", "verified": false } } },
+  "safety": {
+    "generalEmergency": "999", "numbers": { "gas": "0800 111 999" },
+    "stopMessages": {
+      "gas": "Leave the area, avoid switches and flames, and call {number} from a safe place.",
+      "electrical": "Do not touch the appliance. Move away and call {number} for professional help.",
+      "water_near_power": "Stay clear of the water and electrical equipment. Call {number} for help.",
+      "fire": "Leave the building and call {number} from a safe place.",
+      "carbon_monoxide": "Leave the building immediately and call {number} from outside."
+    },
+    "source": { "note": "UK national gas emergency line — verify", "verified": false }
+  },
+  "sources": [{ "note": "United Kingdom region-pack starter values", "verified": false }]
+}

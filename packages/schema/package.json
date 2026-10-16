@@ -1,0 +1,33 @@
+{
+  "name": "@ellie/schema",
+  "version": "1.0.0",
+  "description": "Open home-event schema and region-pack format for household memory agents.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./region-packs/*.json": "./dist/region-packs/*.json",
+    "./json-schema/region-pack.schema.json": "./json-schema/region-pack.schema.json"
+  },
+  "files": ["dist", "json-schema", "README.md", "LICENSE", "CHANGELOG.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "gen:jsonschema": "tsx scripts/gen-json-schema.ts",
+    "validate:packs": "tsx scripts/validate-packs.ts",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": { "zod": "^3.25" },
+  "devDependencies": {
+    "zod-to-json-schema": "^3",
+    "vitest": "^2",
+    "@types/node": "^22",
+    "@vitest/coverage-v8": "^2"
+  },
+  "keywords": ["home", "household", "maintenance", "schema", "mcp", "alexa", "region-pack"]
+}

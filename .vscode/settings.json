@@ -3,5 +3,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "files.exclude": { "**/dist": true, "**/coverage": true }
+  "files.exclude": { "**/dist": true, "**/coverage": true },
+  "json.schemas": [
+    { "fileMatch": ["packages/schema/src/region-packs/*.json"], "url": "./packages/schema/json-schema/region-pack.schema.json" }
+  ]
 }

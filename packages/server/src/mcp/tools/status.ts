@@ -15,12 +15,14 @@ export async function statusData(ctx: AppContext) {
     implementation: decision.implementation,
     missingKeys: decision.missingKeys,
   }]));
+  const regions = ctx.regions.list().map(({ packId, version }) => ({ packId, version, unverifiedCount: ctx.regions.unverifiedFacts(packId).length }));
   return {
     version: ctx.version,
     specVersion: "2025-11-25",
     uptimeSec: Math.floor((Date.now() - ctx.startedAt.getTime()) / 1000),
     activeMcpSessions: activeSessionCount(),
     drivers,
+    regions,
     storageHealth: health,
     recentToolTimings: { count: timings.length, p50, max },
     clockMode: ctx.clock.isFake() ? "fake" : "real",

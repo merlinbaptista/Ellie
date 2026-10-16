@@ -1,0 +1,621 @@
+{
+  "$ref": "#/definitions/RegionPack",
+  "definitions": {
+    "RegionPack": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "packId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "string",
+              "const": "DEFAULT"
+            }
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}\\.\\d{2}(\\.\\d+)?$"
+        },
+        "extends": {
+          "type": "string",
+          "const": "DEFAULT"
+        },
+        "name": {
+          "type": "string"
+        },
+        "countries": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "minItems": 1
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": [
+                {
+                  "type": "string",
+                  "const": "*"
+                }
+              ]
+            }
+          ]
+        },
+        "locale": {
+          "type": "object",
+          "properties": {
+            "defaultLanguage": {
+              "type": "string",
+              "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+            },
+            "supportedLanguages": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+              },
+              "minItems": 1
+            },
+            "defaultTimeZone": {
+              "type": "string"
+            },
+            "dateOrder": {
+              "type": "string",
+              "enum": [
+                "DMY",
+                "MDY",
+                "YMD"
+              ]
+            }
+          },
+          "required": [
+            "defaultLanguage",
+            "supportedLanguages",
+            "defaultTimeZone",
+            "dateOrder"
+          ],
+          "additionalProperties": false
+        },
+        "units": {
+          "type": "object",
+          "properties": {
+            "volume": {
+              "type": "string",
+              "enum": [
+                "L",
+                "gal"
+              ]
+            },
+            "temp": {
+              "type": "string",
+              "enum": [
+                "C",
+                "F"
+              ]
+            },
+            "weight": {
+              "type": "string",
+              "enum": [
+                "kg",
+                "lb"
+              ]
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          },
+          "required": [
+            "volume",
+            "temp",
+            "weight",
+            "currency"
+          ],
+          "additionalProperties": false
+        },
+        "seasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "startMonth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              },
+              "endMonth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "key",
+              "startMonth",
+              "endMonth"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "vocabulary": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {}
+        },
+        "catalog": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "supply",
+                  "appliance",
+                  "bill",
+                  "safety_device",
+                  "custom"
+                ]
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "aliases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "icon": {
+                "type": "string"
+              },
+              "recurring": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "changed",
+                      "serviced",
+                      "symptom",
+                      "booked",
+                      "delivered",
+                      "cost",
+                      "installed",
+                      "note"
+                    ]
+                  },
+                  "defaultIntervalDays": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "safetyBufferDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "minDaysBetweenBookings": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "preferredMonths": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 12
+                    }
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "note": {
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "verified": {
+                        "type": "boolean"
+                      },
+                      "checkedOn": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      }
+                    },
+                    "required": [
+                      "note",
+                      "verified"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "action",
+                  "defaultIntervalDays",
+                  "source"
+                ],
+                "additionalProperties": false
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "defaultIntervalDays": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "source": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "note": {
+                          "type": "string",
+                          "maxLength": 300
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "checkedOn": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        }
+                      },
+                      "required": [
+                        "note",
+                        "verified"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "displayName",
+                    "defaultIntervalDays",
+                    "source"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "symptoms": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "questions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "text": {
+                            "type": "string"
+                          },
+                          "answers": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 2
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "text",
+                          "answers"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "default": []
+                    },
+                    "likelyCauses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "relatedComponent": {
+                            "type": "string"
+                          },
+                          "diy": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "description",
+                          "diy"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "default": []
+                    },
+                    "safety": {
+                      "type": "string",
+                      "enum": [
+                        "gas",
+                        "electrical",
+                        "water_near_power",
+                        "fire",
+                        "carbon_monoxide"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "aliases"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "defaultProviderKey": {
+                "type": "string"
+              },
+              "manualSearchHint": {
+                "type": "string"
+              },
+              "questionsOnAdd": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "purchaseDate",
+                    "warrantyUntil",
+                    "brand",
+                    "model",
+                    "provider",
+                    "lastChangeDate"
+                  ]
+                },
+                "maxItems": 2,
+                "default": []
+              }
+            },
+            "required": [
+              "kind",
+              "displayName",
+              "aliases"
+            ],
+            "additionalProperties": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z0-9_]+$"
+          }
+        },
+        "providers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "appliesTo": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "whatsapp",
+                  "sms",
+                  "phone_call",
+                  "ivrs",
+                  "web",
+                  "app",
+                  "shopping_link",
+                  "none"
+                ]
+              },
+              "to": {
+                "type": "string"
+              },
+              "urlTemplate": {
+                "type": "string"
+              },
+              "messageTemplate": {
+                "type": "string"
+              },
+              "requiresRegisteredPhone": {
+                "type": "boolean",
+                "default": false
+              },
+              "notes": {
+                "type": "string"
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "verified": {
+                    "type": "boolean"
+                  },
+                  "checkedOn": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "note",
+                  "verified"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "name",
+              "appliesTo",
+              "channel",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "propertyNames": {
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "default": {}
+        },
+        "safety": {
+          "type": "object",
+          "properties": {
+            "generalEmergency": {
+              "type": "string"
+            },
+            "numbers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "stopMessages": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "verified": {
+                  "type": "boolean"
+                },
+                "checkedOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              },
+              "required": [
+                "note",
+                "verified"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "generalEmergency",
+            "numbers",
+            "stopMessages",
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 300
+              },
+              "verified": {
+                "type": "boolean"
+              },
+              "checkedOn": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "note",
+              "verified"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "packId",
+        "version",
+        "name",
+        "countries",
+        "locale",
+        "units",
+        "catalog",
+        "safety"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/merlinbaptista/home-event-schema/region-pack.schema.json",
+  "title": "Ellie Region Pack"
+}

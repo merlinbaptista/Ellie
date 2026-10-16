@@ -1,0 +1,39 @@
+{
+  "$schema": "../../json-schema/region-pack.schema.json",
+  "packId": "DEFAULT",
+  "version": "2026.10",
+  "name": "Default",
+  "countries": ["*"],
+  "locale": { "defaultLanguage": "en", "supportedLanguages": ["en"], "defaultTimeZone": "UTC", "dateOrder": "DMY" },
+  "units": { "volume": "L", "temp": "C", "weight": "kg", "currency": "USD" },
+  "seasons": [],
+  "vocabulary": {},
+  "catalog": {
+    "smoke_alarm": {
+      "kind": "safety_device", "displayName": "smoke alarm", "aliases": ["smoke alarm", "smoke detector", "fire alarm"], "icon": "🔔",
+      "recurring": { "action": "serviced", "defaultIntervalDays": 365, "source": { "note": "Starter annual smoke alarm check interval", "verified": false } },
+      "symptoms": [{ "key": "chirping", "aliases": ["chirping", "beeping"], "likelyCauses": [{ "key": "low_battery", "description": "The alarm battery may be low", "diy": true }] }],
+      "questionsOnAdd": []
+    },
+    "water_filter": {
+      "kind": "appliance", "displayName": "water filter", "aliases": ["water filter", "filter jug"], "icon": "💧",
+      "recurring": { "action": "changed", "defaultIntervalDays": 60, "source": { "note": "Starter water-filter replacement interval", "verified": false } },
+      "questionsOnAdd": []
+    },
+    "custom": { "kind": "custom", "displayName": "custom item", "aliases": ["custom item"], "questionsOnAdd": [] }
+  },
+  "providers": {},
+  "safety": {
+    "generalEmergency": "112",
+    "numbers": {},
+    "stopMessages": {
+      "gas": "Please don't use switches or flames. Open windows, leave the room, and call {number} now.",
+      "electrical": "Do not touch the appliance. Move away and call {number} for professional help.",
+      "water_near_power": "Stay clear of the water and electrical equipment. Call {number} for help.",
+      "fire": "Leave the building and call {number} from a safe place.",
+      "carbon_monoxide": "Leave the building immediately and call {number} from outside."
+    },
+    "source": { "note": "General emergency and safety wording starter defaults", "verified": false }
+  },
+  "sources": [{ "note": "Default region-pack starter values", "verified": false }]
+}

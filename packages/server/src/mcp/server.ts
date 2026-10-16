@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AppContext } from "../context.js";
 import { registerAllTools } from "./tools/index.js";
+import { registerRegionResources } from "./resources.js";
 
 export function buildMcpServer(ctx: AppContext): McpServer {
   const server = new McpServer(
@@ -10,5 +11,6 @@ export function buildMcpServer(ctx: AppContext): McpServer {
     },
   );
   registerAllTools(server, ctx);
+  registerRegionResources(server, ctx);
   return server;
 }

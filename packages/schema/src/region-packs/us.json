@@ -1,0 +1,31 @@
+{
+  "$schema": "../../json-schema/region-pack.schema.json",
+  "packId": "US", "version": "2026.10", "extends": "DEFAULT", "name": "United States", "countries": ["US"],
+  "locale": { "defaultLanguage": "en-US", "supportedLanguages": ["en-US", "es-US"], "defaultTimeZone": "America/Chicago", "dateOrder": "MDY" },
+  "units": { "volume": "gal", "temp": "F", "weight": "lb", "currency": "USD" },
+  "seasons": [{ "key": "heating", "startMonth": 11, "endMonth": 3 }, { "key": "cooling", "startMonth": 6, "endMonth": 9 }],
+  "vocabulary": { "gas_container": "tank", "gas_supplier": "propane supplier" },
+  "catalog": {
+    "propane_tank": { "kind": "supply", "displayName": "propane tank", "aliases": ["propane", "tank", "propane tank", "gas tank"], "icon": "🔥", "defaultProviderKey": "local_propane", "recurring": { "action": "changed", "defaultIntervalDays": 60, "leadTimeDays": 5, "safetyBufferDays": 3, "source": { "note": "Starter refill interval; check gauge and refill around 20–30%", "verified": false } }, "symptoms": [{ "key": "smell_of_gas", "aliases": ["smell of gas", "gas smell"], "safety": "gas", "likelyCauses": [{ "key": "possible_leak", "description": "A propane leak may be present", "diy": false }] }], "questionsOnAdd": [] },
+    "hvac_filter": { "kind": "supply", "displayName": "HVAC filter", "aliases": ["hvac filter", "furnace filter", "air filter", "ac filter"], "icon": "🌬️", "defaultProviderKey": "filter_shop", "recurring": { "action": "changed", "defaultIntervalDays": 90, "source": { "note": "Starter HVAC filter replacement interval", "verified": false } }, "symptoms": [{ "key": "weak_airflow", "aliases": ["weak airflow", "low airflow"] }], "questionsOnAdd": [] },
+    "fridge_water_filter": { "kind": "appliance", "displayName": "refrigerator water filter", "aliases": ["fridge filter", "refrigerator filter"], "icon": "🧊", "defaultProviderKey": "filter_shop", "recurring": { "action": "changed", "defaultIntervalDays": 180, "source": { "note": "Starter refrigerator filter replacement interval", "verified": false } }, "symptoms": [{ "key": "slow_dispense", "aliases": ["slow dispense", "slow water"] }, { "key": "bad_taste", "aliases": ["bad taste", "strange taste"] }], "questionsOnAdd": [] },
+    "water_heater": { "kind": "appliance", "displayName": "water heater", "aliases": ["water heater", "boiler", "hot water heater"], "icon": "♨️", "recurring": { "action": "serviced", "defaultIntervalDays": 365, "source": { "note": "Starter annual water-heater flush interval", "verified": false } }, "symptoms": [{ "key": "no_hot_water", "aliases": ["no hot water", "cold shower"] }, { "key": "leaking", "aliases": ["leaking", "water leak"], "safety": "water_near_power", "likelyCauses": [{ "key": "possible_leak", "description": "Water may be near electrical equipment", "diy": false }] }], "questionsOnAdd": [] },
+    "smoke_alarm": { "kind": "safety_device", "displayName": "smoke alarm", "aliases": ["smoke alarm", "smoke detector", "fire alarm"], "icon": "🔔", "recurring": { "action": "serviced", "defaultIntervalDays": 180, "source": { "note": "Starter twice-yearly smoke alarm battery check", "verified": false } }, "symptoms": [{ "key": "chirping", "aliases": ["chirping", "beeping"], "likelyCauses": [{ "key": "low_battery", "description": "The alarm battery may be low", "diy": true }] }], "questionsOnAdd": [] }
+  },
+  "providers": {
+    "local_propane": { "name": "Local propane supplier", "appliesTo": ["propane_tank"], "channel": "phone_call", "to": "+15555550100", "notes": "Demo placeholder number — replace with the household's supplier", "source": { "note": "Demo placeholder provider contact", "verified": false } },
+    "filter_shop": { "name": "Online filter order", "appliesTo": ["hvac_filter", "fridge_water_filter"], "channel": "shopping_link", "urlTemplate": "https://www.amazon.com/s?k={query}", "source": { "note": "Starter shopping search URL", "verified": false } }
+  },
+  "safety": {
+    "generalEmergency": "911", "numbers": { "gas": "911" },
+    "stopMessages": {
+      "gas": "Leave the house now, don't use switches or phones inside, and call {number} or your propane supplier from outside.",
+      "electrical": "Do not touch the appliance. Move away and call {number} for professional help.",
+      "water_near_power": "Stay clear of the water and electrical equipment. Call {number} for help.",
+      "fire": "Leave the building and call {number} from a safe place.",
+      "carbon_monoxide": "Leave the building immediately and call {number} from outside."
+    },
+    "source": { "note": "United States emergency and safety wording starter defaults", "verified": false }
+  },
+  "sources": [{ "note": "United States region-pack starter values", "verified": false }]
+}

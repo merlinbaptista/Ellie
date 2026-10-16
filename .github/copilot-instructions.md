@@ -21,3 +21,10 @@ from history, and hands fixes/bookings to the phone.
 - Keep tool latency under 500 ms on the mock path.
 - Add/extend vitest tests for every new module. `npm test` and `npm run typecheck` must pass before finishing.
 - Log developer friction in `docs/friction-log.md` when something is confusing or slow.
+
+## Schema rules (Module 2+)
+- All domain types come from `@ellie/schema`. Never redefine Household/Item/Event/Prediction/Resolution in the server.
+- `@ellie/schema/src` must stay browser-safe: no fs, path, process, Buffer.
+- Regional facts live only in region-pack JSON with a `source`. Never hard-code intervals, phone numbers or rules in server code.
+- Use `registry.vocabulary()` and pack units for any user-facing wording.
+- Dates: use `@ellie/schema` date helpers; store UTC, compute in household time zone.

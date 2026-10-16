@@ -17,6 +17,19 @@ try {
   const status = await client.callTool({ name: "ellie_status", arguments: {} });
   if (status.isError) throw new Error("ellie_status returned an error");
   console.log(JSON.stringify(status.structuredContent, null, 2));
+  const region = await client.callTool({ name: "ellie_region_info", arguments: { country: "IN", item: "gas" } });
+  if (region.isError || !region.content[0]?.text.toLowerCase().includes("cylinder") || !region.content[0]?.text.includes("25")) {
+    throw new Error("ellie_region_info returned an unexpected result");
+  }
+  console.log("Region:", region.content[0].text);
+  const resources = await client.listResources();
+  if (!resources.resources.some((resource) => resource.uri === "ellie://region-packs")) {
+    throw new Error("Missing ellie://region-packs resource");
+  }
+  const regionPack = await client.readResource({ uri: "ellie://region-packs/IN" });
+  const pack = JSON.parse(String(regionPack.contents[0]?.text ?? "{}")) as { packId?: string };
+  if (pack.packId !== "IN") throw new Error("India region pack resource is invalid");
+  console.log("Resources: ellie://region-packs, ellie://region-packs/IN");
 } finally {
   await client.close();
 }

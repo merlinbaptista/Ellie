@@ -1,0 +1,24 @@
+import { z } from "zod";
+
+export const ItemKind = z.enum(["supply", "appliance", "bill", "safety_device", "custom"]);
+export type ItemKind = z.infer<typeof ItemKind>;
+export const EventType = z.enum(["changed", "serviced", "symptom", "booked", "delivered", "cost", "installed", "note"]);
+export type EventType = z.infer<typeof EventType>;
+export const EventSource = z.enum(["voice", "phone", "simulator", "seed", "system"]);
+export type EventSource = z.infer<typeof EventSource>;
+export const Channel = z.enum(["whatsapp", "sms", "phone_call", "ivrs", "web", "app", "shopping_link", "none"]);
+export type Channel = z.infer<typeof Channel>;
+export const SafetyLevel = z.enum(["none", "caution", "stop"]);
+export type SafetyLevel = z.infer<typeof SafetyLevel>;
+export const SafetyCategory = z.enum(["gas", "electrical", "water_near_power", "fire", "carbon_monoxide"]);
+export type SafetyCategory = z.infer<typeof SafetyCategory>;
+export const Confidence = z.enum(["low", "medium", "high"]);
+export type Confidence = z.infer<typeof Confidence>;
+export const VolumeUnit = z.enum(["L", "gal"]);
+export type VolumeUnit = z.infer<typeof VolumeUnit>;
+export const TempUnit = z.enum(["C", "F"]);
+export type TempUnit = z.infer<typeof TempUnit>;
+export const WeightUnit = z.enum(["kg", "lb"]);
+export type WeightUnit = z.infer<typeof WeightUnit>;
+export const DateOrder = z.enum(["DMY", "MDY", "YMD"]);
+export type DateOrder = z.infer<typeof DateOrder>;

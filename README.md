@@ -46,9 +46,18 @@ Credentials are `AWS_PROFILE` or both `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS
 ## Project structure
 
 - `packages/server`: TypeScript MCP server, adapters, HTTP API, tests
+- `packages/schema`: browser-safe home-event schemas, region packs, and pure helpers
 - `scripts`: end-to-end smoke client
 - `docs`: module roadmap and development friction log
 - `.vscode`: MCP server, launch, task, and editor configuration
+
+## Region packs
+
+`@ellie/schema` provides household entities, regional catalogs, matching, date and unit helpers, and shared tool contracts. Starter packs cover DEFAULT, India, the United States, and the United Kingdom. Review unverified starter facts before relying on them.
+
+```powershell
+npm run validate:packs
+```
 
 ## Verification
 

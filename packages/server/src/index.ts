@@ -28,6 +28,9 @@ const httpServer = app.listen(env.PORT, env.HOST, () => {
     const active = service.resolved === "aws" ? "mock (AWS adapter pending)" : "mock";
     logger.info(`${service.service.padEnd(10)} ${active.padEnd(27)} ${service.implementation} (${service.reason})`);
   }
+  const regionSummary = ctx.regions.list().map(({ packId, version }) => `${packId} ${version}`).join(" · ");
+  const unverifiedCount = ctx.regions.list().reduce((count, { packId }) => count + ctx.regions.unverifiedFacts(packId).length, 0);
+  logger.info(`regions    ${regionSummary}   (${unverifiedCount} starter values to verify)`);
   logger.info(`clock      ${ctx.clock.isFake() ? "fake" : "real"} (set ELLIE_FAKE_NOW to time-travel)`);
 });
 

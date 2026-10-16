@@ -14,6 +14,8 @@ import type { SchedulerAdapter } from "./adapters/scheduler/types.js";
 import type { Clock } from "./lib/clock.js";
 import { createClock } from "./lib/clock.js";
 import { logger as rootLogger } from "./lib/logger.js";
+import type { RegionRegistry } from "@ellie/schema";
+import { createServerRegionRegistry } from "./regions/registry.js";
 
 export interface AppContext {
   env: Env;
@@ -24,6 +26,7 @@ export interface AppContext {
   llm: LlmAdapter;
   notifier: NotifierAdapter;
   scheduler: SchedulerAdapter;
+  regions: RegionRegistry;
   startedAt: Date;
   version: string;
 }
@@ -39,6 +42,7 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
     }
   }
   const storage = overrides.storage ?? await createStorage(drivers.storage, env, clock, log);
+  const regions = overrides.regions ?? await createServerRegionRegistry(log, env.REGION_PACKS_DIR);
   return {
     env,
     drivers,
@@ -48,6 +52,7 @@ export async function buildContext(overrides: Partial<AppContext> = {}): Promise
     llm: overrides.llm ?? createLlm(drivers.llm),
     notifier: overrides.notifier ?? createNotifier(drivers.notifier, storage, clock),
     scheduler: overrides.scheduler ?? createScheduler(drivers.scheduler, storage, clock),
+    regions,
     startedAt: overrides.startedAt ?? new Date(),
     version: overrides.version ?? "0.1.0",
   };
