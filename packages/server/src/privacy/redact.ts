@@ -1,4 +1,5 @@
-const phonePattern = /(?<!\w)\+?\d[\d\s().-]{7,}\d(?!\w)/g;
+// A separator may not be a sentence-ending period, so one candidate never spans two sentences.
+const phonePattern = /(?<!\w)\+?\d(?:(?:[-()\s]|\.(?!\s)){0,2}\d){7,14}(?!\w)/g;
 const emailPattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const bearerPattern = /\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi;
 const jwtPattern = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g;
@@ -9,7 +10,8 @@ const namePattern = /\b(my name is|their name is|his name is|her name is)\s+[\p{
 export function maskPhone(value: string): string { return `•••• ${value.slice(-4)}`; }
 export function maskEmail(value: string): string { return value.replace(/^([^@]).*(@.*)$/, "$1***$2"); }
 function redactPhoneCandidate(value: string): string {
-  if (/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(value)) return value;
+  if (/\d{4}-\d{2}-\d{2}/.test(value)) return value;
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}\b/.test(value)) return value;
   if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) return value;
   return "[REDACTED_PHONE]";
 }

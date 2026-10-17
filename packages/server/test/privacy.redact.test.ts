@@ -19,4 +19,21 @@ describe("privacy redaction", () => {
   it("preserves IPv4 hosts in local phone links", () => {
     expect(redactText("http://127.0.0.1:53941/l/short-code")).toBe("http://127.0.0.1:53941/l/short-code");
   });
+
+  it("keeps spoken dates, day counts and quantities intact across sentence boundaries", () => {
+    expect(redactText("It's now 2026-10-16. 0 reminders were sent.")).toBe("It's now 2026-10-16. 0 reminders were sent.");
+    expect(redactText("It's now 2026-10-16. 12 reminders were sent.")).toBe("It's now 2026-10-16. 12 reminders were sent.");
+    expect(redactText("Your gas cylinder is due on 2026-10-25, 9 days from now, and you have used 14.2 kg.")).toContain("2026-10-25, 9 days from now");
+    expect(redactText("I'll forget the inverter and its 12 events, 3 fixes and 1 reminders.")).toContain("12 events, 3 fixes and 1 reminders");
+    expect(redactText("Next service 2026-10-16 09:00 local time.")).toContain("2026-10-16 09:00");
+    expect(redactText("Logged at 2026-10-16T03:30:00.000Z.")).toContain("2026-10-16T03:30:00.000Z");
+  });
+
+  it("still masks phone numbers in every written form", () => {
+    for (const phone of ["+919000000001", "+1 (555) 555-0100", "+1-555-555-0100", "919000000001", "555.555.0100"]) {
+      expect(redactText(`Call ${phone} now.`)).not.toContain(phone);
+      expect(redactText(`Call ${phone} now.`)).toContain("[REDACTED_PHONE]");
+    }
+    expect(redactText("Texted 2026-10-16 from +919000000001.")).toBe("Texted 2026-10-16 from [REDACTED_PHONE].");
+  });
 });
