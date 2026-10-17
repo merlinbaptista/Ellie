@@ -31,9 +31,9 @@ if (env.NODE_ENV === "production") {
   ] as const) {
     try {
       const response = await fetch(new URL(path, origin), { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(2500) });
-      checks.push({ status: response.status === 404 ? "PASS" : "FAIL", label, detail: response.status === 404 ? "Returns 404" : `Expected 404; received HTTP ${response.status}` });
+      checks.push({ status: response.status === 404 ? "PASS" : "FAIL", kind: "CODE", label, detail: response.status === 404 ? "Returns 404" : `Expected 404; received HTTP ${response.status}` });
     } catch {
-      checks.push({ status: "FAIL", label, detail: "Could not reach the configured public URL to verify the production gate" });
+      checks.push({ status: "FAIL", kind: "CREDENTIAL", label, detail: "Could not reach the configured public URL to verify the production gate" });
     }
   }
   if (!env.OAUTH_ENABLED) {
@@ -42,14 +42,21 @@ if (env.NODE_ENV === "production") {
       await client.connect(new StreamableHTTPClientTransport(new URL(`${origin}/mcp`)));
       const tools = await client.listTools();
       const exposed = tools.tools.some((tool) => tool.name === "ellie_dev_time_travel");
-      checks.push({ status: exposed ? "FAIL" : "PASS", label: "Development MCP tool", detail: exposed ? "ellie_dev_time_travel is exposed" : "ellie_dev_time_travel is not registered" });
+      checks.push({ status: exposed ? "FAIL" : "PASS", kind: "CODE", label: "Development MCP tool", detail: exposed ? "ellie_dev_time_travel is exposed" : "ellie_dev_time_travel is not registered" });
     } catch {
-      checks.push({ status: "FAIL", label: "Development MCP tool", detail: "Could not connect to MCP to verify tool registration" });
+      checks.push({ status: "FAIL", kind: "CREDENTIAL", label: "Development MCP tool", detail: "Could not connect to MCP to verify tool registration" });
     } finally { await client.close().catch(() => undefined); }
-  } else checks.push({ status: "WARN", label: "Development MCP tool", detail: "OAuth is enabled; unauthenticated tool-list check was skipped" });
+  } else checks.push({ status: "WARN", kind: "CODE", label: "Development MCP tool", detail: "OAuth is enabled; unauthenticated tool-list check was skipped" });
 }
 
-for (const check of checks) console.log(`${check.status.padEnd(4)} ${check.label}: ${check.detail}`);
+for (const kind of ["CODE", "CREDENTIAL"] as const) {
+  console.log(kind === "CODE" ? "\nCODE problems (must be zero)" : "\nCREDENTIAL gaps (expected until the keys exist)");
+  for (const check of checks.filter((entry) => entry.kind === kind)) console.log(`  ${check.status.padEnd(4)} ${check.label}: ${check.detail}`);
+}
 const summary = summarizePreflight(checks);
-console.log(`Preflight: ${summary.failures} failure(s), ${summary.warnings} warning(s).`);
+console.log(`\nPreflight: ${summary.codeProblems} CODE problem(s), ${summary.credentialGaps} CREDENTIAL gap(s), ${summary.warnings} warning(s).`);
 if (!summary.passed) process.exitCode = 1;
+else if (env.NODE_ENV === "production" && summary.credentialGaps > 0) {
+  console.log("Code is release-ready. Go-live still needs the credential gaps above.");
+  process.exitCode = 1;
+}
