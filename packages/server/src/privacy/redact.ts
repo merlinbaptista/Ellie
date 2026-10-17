@@ -1,5 +1,6 @@
-// A separator may not be a sentence-ending period, so one candidate never spans two sentences.
-const phonePattern = /(?<!\w)\+?\d(?:(?:[-()\s]|\.(?!\s)){0,2}\d){7,14}(?!\w)/g;
+// A separator may not be a sentence-ending period, and a candidate may not sit inside a longer
+// hyphenated token, so dates, counts and UUID segments are never mistaken for a phone number.
+const phonePattern = /(?<![\w-])\+?\d(?:(?:[-()\s]|\.(?!\s)){0,2}\d){7,14}(?![\w-])/g;
 const emailPattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const bearerPattern = /\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi;
 const jwtPattern = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g;

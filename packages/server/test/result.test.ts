@@ -11,6 +11,13 @@ describe("MCP result envelope", () => {
     expect(response.structuredContent).toEqual(result);
   });
 
+  it("returns a destructive confirmation id unchanged, whatever digits the UUID has", () => {
+    for (const confirmationId of ["12345678-91ce-40b7-b257-bdc5ec2739ff", "4df316f2-143a-47a9-97f0-3ecfbec2d34a", "00000000-0000-4000-8000-000000000000"]) {
+      const response = toolResponse({ speech: "I'll prepare that deletion for your confirmation.", followUp: { field: "confirm", question: "Should I go ahead?", retry: { tool: "forget_item", argName: "confirm", args: { householdId: "demo-blr", item: "itm_1", confirmationId } } }, data: { planKeys: 7 } });
+      expect((response.structuredContent as { followUp: { retry: { args: { confirmationId: string } } } }).followUp.retry.args.confirmationId).toBe(confirmationId);
+    }
+  });
+
   it("returns friendly errors without exposing stack traces", () => {
     const response = toolError(new EllieError("internal detail", "TEST", "Please try again."));
     expect(response.isError).toBe(true);

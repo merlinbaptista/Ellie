@@ -30,10 +30,19 @@ describe("privacy redaction", () => {
   });
 
   it("still masks phone numbers in every written form", () => {
-    for (const phone of ["+919000000001", "+1 (555) 555-0100", "+1-555-555-0100", "919000000001", "555.555.0100"]) {
+    for (const phone of ["+919000000001", "+1 (555) 555-0100", "+1-555-555-0100", "919000000001", "555.555.0100", "919-000-0001"]) {
       expect(redactText(`Call ${phone} now.`)).not.toContain(phone);
       expect(redactText(`Call ${phone} now.`)).toContain("[REDACTED_PHONE]");
     }
     expect(redactText("Texted 2026-10-16 from +919000000001.")).toBe("Texted 2026-10-16 from [REDACTED_PHONE].");
+  });
+
+  it("never mangles a confirmation UUID whose first segment is all digits", () => {
+    const confirmationId = "12345678-91ce-40b7-b257-bdc5ec2739ff";
+    expect(redactText(confirmationId)).toBe(confirmationId);
+    expect(redactObject({ followUp: { retry: { args: { confirmationId } } } })).toEqual({ followUp: { retry: { args: { confirmationId } } } });
+    for (const id of ["00000000-0000-4000-8000-000000000000", "98765432-1234-4abc-8def-123456789012", "4df316f2-143a-47a9-97f0-3ecfbec2d34a"]) {
+      expect(redactText(`confirmationId=${id}`)).toContain(id);
+    }
   });
 });
