@@ -139,6 +139,7 @@ At a 1440 × 900 desktop viewport, the Echo Show and phone panels sit side by si
 
 Screenshots from the scripted rehearsal:
 
+The image descriptions remain visible until the optional Chromium capture has generated the files.
 ![Simulator idle screen](docs/images/simulator-idle.png)
 ![Simulator two-intent result](docs/images/simulator-hero.png)
 ![Phone fix guide](docs/images/phone-fix.png)

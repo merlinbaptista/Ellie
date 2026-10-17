@@ -2,6 +2,8 @@
 
 Complete these rows manually with Bengaluru first, then Texas where indicated. Voice and chip use are recorded separately; a chip is an acceptable fallback, not a substitute for recording a voice failure.
 
+Screenshot capture: Run `npx playwright install chromium` then `npm run screenshots` with the server running.
+
 | # | Household | Utterance / action | Voice OK | Chip used | Notes |
 |---|---|---|---|---|---|
 | 1 | demo-blr | What's due this week? | [ ] | [ ] | |
