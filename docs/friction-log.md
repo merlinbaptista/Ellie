@@ -1,5 +1,19 @@
 # Friction log
 
+## Module 11 Phase A Findings
+
+Audit baseline: `a471bbd`, 2026-10-17. Full evidence and approval-gated proposals are in `docs/audit/final-audit.md`. No application fixes were made during Phase A.
+
+| Snag | Severity | Observed result | Workaround | Suggestion |
+|---|---|---|---|---|
+| Privacy integration differs between suite and isolation | High | Full run: 216/217 pass; Journey 6 reads undefined `data.scope`; isolated rerun passes | Retain the failure as an open gate, not a green rerun | Capture the unexpected confirmation response and reproduce under full-suite conditions before fixing |
+| Smoke fixture is not repeatable | High | Fixed household hits 120-second duplicate-send guard; script expects a new short URL | Disposable unique-household diagnostic succeeds | Isolate/reset the test fixture without weakening production dedupe |
+| Date/count redaction false positive | Medium | Dev-clock speech becomes `It's now [REDACTED_PHONE] reminders were sent.` | Use structured clock evidence for the audit | Add a regression preserving date/count while masking actual phone strings |
+| Fresh clone date differs from scripted demo | Low | Default seed uses October 17; scripted demo is October 16; presenter reset corrects it | Explicit fake clock and presenter preparation | Clarify everyday seed versus reproducible demo anchor in README after approval |
+| Original prompt provenance incomplete | Medium | Modules 1-6 are condensed briefs; Module 9 prompt absent | Audit available requirements and state the limitation | Recover originals; never invent a missing DOD |
+| Dependency audit is not release clean | High | Monorepo 10 advisories; extracted schema 7 in dev/test tooling, including critical worker/UI findings | Do not expose test/dev servers or force-upgrade | Review aligned Vitest/Vite upgrades with compatibility tests after approval |
+| External tools unavailable | Medium | Docker CLI and managed Chromium absent; Inspector UI not run | Real MCP SDK sweep succeeds for all 16 tools; integrated browser renders clone presenter | Record tool-specific proof separately; do not call an SDK check an Inspector check |
+
 ## Five Useful Findings
 
 - **MCP SDK:** SDK v1 `metadataHandler` serves protected-resource metadata correctly; token validation remains JOSE-based to retain audience binding, 60-second leeway, and audit behavior.
