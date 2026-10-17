@@ -6,10 +6,12 @@ import { logger } from "./lib/logger.js";
 import { closeAllSessions } from "./mcp/transport.js";
 import { seedDemo } from "./seed/seed.js";
 import { flushBackgroundWork } from "./diagnosis/llmRanker.js";
+import { expireOutbox } from "./privacy/retention.js";
 
 const env = loadEnv();
 const drivers = await resolveDrivers(env);
 const ctx = await buildContext({ env, drivers });
+await expireOutbox(ctx);
 let startupSeed: Awaited<ReturnType<typeof seedDemo>> | undefined;
 if (env.SEED_ON_START) {
   const indexed = await ctx.repositories.households.list();

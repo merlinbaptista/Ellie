@@ -14,7 +14,18 @@ export function routeDeterministically(fragment: string, pack: RegionPack, conte
   const item = matchedItem(text, pack, /\b(it|that|same one)\b/i.test(text) ? context.lastItem : undefined);
   const args = (extra: Record<string, unknown> = {}) => ({ householdId: context.householdId, ...(item.name ? { item: item.name } : {}), ...extra });
   let call: PlannedCall | undefined;
-  if (/\b(what'?s due|anything due|what do i need to do|this week at home|due this week)\b/i.test(lower)) {
+  if (/\bwhat do you know\b|\bwhat are you storing\b|\bwhat do you remember\b/i.test(lower)) {
+    call = { tool: "what_do_you_know", args: { householdId: context.householdId, ...(item.name ? { item: item.name } : {}) }, fragment: text };
+  } else if (/\b(forget everything|delete all my data|erase my home)\b/i.test(lower)) {
+    call = { tool: "forget_household", args: { householdId: context.householdId }, fragment: text };
+  } else if (/\b(forget|delete|stop tracking)\b/i.test(lower) && !/everything|all my data|my home/i.test(lower)) {
+    const requestedItem = text.replace(/^.*?\b(?:forget|delete|stop tracking)\s+(?:the\s+)?/i, "").replace(/[.!?]+$/, "").trim() || item.name;
+    call = { tool: "forget_item", args: { householdId: context.householdId, item: item.name ?? requestedItem }, fragment: text };
+  } else if (/\b(stop texting me|don't send me messages|do not send me messages|unsubscribe)\b/i.test(lower)) {
+    call = { tool: "manage_consent", args: { householdId: context.householdId, action: "withdraw", purpose: "phone_messages" }, fragment: text };
+  } else if (/\b(you can text me again|text me again|allow messages again)\b/i.test(lower)) {
+    call = { tool: "manage_consent", args: { householdId: context.householdId, action: "grant", purpose: "phone_messages" }, fragment: text };
+  } else if (/\b(what'?s due|anything due|what do i need to do|this week at home|due this week)\b/i.test(lower)) {
     const days = /this month/i.test(lower) ? 31 : /next two weeks|next 14 days/i.test(lower) ? 14 : undefined;
     call = { tool: "due_this_week", args: { householdId: context.householdId, ...(days ? { days } : {}) }, fragment: text };
   } else if (/\b(when (?:is|will)|when should i change|when .*due|when .*run out)\b/i.test(lower) && item.name) {

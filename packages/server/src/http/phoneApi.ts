@@ -14,6 +14,11 @@ import { linkPk, phoneActionSk, phoneChatDisabledSk, ttlClockForKey } from "../d
 import { NotFoundError } from "../lib/errors.js";
 import { getPhoneChat, postPhoneChat, ChatLimitError } from "../phone/chat.js";
 import { translatePhoneView } from "../phone/translate.js";
+import { buildInventory } from "../privacy/inventory.js";
+import { recordConsent } from "../privacy/consent.js";
+import { executeForgetHousehold, executeForgetItem } from "../privacy/forget.js";
+import { writePrivacyAudit } from "../privacy/audit.js";
+import { buildPrivacyExport } from "../privacy/export.js";
 
 const expiredSpeech = "This link has expired. Ask Alexa to send it again.";
 const invalidSpeech = "This link is invalid. Ask Alexa to send it again.";
@@ -44,6 +49,65 @@ function setPrivateHeaders(res: Response): void {
 }
 
 export function registerPhoneApi(app: Express, ctx: AppContext): void {
+  app.get("/api/phone/privacy/inventory", async (req, res, next) => {
+    setPrivateHeaders(res);
+    try {
+      const payload = verifyPhoneLink(requestToken(req), ctx.env);
+      if (payload.kind !== "privacy") { res.status(403).json({ error: "wrong_link_kind" }); return; }
+      if (!await ctx.repositories.households.get(payload.hh)) { res.status(410).json({ error: "revoked" }); return; }
+      res.json(await buildInventory(ctx, payload.hh));
+    } catch (error) { if (error instanceof PhoneTokenError) respondTokenError(res, error); else next(error); }
+  });
+
+  app.get("/api/phone/export", async (req, res, next) => {
+    setPrivateHeaders(res);
+    try {
+      const payload = verifyPhoneLink(requestToken(req), ctx.env);
+      if (payload.kind !== "privacy") { res.status(403).json({ error: "wrong_link_kind" }); return; }
+      if (!await ctx.repositories.households.get(payload.hh)) { res.status(410).json({ error: "revoked" }); return; }
+      const exported = await buildPrivacyExport(ctx, payload.hh);
+      await writePrivacyAudit(ctx, payload.hh, "exported");
+      res.setHeader("Content-Disposition", `attachment; filename=ellie-export-${ctx.clock.now().toISOString().slice(0, 10)}.json`);
+      res.type("application/json").send(JSON.stringify(exported, null, 2));
+    } catch (error) { if (error instanceof PhoneTokenError) respondTokenError(res, error); else next(error); }
+  });
+
+  app.post("/api/phone/privacy/forget-item", async (req, res, next) => {
+    setPrivateHeaders(res);
+    try {
+      const payload = verifyPhoneLink(requestToken(req), ctx.env);
+      if (payload.kind !== "privacy") { res.status(403).json({ error: "wrong_link_kind" }); return; }
+      if (!await ctx.repositories.households.get(payload.hh)) { res.status(410).json({ error: "revoked" }); return; }
+      const itemId = typeof req.body?.itemId === "string" ? req.body.itemId : "";
+      if (!itemId || !(await ctx.repositories.items.get(payload.hh, itemId))) { res.status(404).json({ error: "item_not_found" }); return; }
+      const receipt = await executeForgetItem(ctx, payload.hh, itemId);
+      res.json({ message: "Item and related home history forgotten.", receipt });
+    } catch (error) { if (error instanceof PhoneTokenError) respondTokenError(res, error); else next(error); }
+  });
+
+  app.post("/api/phone/privacy/withdraw", async (req, res, next) => {
+    setPrivateHeaders(res);
+    try {
+      const payload = verifyPhoneLink(requestToken(req), ctx.env);
+      if (payload.kind !== "privacy") { res.status(403).json({ error: "wrong_link_kind" }); return; }
+      if (!await ctx.repositories.households.get(payload.hh)) { res.status(410).json({ error: "revoked" }); return; }
+      await recordConsent(ctx, { householdId: payload.hh, purpose: "phone_messages", action: "withdrawn", source: "phone", note: "User withdrew consent from privacy page" });
+      res.json({ message: "Message consent withdrawn and the contact deleted." });
+    } catch (error) { if (error instanceof PhoneTokenError) respondTokenError(res, error); else next(error); }
+  });
+
+  app.post("/api/phone/privacy/forget-household", async (req, res, next) => {
+    setPrivateHeaders(res);
+    try {
+      const payload = verifyPhoneLink(requestToken(req), ctx.env);
+      if (payload.kind !== "privacy") { res.status(403).json({ error: "wrong_link_kind" }); return; }
+      if (!await ctx.repositories.households.get(payload.hh)) { res.status(410).json({ error: "revoked" }); return; }
+      if (req.body?.confirmation !== "erase") { res.status(400).json({ error: "confirmation_required" }); return; }
+      await executeForgetHousehold(ctx, payload.hh);
+      res.json({ message: "Everything is erased." });
+    } catch (error) { if (error instanceof PhoneTokenError) respondTokenError(res, error); else next(error); }
+  });
+
   app.get("/api/phone/view", async (req, res, next) => {
     setPrivateHeaders(res);
     const token = requestToken(req);

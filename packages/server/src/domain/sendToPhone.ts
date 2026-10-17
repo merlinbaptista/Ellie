@@ -11,6 +11,8 @@ import { selectProvider } from "./providers.js";
 import { linkPk, phoneSendPrefix, phoneSendSk, ttlClockForKey } from "../data/keys.js";
 import { recomputeItem } from "./predictions.js";
 import { formatSmsDate } from "../phone/messages.js";
+import { canSend, consentHistory } from "../privacy/consent.js";
+import { maskEmail, maskPhone } from "../privacy/redact.js";
 
 const duplicateWindowSeconds = 120;
 export interface SendToPhoneOutcome {
@@ -19,7 +21,7 @@ export interface SendToPhoneOutcome {
   data?: { messageId: string; status: string; shortUrl: string; expiresAt: string; provider?: string };
   card?: { channel: string; to: string; expiresAt: string; url: string };
 }
-function maskedContact(value: string): string { return value.includes("@") ? value.replace(/^(.{1}).*(@.*)$/, "$1***$2") : `ending ${value.slice(-4)}`; }
+function maskedContact(value: string): string { return value.includes("@") ? maskEmail(value) : `ending ${maskPhone(value).slice(-4)}`; }
 
 export async function sendToPhone(ctx: AppContext, input: SendToPhoneInput): Promise<SendToPhoneOutcome> {
   const householdId = resolveHouseholdId(input.householdId, ctx);
@@ -28,7 +30,12 @@ export async function sendToPhone(ctx: AppContext, input: SendToPhoneInput): Pro
   const pack = ctx.regions.get(household.regionPackId ?? "DEFAULT");
   const channel = input.channel ?? (household.contact?.phone ? "sms" : household.contact?.email ? "email" : "sms");
   const recipient = channel === "sms" ? household.contact?.phone : household.contact?.email;
-  if (!recipient || !household.contact?.consentGivenAt) {
+  const purpose = channel === "sms" ? "phone_messages" : "email_messages";
+  const consent = await canSend(ctx, householdId, purpose);
+  if (!consent && (await consentHistory(ctx, householdId)).some((entry) => entry.purpose === purpose && entry.action === "withdrawn")) {
+    return { speech: input.contentType === "privacy" ? "I won't send anything to that contact because you withdrew consent. You can ask me to show your home history here." : "I can't send anything to that contact because you withdrew consent. You can ask me to grant consent again." };
+  }
+  if (!recipient || !consent) {
     const field = channel === "sms" ? "phone" : "email";
     return {
       speech: channel === "sms" ? "Where should I send it?" : "Which email should I send it to?",
@@ -86,21 +93,24 @@ export async function sendToPhone(ctx: AppContext, input: SendToPhoneInput): Pro
   } else if (input.contentType === "summary") {
     const dueSection = view.sections.find((section) => section.heading === "Due or overdue");
     detail = dueSection?.list?.length ? `${dueSection.list.length} things due` : "nothing due soon";
+  } else if (input.contentType === "privacy") {
+    detail = "your home data and privacy controls";
   }
   const body = channel === "sms"
     ? buildSmsMessage(input.contentType, { ...(item ? { item: item.name } : {}), ...(detail ? { detail } : {}), shortUrl: short.url })
     : buildEmailMessage(view, short.url).body;
   const email = channel === "email" ? buildEmailMessage(view, short.url) : undefined;
-  const outbound = await ctx.notifier.send({ householdId, channel, to: recipient, ...(email ? { subject: email.subject } : {}), body, link: short.url, kind: input.contentType });
+  const outbound = await ctx.notifier.send({ householdId, ...(item ? { itemId: item.itemId } : {}), channel, to: recipient, ...(email ? { subject: email.subject } : {}), body, link: short.url, kind: input.contentType });
   const sendPk = linkPk();
   const sendSk = phoneSendSk(dedupeId, nowEpoch, newId("evt"));
-  await ctx.storage.put({ pk: sendPk, sk: sendSk, type: "phone-send", data: { sentAtEpoch: nowEpoch, code: short.code, channel, status: outbound.status }, ttlClock: ttlClockForKey(sendPk, sendSk), ttl: nowEpoch + 3600 });
-  const noteItem = item ?? items[0];
+  await ctx.storage.put({ pk: sendPk, sk: sendSk, type: "phone-send", data: { householdId, ...(item ? { itemId: item.itemId } : {}), contentType: input.contentType, sentAtEpoch: nowEpoch, code: short.code, channel, status: outbound.status }, ttlClock: ttlClockForKey(sendPk, sendSk), ttl: nowEpoch + 3600 });
+  const noteItem = input.contentType === "privacy" ? undefined : item ?? items[0];
   if (noteItem) await logEvent({ householdId, item: noteItem.name, type: "note", source: "system", notes: `Sent ${input.contentType} to phone` }, ctx);
   const label = channel === "sms" ? `your phone ${maskedContact(recipient)}` : `your email ${maskedContact(recipient)}`;
   const speech = outbound.status === "failed" ? "I couldn't send that to your phone just now. I've saved it — ask me again in a minute."
     : input.contentType === "booking" ? `Sent the ${provider && "name" in provider ? provider.name : "booking"} link to ${label}${provider?.channel === "whatsapp" ? ` — it opens WhatsApp with ${provider.messageTemplate ?? "the booking message"} ready` : ""}.`
       : input.contentType === "fix" ? `Sent the steps to ${label}.`
-        : `Sent this week's summary to ${label}.`;
+        : input.contentType === "privacy" ? `Sent your privacy page to ${label}.`
+          : `Sent this week's summary to ${label}.`;
   return { speech, data: { messageId: outbound.id, status: outbound.status, shortUrl: short.url, expiresAt: signed.expiresAt, ...(item?.providerKey ? { provider: item.providerKey } : provider && "name" in provider ? { provider: provider.name } : {}) }, card: { channel, to: maskedContact(recipient), expiresAt: signed.expiresAt, url: short.url } };
 }

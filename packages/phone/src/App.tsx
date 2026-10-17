@@ -4,10 +4,12 @@ import { t, uiLanguage, type UiLanguage } from "@ellie/ui";
 import { getPhoneView } from "./api.js";
 import { captureToken, readLinkClaims } from "./token.js";
 import { LanguagePicker } from "./components/LanguagePicker.js";
+import "./privacy.css";
 import { ErrorPage } from "./pages/ErrorPage.js";
 import { FixPage } from "./pages/FixPage.js";
 import { BookingPage } from "./pages/BookingPage.js";
 import { SummaryPage } from "./pages/SummaryPage.js";
+import { PrivacyPage } from "./pages/PrivacyPage.js";
 
 const languageKey = "ellie.lang";
 export default function App() {
@@ -31,6 +33,7 @@ export default function App() {
   if (error) return <><ErrorPage error={error} lang={language} onRetry={() => void refresh()} /><div className="phone-floating-language"><LanguagePicker value={language} onChange={changeLanguage} /></div></>;
   if (!view || !claims) return <ErrorPage noToken lang={language} />;
   document.title = `${view.title} · Ellie`;
+  if (view.kind === "privacy") return <PrivacyPage token={token} view={view} lang={language} />;
   const notice = language !== "en" && view.translated?.by === "none" ? t("translated.none", language) : undefined;
   const safetyOnly = view.kind === "fix" && view.sections.some((section) => section.tone === "safety");
   return <div className="phone-app">{!safetyOnly ? <div className="phone-floating-language"><LanguagePicker value={language} onChange={changeLanguage} /></div> : null}{view.kind === "fix" ? <FixPage token={token} view={view} refId={claims.ref ?? "guide"} lang={language} onRefresh={refresh} /> : view.kind === "booking" ? <BookingPage token={token} view={view} lang={language} /> : <SummaryPage view={view} lang={language} />}{notice && !safetyOnly ? <p className="phone-translation-note">{notice}</p> : null}</div>;

@@ -10,6 +10,10 @@ describe("shared tool contracts", () => {
       { item: "gas" },
       { item: "purifier", symptom: "beeping" },
       { contentType: "fix" },
+      {},
+      { item: "purifier" },
+      {},
+      { action: "status" },
       { item: "purifier", cause: "filter", fix: "replace" },
       {},
     ];

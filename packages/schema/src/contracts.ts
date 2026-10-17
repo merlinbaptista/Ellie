@@ -10,7 +10,11 @@ const schemas = {
   get_history: z.object({ householdId, item: item.optional(), period: z.enum(["30d", "90d", "1y", "all"]).default("1y").describe("How far back to search"), types: z.array(EventType).optional().describe("Limit to these event types") }).strict(),
   predict_next: z.object({ householdId, item, component: z.string().optional().describe("Specific item part, such as sediment filter or membrane") }).strict(),
   diagnose: z.object({ householdId, item, symptom: z.string().describe("Reported problem"), diagnosisId: z.string().optional().describe("Continue an earlier diagnosis"), answer: z.string().optional().describe("The user's answer to Ellie's last question"), answers: z.record(z.string(), z.string()).optional().describe("Answers already supplied to diagnosis questions") }).strict(),
-  send_to_phone: z.object({ householdId, item: item.optional(), contentType: z.enum(["fix", "booking", "summary"]).describe("Kind of phone handoff"), diagnosisId: z.string().optional().describe("Diagnosis to send as a fix guide"), channel: z.enum(["sms", "email"]).optional().describe("Use only when the user asks for a specific delivery channel"), provider: z.string().max(120).optional().describe("Supplier name or phone number, when answering Ellie's provider question") }).strict(),
+  send_to_phone: z.object({ householdId, item: item.optional(), contentType: z.enum(["fix", "booking", "summary", "privacy"]).describe("Kind of phone handoff"), diagnosisId: z.string().optional().describe("Diagnosis to send as a fix guide"), channel: z.enum(["sms", "email"]).optional().describe("Use only when the user asks for a specific delivery channel"), provider: z.string().max(120).optional().describe("Supplier name or phone number, when answering Ellie's provider question") }).strict(),
+  what_do_you_know: z.object({ householdId, item: item.optional().describe("Limit the inventory to one remembered item") }).strict(),
+  forget_item: z.object({ householdId, item, confirm: z.boolean().optional().describe("Confirm or reject the deletion plan"), confirmationId: z.string().optional().describe("Confirmation returned in Ellie's follow-up") }).strict(),
+  forget_household: z.object({ householdId, confirmationCode: z.string().optional().describe("Two-word spoken code returned by Ellie"), confirmationId: z.string().optional().describe("Confirmation returned in Ellie's follow-up") }).strict(),
+  manage_consent: z.object({ householdId, action: z.enum(["withdraw", "grant", "status"]).describe("Read, grant, or withdraw message consent"), purpose: z.enum(["phone_messages", "email_messages", "reminders"]).default("phone_messages").describe("Consent purpose"), phone: z.string().optional().describe("Phone number supplied for an explicit grant"), email: z.string().email().optional().describe("Email supplied for an explicit grant"), confirm: z.boolean().optional().describe("Explicit confirmation for contact storage") }).strict(),
   log_resolution: z.object({ householdId, item, diagnosisId: z.string().optional().describe("Diagnosis session being resolved"), causeKey: z.string().optional().describe("Selected diagnosis cause key"), component: z.string().optional().describe("Part that was fixed or replaced"), cause: z.string().max(200).optional().describe("Confirmed cause"), fix: z.string().max(500).optional().describe("What fixed the issue"), byWhom: z.enum(["self", "technician", "warranty_service"]).optional().describe("Who completed the fix"), when: z.string().optional().describe("When the fix happened"), cost: z.number().nonnegative().optional().describe("Cost of the fix") }).strict().superRefine((value, ctx) => {
     if (!value.diagnosisId && !value.causeKey && (!value.cause || !value.fix)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["fix"], message: "Provide a diagnosis/cause key or describe both the cause and fix" });
@@ -31,6 +35,14 @@ export const DiagnoseInput = schemas.diagnose;
 export type DiagnoseInput = z.infer<typeof DiagnoseInput>;
 export const SendToPhoneInput = schemas.send_to_phone;
 export type SendToPhoneInput = z.infer<typeof SendToPhoneInput>;
+export const WhatDoYouKnowInput = schemas.what_do_you_know;
+export type WhatDoYouKnowInput = z.infer<typeof WhatDoYouKnowInput>;
+export const ForgetItemInput = schemas.forget_item;
+export type ForgetItemInput = z.infer<typeof ForgetItemInput>;
+export const ForgetHouseholdInput = schemas.forget_household;
+export type ForgetHouseholdInput = z.infer<typeof ForgetHouseholdInput>;
+export const ManageConsentInput = schemas.manage_consent;
+export type ManageConsentInput = z.infer<typeof ManageConsentInput>;
 export const LogResolutionInput = schemas.log_resolution;
 export type LogResolutionInput = z.infer<typeof LogResolutionInput>;
 export const DueThisWeekInput = schemas.due_this_week;
@@ -43,6 +55,10 @@ export const ToolContractShapes = {
   predict_next: PredictNextInput.shape,
   diagnose: DiagnoseInput.shape,
   send_to_phone: SendToPhoneInput.shape,
+  what_do_you_know: WhatDoYouKnowInput.shape,
+  forget_item: ForgetItemInput.shape,
+  forget_household: ForgetHouseholdInput.shape,
+  manage_consent: ManageConsentInput.shape,
   log_resolution: { householdId, item, diagnosisId: z.string().optional().describe("Diagnosis session being resolved"), causeKey: z.string().optional().describe("Selected diagnosis cause key"), component: z.string().optional().describe("Part that was fixed or replaced"), cause: z.string().max(200).optional().describe("Confirmed cause"), fix: z.string().max(500).optional().describe("What fixed the issue"), byWhom: z.enum(["self", "technician", "warranty_service"]).optional().describe("Who completed the fix"), when: z.string().optional().describe("When the fix happened"), cost: z.number().nonnegative().optional().describe("Cost of the fix") },
   due_this_week: DueThisWeekInput.shape,
 } as const;

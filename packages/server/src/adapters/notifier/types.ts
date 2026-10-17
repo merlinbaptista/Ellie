@@ -1,11 +1,12 @@
 export interface OutboundMessage {
   householdId: string;
+  itemId?: string;
   channel: "sms" | "email";
   to: string;
   subject?: string;
   body: string;
   link?: string;
-  kind: "fix" | "booking" | "summary" | "reminder" | "test";
+  kind: "fix" | "booking" | "summary" | "privacy" | "reminder" | "test";
 }
 export interface SendResult { id: string; status: "sent" | "queued" | "failed"; provider: string; error?: string }
 export interface NotifierAdapter {

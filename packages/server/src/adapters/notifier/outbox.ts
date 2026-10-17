@@ -4,10 +4,10 @@ import type { StorageAdapter } from "../storage/types.js";
 import type { OutboundMessage, SendResult } from "./types.js";
 import { outboxMessageSk, outboxPk } from "../../data/keys.js";
 
-export async function mirrorOutbox(storage: StorageAdapter, clock: Clock, message: OutboundMessage, result: SendResult): Promise<OutboundMessage & SendResult & { sentAt: string }> {
+export async function mirrorOutbox(storage: StorageAdapter, clock: Clock, message: OutboundMessage, result: SendResult, retentionDays = 30): Promise<OutboundMessage & SendResult & { sentAt: string }> {
   const sentAt = clock.now().toISOString();
   const id = result.id || randomUUID();
   const saved = { ...message, ...result, id, sentAt };
-  await storage.put({ pk: outboxPk(), sk: outboxMessageSk(sentAt, id), type: "outbound-message", data: saved });
+  await storage.put({ pk: outboxPk(), sk: outboxMessageSk(sentAt, id), type: "outbound-message", data: saved, ttlClock: "wall", ttl: Math.floor(Date.now() / 1000) + retentionDays * 86400 });
   return saved;
 }

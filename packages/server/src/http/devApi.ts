@@ -4,11 +4,12 @@ import { diffDays, localDateToUtc, matchCatalog, toLocalDate, warrantyStatus } f
 import type { AppContext } from "../context.js";
 import { seedDemo } from "../seed/seed.js";
 import { recomputeHousehold } from "../domain/predictions.js";
+import { maskEmail, maskPhone } from "../privacy/redact.js";
 
-function enabled(ctx: AppContext): boolean { return ctx.env.NODE_ENV !== "production" || ctx.env.OAUTH_ENABLED; }
-function maskProfile<T extends { contact?: { phone?: string } }>(profile: T): T {
-  if (!profile.contact?.phone) return profile;
-  return { ...profile, contact: { ...profile.contact, phone: `•••••• ${profile.contact.phone.slice(-4)}` } };
+function enabled(ctx: AppContext): boolean { return ctx.env.NODE_ENV !== "production"; }
+function maskProfile<T extends { contact?: { phone?: string; email?: string } }>(profile: T): T {
+  if (!profile.contact?.phone && !profile.contact?.email) return profile;
+  return { ...profile, contact: { ...profile.contact, ...(profile.contact.phone ? { phone: maskPhone(profile.contact.phone) } : {}), ...(profile.contact.email ? { email: maskEmail(profile.contact.email) } : {}) } };
 }
 interface DueApiEntry {
   itemId: string;

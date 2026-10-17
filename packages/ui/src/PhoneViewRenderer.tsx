@@ -10,7 +10,7 @@ const sectionTranslationKeys: Record<string, Parameters<typeof t>[0]> = {
   When: "heading.when", How: "heading.how", Overdue: "heading.overdue", Due: "heading.due", "Due soon": "heading.due_soon", Warranty: "heading.warranty", "Recent history": "heading.history",
 };
 const actionTranslationKeys: Record<PhoneAction["id"], Parameters<typeof t>[0] | undefined> = {
-  fixed: "button.fixed", not_fixed: "button.not_fixed", booked: "button.booked", chat: "button.chat", open_manual: "button.manual", book: undefined, call: "button.call",
+  fixed: "button.fixed", not_fixed: "button.not_fixed", booked: "button.booked", chat: "button.chat", open_manual: "button.manual", book: undefined, call: "button.call", download: undefined, forget: undefined, withdraw: undefined, erase: undefined,
 };
 
 export function PhoneViewRenderer({ view, onAction, lang = "en", notice, children }: { view: PhoneView; onAction?: (action: PhoneAction) => void; lang?: UiLanguage; notice?: string; children?: ReactNode }): ReactNode {

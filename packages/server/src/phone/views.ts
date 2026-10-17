@@ -4,16 +4,27 @@ import { buildBookingAction } from "../links/booking.js";
 import { recomputeItem } from "../domain/predictions.js";
 import { loadHouseholdSnapshot } from "../domain/snapshot.js";
 import { NotFoundError } from "../lib/errors.js";
+import { buildInventory } from "../privacy/inventory.js";
 
 export async function buildPhoneView(ctx: AppContext, payload: PhoneLinkPayload): Promise<PhoneViewType> {
   const snapshot = await loadHouseholdSnapshot(payload.hh, ctx);
   const household = snapshot.profile;
-  if (!household) throw new Error("Household not found");
+  if (!household) throw new NotFoundError("Household not found");
   const pack = ctx.regions.get(household.regionPackId ?? "DEFAULT");
   const now = ctx.clock.now();
   const todayLocal = toLocalDate(now.toISOString(), household.timeZone ?? pack.locale.defaultTimeZone);
   const expiresAt = new Date(payload.exp * 1000).toISOString();
   const language = household.phoneLanguage ?? household.language ?? pack.locale.defaultLanguage;
+  if (payload.kind === "privacy") {
+    const inventory = await buildInventory(ctx, payload.hh);
+    const sections = [
+      { heading: "What I remember", list: inventory.items.length ? inventory.items.map((entry) => `${entry.name}: ${entry.eventCount} events${entry.lastLocal ? `; last ${entry.lastLocal}` : ""}${entry.nextDueLocal ? `; next due ${entry.nextDueLocal}` : ""}`) : ["No home data is stored."] },
+      { heading: "Who it's shared with", list: inventory.sharedWith.map((entry) => `${entry.service}: ${entry.purpose}; ${entry.dataSent}`) },
+      { heading: "How long I keep things", list: inventory.retention.map((entry) => `${entry.data}: ${entry.keptFor}`) },
+      { heading: "Messages", list: [...inventory.consent.map((record) => `${record.purpose}: ${record.action} on ${record.at.slice(0, 10)}${record.channelMasked ? ` (${record.channelMasked})` : ""}`), "Backups kept by AWS expire on their own schedule."] },
+    ];
+    return PhoneView.parse({ kind: "privacy", title: "Your privacy and home data", language, sections, actions: [], expiresAt, generatedAt: now.toISOString() });
+  }
   const diagnosis = payload.ref ? await ctx.repositories.diagnoses.get(payload.hh, payload.ref) : null;
   const itemId = payload.kind === "fix" ? diagnosis?.itemId : payload.ref;
   const item = itemId ? snapshot.items.find((candidate) => candidate.itemId === itemId) : undefined;

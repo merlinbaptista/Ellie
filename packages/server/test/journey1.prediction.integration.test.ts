@@ -1,6 +1,7 @@
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { describe, expect, it } from "vitest";
+import { toLocalDate } from "@ellie/schema";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
@@ -54,7 +55,8 @@ describe("prediction Journey 1", () => {
       const predictions = await fetch(`${base}/api/households/demo-blr/predictions`).then((response) => response.json()) as Array<{ main: { itemId: string } | null }>;
       expect(predictions.some((entry) => entry.main?.itemId === data.data.mostUrgent.itemId)).toBe(true);
       const dueApi = await fetch(`${base}/api/households/demo-blr/due?days=7`).then((response) => response.json()) as { generatedForLocal: string; entries: unknown[] };
-      expect(dueApi.generatedForLocal).toBe("2026-10-16");
+      const household = await ctx.repositories.households.get("demo-blr");
+      expect(dueApi.generatedForLocal).toBe(toLocalDate(ctx.clock.now().toISOString(), household?.timeZone ?? "Asia/Kolkata"));
       expect(Array.isArray(dueApi.entries)).toBe(true);
     } finally { await client.close(); }
   });

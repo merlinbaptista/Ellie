@@ -3,6 +3,8 @@ import type { AppContext } from "../context.js";
 import type { HouseholdRecord } from "../data/householdRepo.js";
 import { ValidationError } from "../lib/errors.js";
 import { recomputeHousehold } from "./predictions.js";
+import { recordConsent } from "../privacy/consent.js";
+import { maskPhone } from "../privacy/redact.js";
 
 export interface HouseholdSetupResult {
   household: HouseholdRecord;
@@ -87,7 +89,7 @@ export async function setupHousehold(input: SetupHouseholdInput, ctx: AppContext
     throw new ValidationError("Full address rejected", "I only need your city or postcode, not the full address.");
   }
   if (input.phone && input.consent !== true) {
-    const masked = `•••••• ${input.phone.slice(-4)}`;
+    const masked = maskPhone(input.phone);
     return {
       household: await ctx.repositories.households.put(next),
       missing: missingOptions(next, pack),
@@ -126,6 +128,9 @@ export async function setupHousehold(input: SetupHouseholdInput, ctx: AppContext
   const validated = Household.safeParse(next);
   if (!validated.success) throw new ValidationError(validated.error.message);
   const saved = await ctx.repositories.households.put(validated.data);
+  if (input.consent === true && (input.phone || input.email)) {
+    await recordConsent(ctx, { householdId: id, purpose: input.email && !input.phone ? "email_messages" : "phone_messages", action: "granted", source: "voice", channel: input.phone ?? input.email, note: "Explicit setup confirmation" });
+  }
   const switched = old.country && old.country !== country;
   if (switched) await recomputeHousehold(ctx, id);
   return {

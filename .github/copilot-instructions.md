@@ -70,6 +70,14 @@ from history, and hands fixes/bookings to the phone.
 - Record TTL clock is chosen in `data/keys.ts` (`ttlClock`), never inside storage adapters.
 - MCP Apps are additive: text and `structuredContent` remain complete for hosts without UI.
 
+## Privacy rules (Module 9+)
+- Consent is checked only through `privacy/consent.ts` `canSend()`. No other send path may make its own consent decision.
+- Destructive tools always plan, confirm, then execute; item forget needs yes, household erase needs the spoken code.
+- Any new record type must be added to the forget cascade, export, and retention policy in the same change.
+- All redaction goes through `privacy/redact.ts` for logs, LLM requests, outbox printing, and errors.
+- With OAuth enabled, the household comes from the token; never trust a differing `householdId` argument.
+- Privacy views, export, and erase require a privacy-kind link token.
+
 ## Git history rules
 - Every requested fix or module completion gets a new commit. Never amend a commit or rewrite history.
 

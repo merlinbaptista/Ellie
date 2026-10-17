@@ -1,5 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { EllieError } from "../lib/errors.js";
+import { redactObject, redactText } from "../privacy/redact.js";
 
 export interface Card {
   title: string;
@@ -17,21 +18,22 @@ export interface EllieResult<T = unknown> {
     defaultValue?: string;
     retry?: { tool: string; argName: string; args: Record<string, unknown> };
   };
-  phone?: { url: string; kind: "fix" | "booking" | "summary" };
+  phone?: { url: string; kind: "fix" | "booking" | "summary" | "privacy" };
   safety?: { level: "none" | "caution" | "stop"; message?: string; emergencyNumber?: string };
 }
 
 export function toolResponse<T>(result: EllieResult<T>): CallToolResult {
+  const safe = redactObject(result) as EllieResult<T>;
   return {
     content: [
-      { type: "text", text: `${result.speech}${result.followUp ? ` ${result.followUp.question}` : ""}` },
-      { type: "text", text: JSON.stringify(result) },
+      { type: "text", text: `${safe.speech}${safe.followUp ? ` ${safe.followUp.question}` : ""}` },
+      { type: "text", text: JSON.stringify(safe) },
     ],
-    structuredContent: result as unknown as Record<string, unknown>,
+    structuredContent: safe as unknown as Record<string, unknown>,
   };
 }
 
 export function toolError(error: unknown): CallToolResult {
-  const speech = error instanceof EllieError ? error.speech : "Sorry, something went wrong on my side. Please try again.";
+  const speech = redactText(error instanceof EllieError ? error.speech : "Sorry, something went wrong on my side. Please try again.");
   return { isError: true, content: [{ type: "text", text: speech }] };
 }

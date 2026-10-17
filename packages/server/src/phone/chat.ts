@@ -63,7 +63,7 @@ export async function postPhoneChat(ctx: AppContext, payload: PhoneLinkPayload, 
   const privateValues = [household?.displayName, household?.region, item.name, item.brand, item.model, item.customProvider?.name, item.providerKey ? pack.providers[item.providerKey]?.name : undefined];
   const safeUserText = sanitizeForLlm(userText, privateValues);
   const safety = checkSafety(userText, catalog, pack);
-  const expires = payload.exp;
+  const expires = Math.min(payload.exp, Math.floor(Date.now() / 1000) + ctx.env.CHAT_RETENTION_DAYS * 86400);
   const saveMessage = async (message: PhoneChatResponseType["reply"]): Promise<PhoneChatResponseType["reply"]> => {
     const previous = await getPhoneChat(ctx, payload);
     const previousAt = previous.length ? Date.parse(previous[previous.length - 1]!.createdAt) : 0;

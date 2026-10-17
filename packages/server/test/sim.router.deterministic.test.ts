@@ -35,4 +35,25 @@ describe("deterministic simulator router", () => {
       if (text === "The gas tank got refilled") expect(result.calls[0]?.args.item).toMatch(/propane/i);
     }
   });
+
+  it("routes privacy and consent requests before general help", async () => {
+    const ctx = await createTestContext();
+    const context: SimRouterContext = { householdId: "demo-blr", language: "en-IN" };
+    const cases: Array<[string, string, string?]> = [
+      ["What do you know about my home?", "what_do_you_know"],
+      ["What are you storing?", "what_do_you_know"],
+      ["Forget the purifier", "forget_item", "purifier"],
+      ["Delete the inverter", "forget_item", "inverter"],
+      ["Stop tracking the AC", "forget_item", "air conditioner"],
+      ["Forget everything", "forget_household"],
+      ["Delete all my data", "forget_household"],
+      ["Stop texting me", "manage_consent"],
+      ["You can text me again", "manage_consent"],
+    ];
+    for (const [text, tool, item] of cases) {
+      const routed = routeDeterministically(text, ctx.regions.get("IN"), context);
+      expect(routed.calls[0]?.tool, text).toBe(tool);
+      if (item) expect(String(routed.calls[0]?.args.item).toLowerCase()).toContain(item.toLowerCase());
+    }
+  });
 });

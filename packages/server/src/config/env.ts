@@ -85,10 +85,18 @@ const envSchema = z.object({
   SIM_ROUTER: z.preprocess(blankToUndefined, z.enum(["auto", "mock", "llm"]).default("auto")),
   SIM_ROUTER_TIMEOUT_MS: positiveInt(1500, 30_000),
   SIM_MAX_TOOL_CALLS: positiveInt(4, 10),
+  OUTBOX_RETENTION_DAYS: positiveInt(30),
+  CHAT_RETENTION_DAYS: positiveInt(7),
+  AUDIT_RETENTION_DAYS: positiveInt(365),
+  CONFIRM_TTL_SEC: positiveInt(120),
+  DEV_OAUTH_PRIVATE_KEY: optionalString,
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),
   OAUTH_ISSUER_URL: optionalString,
   OAUTH_AUDIENCE: optionalString,
+  OAUTH_JWKS_URL: optionalString,
+  OAUTH_HOUSEHOLD_CLAIM: defaultString("ellie_household"),
+  OAUTH_REQUIRED_SCOPES: defaultString("ellie.home"),
 });
 
 export type Env = z.infer<typeof envSchema>;

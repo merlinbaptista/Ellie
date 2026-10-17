@@ -3,7 +3,7 @@ import { zHouseholdId, zIsoUtc, zLanguageTag } from "./primitives.js";
 import { SafetyLevel } from "./enums.js";
 import { Evidence } from "./diagnosis.js";
 
-export const PhoneContentKind = z.enum(["fix", "booking", "summary"]);
+export const PhoneContentKind = z.enum(["fix", "booking", "summary", "privacy"]);
 export type PhoneContentKind = z.infer<typeof PhoneContentKind>;
 export const PhoneLinkPayload = z.object({
   v: z.literal(1),
@@ -16,7 +16,7 @@ export const PhoneLinkPayload = z.object({
 export type PhoneLinkPayload = z.infer<typeof PhoneLinkPayload>;
 
 export const PhoneAction = z.object({
-  id: z.enum(["book", "call", "open_manual", "fixed", "booked", "not_fixed", "chat"]),
+  id: z.enum(["book", "call", "open_manual", "fixed", "booked", "not_fixed", "chat", "download", "forget", "withdraw", "erase"]),
   label: z.string(),
   url: z.string().optional(),
   method: z.enum(["link", "post"]),

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.0 — 2026-10-16
+- Add consent, privacy inventory, forget receipt, and privacy export contracts.
+
 ## 1.6.0 — 2026-10-16
 - Add browser-safe request and response schemas for the Alexa+ simulator protocol.
 

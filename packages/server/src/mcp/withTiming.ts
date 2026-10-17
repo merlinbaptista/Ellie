@@ -2,6 +2,8 @@ import { performance } from "node:perf_hooks";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { AppContext } from "../context.js";
 import { toolError } from "./result.js";
+import { currentAuthIdentity } from "../auth/identity.js";
+import { toolResponse } from "./result.js";
 
 export interface ToolTiming { tool: string; ms: number; ok: boolean }
 const recentTimings: ToolTiming[] = [];
@@ -16,6 +18,12 @@ export function withTiming<A extends Record<string, unknown>>(
     const started = performance.now();
     let ok = true;
     try {
+      const identity = currentAuthIdentity();
+      if (identity) {
+        const toolArgs = args as Record<string, unknown>;
+        if (typeof toolArgs.householdId === "string" && toolArgs.householdId !== identity.householdId) return toolResponse({ speech: "I can only see your own home." });
+        toolArgs.householdId = identity.householdId;
+      }
       return await handler(args);
     } catch (error) {
       ok = false;

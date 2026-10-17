@@ -38,7 +38,7 @@ describe("household memory tools", () => {
       const householdList = await fetch(`http://127.0.0.1:${address.port}/api/households`);
       expect((await householdList.json() as Array<{ householdId: string }>).some((entry) => entry.householdId === "demo-blr")).toBe(true);
       const profile = await fetch(`http://127.0.0.1:${address.port}/api/households/demo-blr`).then((response) => response.json()) as { contact: { phone: string } };
-      expect(profile.contact.phone).toBe("•••••• 0001");
+      expect(profile.contact.phone).toBe("•••• 0001");
       const apiHistory = await fetch(`http://127.0.0.1:${address.port}/api/households/demo-blr/history?item=gas`).then((response) => response.json()) as { timeline: unknown[] };
       expect(apiHistory.timeline.length).toBeGreaterThan(0);
 

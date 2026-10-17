@@ -34,9 +34,17 @@ export const phoneChatPrefix = (tokenHash: string) => `${tokenHash}#CHAT#`;
 export const phoneChatSk = (tokenHash: string, timestamp: string, id: string) => `${phoneChatPrefix(tokenHash)}${timestamp}#${id}`;
 export const phoneChatDisabledSk = (tokenHash: string) => `${tokenHash}#CHAT_DISABLED`;
 export const phoneChatCountSk = (tokenHash: string) => `${tokenHash}#CHAT_COUNT`;
+export const consentPrefix = () => "CONSENT#";
+export const consentSk = (purpose: string, at: string, id: string) => `CONSENT#${purpose}#${at}#${id}`;
+export const auditPk = () => "AUDIT";
+export const auditSk = (householdId: string, at: string, id: string) => `${householdId}#${at}#${id}`;
+export const confirmSk = (id: string) => `CONFIRM#${id}`;
+export const subjectPk = () => "SUB";
+export const subjectSk = (hash: string) => `SUB#${hash}`;
 export const translationPk = () => "TRANSLATION";
 export const translationSk = (hash: string, language: string) => `${hash}#${language}`;
 export function ttlClockForKey(pk: string, sk: string): "app" | "wall" {
+  if (pk === "AUDIT" || sk.startsWith("CONFIRM#")) return "wall";
   if (pk === linkPk() && (sk.length === 8 || sk.includes("#ACTION#") || sk.includes("#CHAT#") || sk.includes("#CHAT_COUNT") || sk.includes("#CHAT_DISABLED"))) return "wall";
   if (pk === schedulePk() && sk.startsWith("FIRED#")) return "wall";
   return "app";

@@ -34,6 +34,7 @@
     "format": "prettier --write .",
     "smoke": "tsx scripts/smoke.ts",
     "screenshots": "tsx scripts/screenshots.ts",
+    "dev:token": "tsx scripts/dev-token.ts",
     "aws:env": "tsx scripts/print-env-from-stack.ts",
     "aws:check": "tsx scripts/aws-check.ts",
     "inspector": "npx @modelcontextprotocol/inspector"

@@ -54,7 +54,7 @@ export async function translatePhoneView(ctx: AppContext, payload: PhoneLinkPayl
   if (language === "en" || ctx.llm.name === "mock-llm" || view.sections.some((section) => section.tone === "safety")) {
     return PhoneView.parse({ ...view, translated: { to: locale, by: "none", complete: false } });
   }
-  const hash = createHash("sha256").update(JSON.stringify(view)).digest("hex").slice(0, 32);
+  const hash = createHash("sha256").update(`${payload.hh}:${JSON.stringify(view)}`).digest("hex").slice(0, 32);
   const cacheKey = translationSk(hash, language);
   const cached = await ctx.storage.get(translationPk(), cacheKey);
   if (cached) return PhoneView.parse(cached.data.view);
@@ -88,7 +88,7 @@ export async function translatePhoneView(ctx: AppContext, payload: PhoneLinkPayl
       replacePath(translated, actual.path, text);
     }
     const result = PhoneView.parse({ ...translated, translated: { to: locale, by: "llm", complete: true } });
-    await ctx.storage.put({ pk: translationPk(), sk: cacheKey, type: "phone-translation", data: { view: result }, ttl: Math.floor(ctx.clock.now().getTime() / 1000) + 7 * 24 * 60 * 60 });
+    await ctx.storage.put({ pk: translationPk(), sk: cacheKey, type: "phone-translation", data: { householdId: payload.hh, itemId, view: result }, ttlClock: "wall", ttl: Math.min(payload.exp, Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60) });
     return result;
   } catch (error) {
     ctx.logger.warn({ reason: error instanceof Error ? error.message : "translation_failed" }, "phone.translation_fallback");

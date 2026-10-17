@@ -6,7 +6,7 @@ import { linkPk, shortLinkSk, ttlClockForKey } from "../data/keys.js";
 import { hasPhoneBuild } from "../http/static.js";
 
 const alphabet = "23456789abcdefghjkmnpqrstuvwxyz";
-export interface ShortLinkRecord { token: string; householdId: string; kind: "fix" | "booking" | "summary"; createdAt: string }
+export interface ShortLinkRecord { token: string; householdId: string; kind: "fix" | "booking" | "summary" | "privacy"; createdAt: string }
 
 function makeCode(): string {
   return Array.from({ length: 8 }, () => alphabet[randomInt(alphabet.length)]).join("");

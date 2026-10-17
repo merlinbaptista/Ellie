@@ -2,7 +2,7 @@
 
 Normal reminders remember a time. Ellie remembers your home.
 
-**Status: Module 7: phone page, phone chat and MCP Apps view**
+**Status: Module 9: privacy and trust**
 
 Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
@@ -149,6 +149,34 @@ Regenerate them with `npm run screenshots` while the server is running. If Chrom
 Routing uses the deterministic rules by default. Set `SIM_ROUTER=llm` to request Bedrock tool use, or keep `auto` to use Bedrock when the LLM driver resolves to it and fall back to deterministic routing on an error or timeout. The router only selects validated tools and arguments; spoken words come from MCP tool results. In production, the simulator is disabled unless `SIMULATOR_ENABLED=true` and `SIM_ACCESS_CODE` is at least 12 characters. Enter the code in the simulator unlock form; it is kept in session storage and sent in `x-sim-access-code` headers.
 
 The **Host view** toggle loads the same `ui://ellie/card.html` resource used by MCP Apps inside a sandboxed iframe and compares it with the shared native card. Its local host bridge initializes the view and routes card tool actions back through simulator turns. A manual Lighthouse accessibility score is optional; automated axe checks cover the phone states and simulator main screen.
+
+## Privacy and trust
+
+Ellie stores household profile settings, items, events, predictions, diagnoses, resolutions, consent history, short-lived phone links, and queued messages. Ask “what do you know about my home?” for an inventory, use `forget_item` or `forget_household` to delete data with confirmation, and use the privacy phone page to download a JSON export, withdraw message consent, or erase the household. See [the privacy notice](docs/PRIVACY.md) for the full inventory and controls.
+
+| Active driver | Data shared | Purpose |
+|---|---|---|
+| All mock drivers | Nothing leaves this computer | Local development and demo |
+| DynamoDB | Everything listed in the inventory | Store home history |
+| Bedrock | Item type, symptom, and history facts; no name, phone, email, or address | Explain problems and translate |
+| SNS | Consented phone/email and message text | Deliver messages |
+| EventBridge Scheduler | Job id and timing | Schedule reminders |
+
+| Data | Retention |
+|---|---|
+| Home history, items, predictions, resolutions | Until you delete it |
+| Outbox messages | `OUTBOX_RETENTION_DAYS` (30 days by default) |
+| Phone chat | `CHAT_RETENTION_DAYS` (7 days) or link expiry, whichever comes first |
+| Diagnosis sessions | 24 hours |
+| Short links | Link expiry (72 hours by default) |
+| Translation cache | 7 days |
+| Privacy audit records | `AUDIT_RETENTION_DAYS` (365 days by default) |
+
+Deleting data removes records and cancels schedules under Ellie's control. AWS-side SNS delivery logs, CloudWatch logs, and DynamoDB point-in-time backups are outside Ellie's control; backups kept by AWS expire on their own schedule.
+
+### Connecting with OAuth
+
+OAuth resource protection is optional and off by default. Set `OAUTH_ENABLED=true`, `OAUTH_ISSUER_URL`, `OAUTH_AUDIENCE`, and `OAUTH_JWKS_URL`; configure `OAUTH_REQUIRED_SCOPES` and the `OAUTH_HOUSEHOLD_CLAIM` as needed. Register `<ELLIE_PUBLIC_BASE_URL>/mcp` as the resource/audience with your authorization server and include the household claim in access tokens. Ellie validates issuer, audience, expiry, and scope but does not issue tokens or forward them to services. For Alexa+ account-linking steps, check the Alexa+ connector documentation.
 
 ## Go live on AWS
 

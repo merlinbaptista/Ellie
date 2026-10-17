@@ -10,6 +10,7 @@ import { signPhoneLink } from "../links/sign.js";
 import { createShortLink } from "../links/shortLinks.js";
 import { buildReminderSms, formatSmsDate } from "../phone/messages.js";
 import { mirrorOutbox } from "../adapters/notifier/outbox.js";
+import { canSend } from "../privacy/consent.js";
 
 export function reminderJobId(householdId: string, itemId: string, component?: string): string {
   return component ? `remind:${householdId}:${itemId}:${component}` : `remind:${householdId}:${itemId}`;
@@ -108,10 +109,16 @@ async function sendReminderMessage(job: ScheduledJob, item: Item, household: Hou
   const short = await createShortLink(ctx, { token: signed.token, householdId: job.payload.householdId, kind: "booking", exp: signed.payload.exp });
   const due = prediction?.nextDueLocal ? formatSmsDate(prediction.nextDueLocal, pack.locale.defaultLanguage, pack.locale.dateOrder) : undefined;
   const body = buildReminderSms(job.payload.kind === "delivery_check" ? "delivery_check" : "reminder", { item: item.name, ...(due ? { date: due } : {}), shortUrl: short.url });
-  const hasConsent = Boolean(household?.contact?.consentGivenAt && (household.contact.phone || household.contact.email));
   const channel = household?.contact?.phone ? "sms" as const : "email" as const;
+  const channelPurpose = channel === "sms" ? "phone_messages" : "email_messages";
+  const [channelAllowed, reminderAllowed] = await Promise.all([
+    canSend(ctx, job.payload.householdId, channelPurpose),
+    canSend(ctx, job.payload.householdId, "reminders"),
+  ]);
+  const hasConsent = Boolean((channel === "sms" ? household?.contact?.phone : household?.contact?.email) && channelAllowed && reminderAllowed);
   const message: OutboundMessage = {
     householdId: job.payload.householdId,
+    itemId: item.itemId,
     channel,
     to: hasConsent ? household?.contact?.phone ?? household?.contact?.email ?? "outbox" : "outbox",
     body,
@@ -119,7 +126,7 @@ async function sendReminderMessage(job: ScheduledJob, item: Item, household: Hou
     kind: "reminder",
   };
   if (hasConsent) await ctx.notifier.send(message);
-  else await mirrorOutbox(ctx.storage, ctx.clock, message, { id: `outbox-${job.id}`, status: "queued", provider: "outbox" });
+  else await mirrorOutbox(ctx.storage, ctx.clock, message, { id: `outbox-${job.id}`, status: "queued", provider: "outbox" }, ctx.env.OUTBOX_RETENTION_DAYS);
 }
 
 export function isDueThisWeekStatus(status: Prediction["status"]): boolean {

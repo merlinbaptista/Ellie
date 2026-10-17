@@ -8,8 +8,9 @@ import type { StorageAdapter } from "../storage/types.js";
 import type { NotifierAdapter, OutboundMessage, SendResult } from "./types.js";
 import { mirrorOutbox } from "./outbox.js";
 import { outboxMessagePrefix, outboxPk } from "../../data/keys.js";
+import { maskEmail, maskPhone } from "../../privacy/redact.js";
 
-function masked(value: string): string { return value.includes("@") ? value.replace(/^(.{1}).*(@.*)$/, "$1***$2") : `***${value.slice(-4)}`; }
+function masked(value: string): string { return value.includes("@") ? maskEmail(value) : maskPhone(value); }
 function failureReason(error: unknown): string {
   const name = (error as { name?: string })?.name;
   if (name === "AuthorizationError" || name === "AccessDeniedException") return "not_authorized";
@@ -44,7 +45,7 @@ export class SnsNotifier implements NotifierAdapter {
       this.logger.warn({ householdId: msg.householdId, channel: msg.channel, to: masked(msg.to), reason }, "sns.publish_failed");
       result = { id: randomUUID(), status: "failed", provider: "sns", error: reason };
     }
-    await mirrorOutbox(this.storage, this.clock, msg, { ...result, provider: "sns" });
+    await mirrorOutbox(this.storage, this.clock, msg, { ...result, provider: "sns" }, this.env.OUTBOX_RETENTION_DAYS);
     return result;
   }
 

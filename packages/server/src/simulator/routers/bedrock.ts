@@ -5,7 +5,7 @@ import type { PlannedCall, RouterResult, SimRouterContext } from "./types.js";
 import type { SimulatorMcpClient } from "../mcpClient.js";
 import { MCP_INSTRUCTIONS } from "../../mcp/instructions.js";
 
-const routePrompt = "You route utterances for a home voice assistant. Call one tool per thing the user mentioned, in order. Never answer in natural language. householdId is supplied after routing; do not invent it. Never route development tools or status tools.";
+const routePrompt = "You route utterances for a home voice assistant. Call one tool per thing the user mentioned, in order. Never answer in natural language. householdId is supplied after routing; do not invent it. Never route development tools or status tools. Never call forget_household or forget_item with confirm=true or a confirmationCode unless the user just said the required confirmation.";
 const publicTools = new Set(Object.keys(ToolContracts));
 function safeToolSchema(tool: { name: string; description?: string; inputSchema: Record<string, unknown> }) {
   return { name: tool.name, description: tool.description ?? tool.name, inputSchema: tool.inputSchema };

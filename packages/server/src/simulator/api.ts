@@ -8,8 +8,8 @@ import { runTurn } from "./orchestrator.js";
 
 const rates = new Map<string, { start: number; count: number }>();
 const suggestions: Record<string, string[]> = {
-  "demo-blr": ["What's due this week?", "The cylinder's changed and the purifier is beeping again", "Send it to my phone", "It's fixed", "When is the gas due?", "Show the purifier history"],
-  "demo-tx": ["What's due this week?", "The propane tank got refilled", "The furnace filter is changed", "My water heater has no hot water"],
+  "demo-blr": ["What's due this week?", "The cylinder's changed and the purifier is beeping again", "Send it to my phone", "It's fixed", "When is the gas due?", "Show the purifier history", "What do you know about my home?", "Forget the inverter", "Stop texting me"],
+  "demo-tx": ["What's due this week?", "The propane tank got refilled", "The furnace filter is changed", "My water heater has no hot water", "What do you know about my home?", "Forget the furnace filter", "Stop texting me"],
 };
 function enabled(ctx: AppContext): boolean { return ctx.env.SIMULATOR_ENABLED && (ctx.env.NODE_ENV !== "production" || Boolean(ctx.env.SIM_ACCESS_CODE && ctx.env.SIM_ACCESS_CODE.length >= 12)); }
 function unauthorized(req: Request, ctx: AppContext): boolean {
@@ -48,7 +48,7 @@ export function registerSimulatorApi(app: Express, ctx: AppContext): void {
       const household = await ctx.repositories.households.get(householdId);
       const pack = ctx.regions.get(household?.regionPackId ?? "IN");
       const lang = household?.language ?? pack.locale.defaultLanguage;
-      res.json({ sessionId: session.id, household: { householdId, name: household?.displayName ?? (requested === "fresh" ? "Fresh home" : householdId), country: household?.country ?? pack.packId, region: household?.region ?? "", timeZone: household?.timeZone ?? pack.locale.defaultTimeZone, language: lang, phoneLanguage: household?.phoneLanguage ?? lang }, suggestions: requested === "fresh" ? ["I live in Bengaluru", "I just changed the gas", "About five weeks ago"] : suggestions[householdId] ?? suggestions["demo-blr"], voiceLang: lang });
+      res.json({ sessionId: session.id, household: { householdId, name: household?.displayName ?? (requested === "fresh" ? "Fresh home" : householdId), country: household?.country ?? pack.packId, region: household?.region ?? "", timeZone: household?.timeZone ?? pack.locale.defaultTimeZone, language: lang, phoneLanguage: household?.phoneLanguage ?? lang }, suggestions: requested === "fresh" ? ["I live in Bengaluru", "I just changed the gas", "About five weeks ago", "What do you know about my home?", "Stop texting me"] : suggestions[householdId] ?? suggestions["demo-blr"], voiceLang: lang });
     } catch (failure) { next(failure); }
   });
   app.post("/api/sim/turn", async (req, res, next) => {
@@ -72,7 +72,7 @@ export function registerSimulatorApi(app: Express, ctx: AppContext): void {
     void household.then((profile) => {
       const pack = ctx.regions.get(profile?.regionPackId ?? "IN");
       const language = profile?.language ?? pack.locale.defaultLanguage;
-      res.json({ household: { householdId: session.householdId, name: profile?.displayName ?? session.householdId, country: profile?.country ?? pack.packId, region: profile?.region ?? "", timeZone: profile?.timeZone ?? pack.locale.defaultTimeZone, language, phoneLanguage: profile?.phoneLanguage ?? language }, suggestions: session.householdId.startsWith("hh_sim-") ? ["I live in Bengaluru", "I just changed the gas", "About five weeks ago"] : suggestions[session.householdId] ?? suggestions["demo-blr"], voiceLang: language });
+      res.json({ household: { householdId: session.householdId, name: profile?.displayName ?? session.householdId, country: profile?.country ?? pack.packId, region: profile?.region ?? "", timeZone: profile?.timeZone ?? pack.locale.defaultTimeZone, language, phoneLanguage: profile?.phoneLanguage ?? language }, suggestions: session.householdId.startsWith("hh_sim-") ? ["I live in Bengaluru", "I just changed the gas", "About five weeks ago", "What do you know about my home?", "Stop texting me"] : suggestions[session.householdId] ?? suggestions["demo-blr"], voiceLang: language });
     }).catch(() => error(res, 500, "Could not switch household"));
   });
   app.get("/api/sim/state", (req, res) => {
@@ -84,6 +84,8 @@ export function registerSimulatorApi(app: Express, ctx: AppContext): void {
     const session = getSimSession(String(req.query.sessionId ?? ""));
     if (!session) { error(res, 404, "Simulator session expired"); return; }
     try {
+      const profile = await ctx.repositories.households.get(session.householdId);
+      if (!profile) { res.json({ card: { title: "No home data", items: [{ label: "No home data", value: "This home is empty" }] } }); return; }
       const { LoopbackMcpClient } = await import("./mcpClient.js");
       session.mcp ??= new LoopbackMcpClient(baseUrl(req, ctx));
       const result = await session.mcp.callTool("due_this_week", { householdId: session.householdId });

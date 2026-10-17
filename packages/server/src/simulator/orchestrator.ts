@@ -142,6 +142,9 @@ export async function runTurn(ctx: AppContext, session: SimSession, request: Sim
     const data = value.data && typeof value.data === "object" ? value.data as Record<string, unknown> : undefined;
     const follow = followUpFrom(value.followUp);
     updateContext(session, planned.tool, value);
+    if (planned.tool === "forget_household" && (value.data as Record<string, unknown> | undefined)?.scope === "household") {
+      session.lastItem = undefined; session.lastDiagnosisId = undefined; session.lastCauseKey = undefined; session.lastTool = undefined; session.offeredTool = undefined; session.history = [];
+    }
     parts.push({ call, speech: typeof value.speech === "string" ? value.speech : raw.content?.find((piece) => piece.type === "text")?.text ?? "", ...(value.card ? { card: value.card } : {}), ...(follow ? { followUp: follow } : {}), ...(value.safety && typeof value.safety === "object" ? { safety: value.safety as { level?: string } } : {}), ...(data ? { data } : {}) });
     if (safety) break;
   }

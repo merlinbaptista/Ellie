@@ -5,8 +5,8 @@ import type { AppContext } from "../../context.js";
 import { setupHousehold } from "../../domain/households.js";
 import { toolResponse } from "../result.js";
 import { withTiming } from "../withTiming.js";
+import { maskEmail, maskPhone } from "../../privacy/redact.js";
 
-function maskPhone(phone?: string): string | undefined { return phone ? `•••••• ${phone.slice(-4)}` : undefined; }
 export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool(
     "setup_household",
@@ -20,7 +20,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       const result = await setupHousehold(args, ctx);
       const pack = ctx.regions.get(result.household.regionPackId ?? "DEFAULT");
       const contact = result.household.contact;
-      const dataHousehold = { ...result.household, ...(contact ? { contact: { ...contact, phone: maskPhone(contact.phone) } } : {}) };
+      const dataHousehold = { ...result.household, ...(contact ? { contact: { ...contact, ...(contact.phone ? { phone: maskPhone(contact.phone) } : {}), ...(contact.email ? { email: maskEmail(contact.email) } : {}) } } : {}) };
       return toolResponse({
         speech: result.speech,
         data: { household: dataHousehold, missing: result.missing },
@@ -36,7 +36,7 @@ export function register(server: McpServer, ctx: AppContext): void {
             { label: "Time zone", value: result.household.timeZone ?? "Not set" },
             { label: "Language", value: result.household.language ?? "Not set" },
             { label: "Units", value: `${pack.units.volume}, ${pack.units.temp}, ${pack.units.currency}` },
-            { label: "Phone", value: maskPhone(contact?.phone) ?? (contact?.email ? "Email saved with consent" : "Not set") },
+            { label: "Phone", value: contact?.phone ? maskPhone(contact.phone) : contact?.email ? "Email saved with consent" : "Not set" },
             { label: "Region pack", value: `${pack.packId} ${pack.version}` },
           ],
         },

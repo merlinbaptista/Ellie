@@ -10,10 +10,10 @@ export class DiagnosisRepository {
     return row ? row.data as unknown as Diagnosis : null;
   }
   async put(householdId: string, diagnosis: Diagnosis, ttlHours = 24): Promise<Diagnosis> {
-    const ttl = Math.floor(this.clock.now().getTime() / 1000) + ttlHours * 3600;
+    const ttl = Math.floor(Date.now() / 1000) + ttlHours * 3600;
     const pk = householdPk(householdId);
     const sk = diagnosisSk(diagnosis.diagnosisId);
-    await this.storage.put({ pk, sk, type: "diagnosis", data: diagnosis as unknown as Record<string, unknown>, ttlClock: ttlClockForKey(pk, sk), ttl });
+    await this.storage.put({ pk, sk, type: "diagnosis", data: diagnosis as unknown as Record<string, unknown>, ttlClock: "wall", ttl });
     return diagnosis;
   }
   async list(householdId: string): Promise<Diagnosis[]> {

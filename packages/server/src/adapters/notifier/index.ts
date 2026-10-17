@@ -8,5 +8,5 @@ import type { Env } from "../../config/env.js";
 import type { Logger } from "pino";
 
 export function createNotifier(decision: DriverDecision, storage: StorageAdapter, clock: Clock, env: Env, logger: Logger): NotifierAdapter {
-  return decision.implementation === "sns" ? new SnsNotifier(env, storage, clock, logger) : new ConsoleNotifier(storage, clock);
+  return decision.implementation === "sns" ? new SnsNotifier(env, storage, clock, logger) : new ConsoleNotifier(storage, clock, env.OUTBOX_RETENTION_DAYS);
 }

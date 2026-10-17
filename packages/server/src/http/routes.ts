@@ -5,6 +5,8 @@ import { registerShortLinkRoutes } from "../links/shortLinks.js";
 import { registerPhoneApi } from "./phoneApi.js";
 import { registerStaticPhone, registerStaticSimulator } from "./static.js";
 import { registerSimulatorApi } from "../simulator/api.js";
+import { redactObject } from "../privacy/redact.js";
+import { expireOutbox } from "../privacy/retention.js";
 
 export function registerHttpRoutes(app: Express, ctx: AppContext): void {
   registerStaticPhone(app);
@@ -23,11 +25,13 @@ export function registerHttpRoutes(app: Express, ctx: AppContext): void {
   app.get("/api/outbox", async (req: Request, res: Response, next) => {
     if (ctx.env.NODE_ENV === "production") { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
     try {
+      const householdId = typeof req.query.householdId === "string" ? req.query.householdId : undefined;
+      await expireOutbox(ctx, householdId);
       if (!ctx.notifier.listOutbox) {
         res.status(501).json({ error: { code: "NOT_IMPLEMENTED", message: "Outbox is not available" } });
         return;
       }
-      res.json(await ctx.notifier.listOutbox(typeof req.query.householdId === "string" ? req.query.householdId : undefined));
+      res.json((await ctx.notifier.listOutbox(householdId)).map((message) => redactObject(message)));
     } catch (error) { next(error); }
   });
 

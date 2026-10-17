@@ -117,6 +117,10 @@ export default function App() {
   }
   function actionText(tool: string, args: Record<string, unknown>): string {
     const itemName = typeof args.item === "string" ? args.item : session?.household.householdId === "demo-tx" ? "propane tank" : "gas cylinder";
+    if (tool === "what_do_you_know") return args.item ? `What do you know about ${itemName}?` : "What do you know about my home?";
+    if (tool === "forget_item") return `Forget ${itemName}`;
+    if (tool === "forget_household") return "Forget everything";
+    if (tool === "manage_consent") return args.action === "grant" ? "You can text me again" : "Stop texting me";
     if (tool === "send_to_phone") return `Send the ${args.contentType === "booking" ? "booking link" : args.contentType === "summary" ? "summary" : "fix steps"} to my phone`;
     if (tool === "log_resolution") return "It's fixed";
     return tool === "get_history" ? `Show ${itemName} history` : tool === "predict_next" ? `When is ${itemName} due?` : tool === "due_this_week" ? "What's due this week?" : `Tell me about ${itemName}`;

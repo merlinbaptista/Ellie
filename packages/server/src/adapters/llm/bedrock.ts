@@ -4,6 +4,7 @@ import type { Logger } from "pino";
 import type { Env } from "../../config/env.js";
 import { ExternalServiceError } from "../../lib/errors.js";
 import type { LlmAdapter, LlmRequest, LlmResponse, LlmToolRequest, LlmToolResponse } from "./types.js";
+import { redactText } from "../../privacy/redact.js";
 
 export class BedrockLlm implements LlmAdapter {
   readonly name = "bedrock";
@@ -20,12 +21,12 @@ export class BedrockLlm implements LlmAdapter {
   async complete(req: LlmRequest): Promise<LlmResponse> {
     if (!this.env.BEDROCK_MODEL_ID) throw new ExternalServiceError("BEDROCK_MODEL_ID is not configured", "My explanation service is unavailable, so I'll use my household records.");
     const started = performance.now();
-    const system = `${req.system}${req.responseFormat === "json" ? "\nReturn only JSON." : ""}`;
+    const system = `${redactText(req.system)}${req.responseFormat === "json" ? "\nReturn only JSON." : ""}`;
     try {
       const response = await this.client.send(new ConverseCommand({
         modelId: this.env.BEDROCK_MODEL_ID,
         system: [{ text: system }],
-        messages: req.messages.map((message) => ({ role: message.role, content: [{ text: message.content }] })),
+        messages: req.messages.map((message) => ({ role: message.role, content: [{ text: redactText(message.content) }] })),
         inferenceConfig: { maxTokens: req.maxTokens ?? this.env.BEDROCK_MAX_TOKENS, temperature: req.temperature ?? 0.2 },
         ...(this.env.BEDROCK_GUARDRAIL_ID ? { guardrailConfig: { guardrailIdentifier: this.env.BEDROCK_GUARDRAIL_ID, guardrailVersion: this.env.BEDROCK_GUARDRAIL_VERSION ?? "DRAFT" } } : {}),
       }), { abortSignal: req.signal });
@@ -67,8 +68,8 @@ export class BedrockLlm implements LlmAdapter {
     try {
       const response = await this.client.send(new ConverseCommand({
         modelId: this.env.BEDROCK_MODEL_ID,
-        system: [{ text: req.system }],
-        messages: req.messages.map((message) => ({ role: message.role, content: [{ text: message.content }] })),
+        system: [{ text: redactText(req.system) }],
+        messages: req.messages.map((message) => ({ role: message.role, content: [{ text: redactText(message.content) }] })),
         toolConfig: {
           tools: req.tools.map((tool) => ({ toolSpec: { name: tool.name, description: tool.description, inputSchema: { json: tool.inputSchema as never } } })),
           toolChoice: { auto: {} },

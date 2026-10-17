@@ -5,6 +5,9 @@ import type { AppContext } from "./context.js";
 import { registerHttpRoutes } from "./http/routes.js";
 import { handlePost, handleSessionRequest } from "./mcp/transport.js";
 import { registerDevApi } from "./http/devApi.js";
+import { oauthMiddleware } from "./auth/oauth.js";
+import { protectedResourceMetadataHandler } from "./auth/metadata.js";
+import { redactText } from "./privacy/redact.js";
 
 export function createApp(ctx: AppContext): express.Express {
   const app = express();
@@ -33,6 +36,8 @@ export function createApp(ctx: AppContext): express.Express {
     }
     next();
   });
+  app.use("/.well-known/oauth-protected-resource", protectedResourceMetadataHandler(ctx));
+  app.use("/mcp", oauthMiddleware(ctx));
   app.post("/mcp", (req, res, next) => { void handlePost(req, res, ctx).catch(next); });
   app.get("/mcp", (req, res, next) => { void handleSessionRequest(req, res).catch(next); });
   app.delete("/mcp", (req, res, next) => { void handleSessionRequest(req, res).catch(next); });
@@ -41,7 +46,7 @@ export function createApp(ctx: AppContext): express.Express {
   app.use((_req, res) => res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }));
   app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
     void next;
-    const message = error instanceof Error ? error.message : "Unexpected server error";
+    const message = redactText(error instanceof Error ? error.message : "Unexpected server error");
     ctx.logger.error({ err: error }, "HTTP request failed");
     res.status(500).json({ error: { code: "INTERNAL_ERROR", message } });
   });

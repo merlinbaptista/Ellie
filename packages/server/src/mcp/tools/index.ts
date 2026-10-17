@@ -12,6 +12,10 @@ import { register as registerDevTimeTravel } from "./devTimeTravel.js";
 import { register as registerDiagnose } from "./diagnose.js";
 import { register as registerLogResolution } from "./logResolution.js";
 import { register as registerSendToPhone } from "./sendToPhone.js";
+import { register as registerWhatDoYouKnow } from "./whatDoYouKnow.js";
+import { register as registerForgetItem } from "./forgetItem.js";
+import { register as registerForgetHousehold } from "./forgetHousehold.js";
+import { register as registerManageConsent } from "./manageConsent.js";
 
 export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerPing(server, ctx);
@@ -26,4 +30,8 @@ export function registerAllTools(server: McpServer, ctx: AppContext): void {
   registerDiagnose(server, ctx);
   registerLogResolution(server, ctx);
   registerSendToPhone(server, ctx);
+  registerWhatDoYouKnow(server, ctx);
+  registerForgetItem(server, ctx);
+  registerForgetHousehold(server, ctx);
+  registerManageConsent(server, ctx);
 }
