@@ -8,27 +8,27 @@ Ellie may store household settings (country, city or region, time zone, language
 
 ## Who Receives Data
 
-| Active driver | Data shared | Purpose |
-|---|---|---|
-| All mock drivers | Nothing leaves this computer | Local development and demo |
-| AWS DynamoDB | Household records and home history | Store household data |
-| AWS Bedrock | Item type, symptom, and history facts; not a person's name, phone, email, or address | Explain problems and translate |
-| AWS SNS | Consented phone/email and message text | Deliver messages |
-| AWS EventBridge Scheduler | Job id and timing | Schedule reminders |
+| Active driver             | Data shared                                                                          | Purpose                        |
+| ------------------------- | ------------------------------------------------------------------------------------ | ------------------------------ |
+| All mock drivers          | Nothing leaves this computer                                                         | Local development and demo     |
+| AWS DynamoDB              | Household records and home history                                                   | Store household data           |
+| AWS Bedrock               | Item type, symptom, and history facts; not a person's name, phone, email, or address | Explain problems and translate |
+| AWS SNS                   | Consented phone/email and message text                                               | Deliver messages               |
+| AWS EventBridge Scheduler | Job id and timing                                                                    | Schedule reminders             |
 
 Only active drivers are shown in an inventory. Phone messages are sent only while the matching consent is active.
 
 ## Retention
 
-| Data | Retention |
-|---|---|
-| Home history, items, predictions, and resolutions | Until you delete it |
-| Outbox messages | `OUTBOX_RETENTION_DAYS` (30 days by default) |
-| Phone chat | `CHAT_RETENTION_DAYS` (7 days) or link expiry, whichever comes first |
-| Diagnosis sessions | 24 hours |
-| Short links | Link expiry (72 hours by default) |
-| Translation cache | 7 days |
-| Privacy audit records | `AUDIT_RETENTION_DAYS` (365 days by default) |
+| Data                                              | Retention                                                            |
+| ------------------------------------------------- | -------------------------------------------------------------------- |
+| Home history, items, predictions, and resolutions | Until you delete it                                                  |
+| Outbox messages                                   | `OUTBOX_RETENTION_DAYS` (30 days by default)                         |
+| Phone chat                                        | `CHAT_RETENTION_DAYS` (7 days) or link expiry, whichever comes first |
+| Diagnosis sessions                                | 24 hours                                                             |
+| Short links                                       | Link expiry (72 hours by default)                                    |
+| Translation cache                                 | 7 days                                                               |
+| Privacy audit records                             | `AUDIT_RETENTION_DAYS` (365 days by default)                         |
 
 ## Your Controls
 

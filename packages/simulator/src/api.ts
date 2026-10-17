@@ -1,10 +1,12 @@
 import type { SimTurnRequest, SimTurnResponse } from "@ellie/schema";
+import type { PresenterStep } from "./presenter/types.js";
 
 export interface SimHousehold { householdId: string; name: string; country: string; region: string; timeZone: string; language: string; phoneLanguage: string }
 export interface SimSessionResponse { sessionId: string; household: SimHousehold; suggestions: string[]; voiceLang: string; controlsEnabled: boolean; idleCard?: unknown }
 export interface OutboxMessage { id: string; householdId: string; channel: string; to: string; body: string; link?: string; kind: string; sentAt: string }
 const accessCodeKey = "ellie.sim.access";
 export function setAccessCode(value: string): void { sessionStorage.setItem(accessCodeKey, value); }
+export function hasAccessCode(): boolean { return Boolean(sessionStorage.getItem(accessCodeKey)); }
 function headers(): HeadersInit { const code = sessionStorage.getItem(accessCodeKey); return { "content-type": "application/json", ...(code ? { "x-sim-access-code": code } : {}) }; }
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { ...headers(), ...(init?.headers ?? {}) } });
@@ -16,8 +18,10 @@ export function sendTurn(input: SimTurnRequest): Promise<SimTurnResponse> { retu
 export function switchHousehold(sessionId: string, householdId: string): Promise<Omit<SimSessionResponse, "sessionId" | "controlsEnabled">> { return request("/api/sim/household", { method: "POST", body: JSON.stringify({ sessionId, householdId }) }); }
 export function getState(sessionId: string): Promise<{ householdId: string; lastItem?: string; pending?: string; router: string }> { return request(`/api/sim/state?sessionId=${encodeURIComponent(sessionId)}`); }
 export function getIdleCard(sessionId: string): Promise<{ card: unknown | null }> { return request(`/api/sim/idle?sessionId=${encodeURIComponent(sessionId)}`); }
+export function getDemoScript(): Promise<PresenterStep[]> { return request("/api/sim/demo-script"); }
 export function getOutbox(householdId: string): Promise<OutboxMessage[]> { return request(`/api/outbox?householdId=${encodeURIComponent(householdId)}`); }
 export function getAppResource(): Promise<string> { return fetch("/api/sim/app-resource", { headers: { "x-sim-access-code": sessionStorage.getItem(accessCodeKey) ?? "" } }).then(async (response) => { if (!response.ok) throw new Error("MCP App resource unavailable"); return response.text(); }); }
 export function timeTravel(input: { days?: number; to?: string; reset?: boolean }): Promise<{ now: string; firedJobs: number; outbox: OutboxMessage[] }> { return request("/api/dev/time-travel", { method: "POST", body: JSON.stringify(input) }); }
 export function reseed(anchor: string): Promise<unknown> { return request("/api/dev/seed", { method: "POST", body: JSON.stringify({ reset: true, anchor }) }); }
+export function prepareDemo(householdId = "demo-blr", keepCatalogKey = "lpg_cylinder"): Promise<{ removedSchedules: number }> { return request("/api/dev/demo/prepare", { method: "POST", body: JSON.stringify({ householdId, keepCatalogKey }) }); }
 export type { SimTurnRequest, SimTurnResponse };

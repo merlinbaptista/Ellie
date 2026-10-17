@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+.env
+.env.*
+data
+**/coverage
+.git
+docs/images
+demo/last-run.json
+packages/*/dist

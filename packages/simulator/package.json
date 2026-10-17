@@ -1,6 +1,6 @@
 {
   "name": "@ellie/simulator",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": { "dev": "vite --host 127.0.0.1 --port 5173", "build": "tsc -p tsconfig.json --noEmit && vite build", "typecheck": "tsc -p tsconfig.json --noEmit", "test": "vitest run" },

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "setup-reseed",
+    "title": "Reset demo households",
+    "household": "demo-blr",
+    "action": { "kind": "reseed" },
+    "expect": {},
+    "hidden": true
+  },
+  {
+    "id": "setup-clock",
+    "title": "Set demo clock",
+    "household": "demo-blr",
+    "action": { "kind": "timeTravel", "to": "2026-10-16T09:00:00+05:30" },
+    "expect": {},
+    "hidden": true
+  },
+  {
+    "id": "due-this-week",
+    "title": "What's due this week?",
+    "household": "demo-blr",
+    "action": { "kind": "say", "text": "What's due this week?" },
+    "expect": { "tools": ["due_this_week"], "speechIncludes": ["3 months overdue", "due today"], "state": "done", "maxToolMs": 500 },
+    "presenterNote": "Normal reminders remember a time. Ellie remembers your home."
+  },
+  {
+    "id": "two-intent-hero",
+    "title": "One sentence, two jobs",
+    "household": "demo-blr",
+    "action": { "kind": "say", "text": "The cylinder's changed and the purifier is beeping again" },
+    "expect": { "tools": ["log_event", "diagnose"], "speechIncludes": ["23 November", "filter", "March", "20 December"], "state": "done", "cards": 2, "maxToolMs": 500 },
+    "presenterNote": "One sentence, two jobs, using the household's own history."
+  },
+  {
+    "id": "send-fix",
+    "title": "Send the fix to the phone",
+    "household": "demo-blr",
+    "action": { "kind": "say", "text": "Send it to my phone" },
+    "expect": { "tools": ["send_to_phone"], "state": "done", "outboxNew": 1 },
+    "presenterNote": "Long content goes to the phone."
+  },
+  {
+    "id": "open-fix",
+    "title": "Open the phone fix guide",
+    "household": "demo-blr",
+    "action": { "kind": "openPhone", "which": "latest" },
+    "expect": {},
+    "presenterNote": "Steps, parts, warranty, and chat grounded in this fix."
+  },
+  {
+    "id": "confirm-fixed",
+    "title": "Confirm the fix",
+    "household": "demo-blr",
+    "action": { "kind": "phoneTap", "action": "fixed" },
+    "expect": {},
+    "presenterNote": ""
+  },
+  {
+    "id": "day-thirty-reminder",
+    "title": "Advance to the reminder",
+    "household": "demo-blr",
+    "action": { "kind": "timeTravel", "to": "2026-11-18T09:05:00+05:30" },
+    "expect": { "outboxNew": 1 },
+    "presenterNote": "Day 30: the reminder arrives with a booking link."
+  },
+  {
+    "id": "open-booking",
+    "title": "Open the booking guide",
+    "household": "demo-blr",
+    "action": { "kind": "openPhone", "which": "latest" },
+    "expect": {},
+    "presenterNote": "The region pack supplies the booking guidance."
+  },
+  {
+    "id": "confirm-booked",
+    "title": "Record the booking",
+    "household": "demo-blr",
+    "action": { "kind": "phoneTap", "action": "book" },
+    "expect": {},
+    "presenterNote": ""
+  },
+  {
+    "id": "reset-clock",
+    "title": "Reset the demo clock",
+    "household": "demo-blr",
+    "action": { "kind": "timeTravel", "to": null },
+    "expect": {},
+    "hidden": true
+  },
+  {
+    "id": "gas-safety",
+    "title": "Safety comes first",
+    "household": "demo-blr",
+    "action": { "kind": "say", "text": "I can smell gas" },
+    "expect": { "tools": ["diagnose"], "speechIncludes": ["1906"], "state": "safety_stop", "maxToolMs": 500 },
+    "presenterNote": "Safety always comes first."
+  },
+  {
+    "id": "texas-propane",
+    "title": "Switch to Texas",
+    "household": "demo-tx",
+    "action": { "kind": "say", "text": "The gas tank got refilled" },
+    "expect": { "tools": ["log_event"], "speechIncludes": ["propane tank"], "state": "done", "maxToolMs": 500 },
+    "presenterNote": "Same schema, Texas: gallons and propane."
+  },
+  {
+    "id": "privacy-inventory",
+    "title": "Show the privacy inventory",
+    "household": "demo-blr",
+    "action": { "kind": "say", "text": "What do you know about my home?" },
+    "expect": { "tools": ["what_do_you_know"], "state": "done", "maxToolMs": 500 },
+    "presenterNote": "The user stays in control."
+  },
+  {
+    "id": "cleanup-reseed",
+    "title": "Restore demo households",
+    "household": "demo-blr",
+    "action": { "kind": "reseed" },
+    "expect": {},
+    "hidden": true
+  }
+]

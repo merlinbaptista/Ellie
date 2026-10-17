@@ -5,6 +5,7 @@ import type { AppContext } from "../context.js";
 import { seedDemo } from "../seed/seed.js";
 import { recomputeHousehold } from "../domain/predictions.js";
 import { maskEmail, maskPhone } from "../privacy/redact.js";
+import { linkPk, schedulePk } from "../data/keys.js";
 
 function enabled(ctx: AppContext): boolean { return ctx.env.NODE_ENV !== "production"; }
 function maskProfile<T extends { contact?: { phone?: string; email?: string } }>(profile: T): T {
@@ -21,6 +22,23 @@ interface DueApiEntry {
   reason: string;
 }
 export function registerDevApi(app: Express, ctx: AppContext): void {
+  app.post("/api/dev/demo/prepare", async (req, res, next) => {
+    if (!enabled(ctx)) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
+    try {
+      const householdId = typeof req.body?.householdId === "string" ? req.body.householdId : "demo-blr";
+      const keepCatalogKey = typeof req.body?.keepCatalogKey === "string" ? req.body.keepCatalogKey : "lpg_cylinder";
+      const keeper = (await ctx.repositories.items.list(householdId)).find((item) => item.catalogKey === keepCatalogKey);
+      if (!keeper) { res.status(404).json({ error: { code: "NOT_FOUND", message: "Demo reminder item not found" } }); return; }
+      const householdJobs = await ctx.scheduler.list(householdId);
+      const unrelated = householdJobs.filter((job) => job.payload.itemId !== keeper.itemId);
+      for (const job of unrelated) await ctx.scheduler.cancel(job.id);
+      const firedMarkers = (await ctx.storage.query(schedulePk())).filter((row) => row.type === "scheduled-job-fired" && typeof row.data.jobId === "string" && (row.data.jobId as string).includes(keeper.itemId));
+      for (const marker of firedMarkers) await ctx.storage.delete(schedulePk(), marker.sk);
+      const previousSends = (await ctx.storage.query(linkPk())).filter((row) => row.type === "phone-send" && row.data.householdId === householdId);
+      for (const send of previousSends) await ctx.storage.delete(send.pk, send.sk);
+      res.json({ removedSchedules: unrelated.length, resetFiredMarkers: firedMarkers.length, resetSendDedupes: previousSends.length, householdId, retainedItemId: keeper.itemId });
+    } catch (error) { next(error); }
+  });
   app.post("/api/dev/schedule-test", async (_req, res, next) => {
     if (ctx.env.NODE_ENV === "production") { res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } }); return; }
     try {

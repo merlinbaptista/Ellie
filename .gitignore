@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 /data/
+/demo/last-run.json
 .env
 .env.*
 !.env.example

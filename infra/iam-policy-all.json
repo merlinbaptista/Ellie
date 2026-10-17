@@ -1,0 +1,89 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EllieMemoryTableAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:DescribeTimeToLive"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/ellie-main"
+    },
+    {
+      "Sid": "InvokeBedrockModels",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/*",
+        "arn:aws:bedrock:*:*:inference-profile/*",
+        "arn:aws:bedrock:*:*:application-inference-profile/*"
+      ]
+    },
+    {
+      "Sid": "ApplyConfiguredGuardrails",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:ApplyGuardrail"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*:*:guardrail/*"
+      ]
+    },
+    {
+      "Sid": "PublishToConfiguredTopic",
+      "Effect": "Allow",
+      "Action": "sns:Publish",
+      "Resource": "REPLACE_WITH_SNS_TOPIC_ARN"
+    },
+    {
+      "Sid": "DirectSmsPublish",
+      "Effect": "Allow",
+      "Action": "sns:Publish",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageEllieSchedules",
+      "Effect": "Allow",
+      "Action": [
+        "scheduler:CreateSchedule",
+        "scheduler:UpdateSchedule",
+        "scheduler:DeleteSchedule",
+        "scheduler:GetSchedule",
+        "scheduler:GetScheduleGroup"
+      ],
+      "Resource": [
+        "arn:aws:scheduler:*:*:schedule/ellie/*",
+        "arn:aws:scheduler:*:*:schedule-group/ellie"
+      ]
+    },
+    {
+      "Sid": "PassSchedulerQueueRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "REPLACE_WITH_EVENTBRIDGE_ROLE_ARN",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "scheduler.amazonaws.com"
+        }
+      }
+    },
+    {
+      "Sid": "ConsumeSchedulerQueue",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+      ],
+      "Resource": "REPLACE_WITH_SCHEDULER_QUEUE_ARN"
+    }
+  ]
+}

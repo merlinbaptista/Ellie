@@ -5,6 +5,7 @@ import type { AppContext } from "../context.js";
 import { MCP_APP_URI } from "../mcp/apps.js";
 import { clearPending, createSimSession, getSimSession } from "./session.js";
 import { runTurn } from "./orchestrator.js";
+import { demoScript } from "../demo/script.js";
 
 const rates = new Map<string, { start: number; count: number }>();
 const suggestions: Record<string, string[]> = {
@@ -40,6 +41,7 @@ export function registerSimulatorApi(app: Express, ctx: AppContext): void {
     if (req.method === "POST" && req.path === "/turn" && !rateLimit(req)) { error(res, 429, "Too many simulator turns"); return; }
     next();
   });
+  app.get("/api/sim/demo-script", (_req, res) => res.json(demoScript));
   app.post("/api/sim/session", async (req, res, next) => {
     try {
       const requested = typeof req.body?.householdId === "string" ? req.body.householdId : "demo-blr";

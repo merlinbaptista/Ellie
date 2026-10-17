@@ -1,5 +1,9 @@
 # Changelog
 
+## Ellie 1.0.0 mapping
+
+Ellie's application/workspace release is `1.0.0`; the independently versioned schema package remains at `1.7.0` and is extracted as `home-event-schema` `1.0.0` for its first standalone release.
+
 ## 1.7.0 — 2026-10-16
 - Add consent, privacy inventory, forget receipt, and privacy export contracts.
 
