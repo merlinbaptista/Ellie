@@ -39,25 +39,45 @@ try {
   const due = await client.callTool({ name: "due_this_week", arguments: { householdId: "demo-blr" } });
   if (due.isError) throw new Error("due_this_week returned an error");
   console.log("Due:", due.content[0]?.text ?? "");
-  const smokeHousehold = "demo-smoke-phone";
-  const setup = await client.callTool({ name: "setup_household", arguments: { householdId: smokeHousehold, country: "US", region: "Smoke test", timeZone: "America/Chicago", phone: "+15555550100", consent: true, confirm: true } });
-  if (setup.isError) throw new Error("Could not prepare the smoke-test phone household");
-  const handoff = await client.callTool({ name: "send_to_phone", arguments: { householdId: smokeHousehold, contentType: "summary" } });
-  if (handoff.isError) throw new Error("send_to_phone returned an error");
-  const handoffData = handoff.structuredContent?.data as { shortUrl?: string } | undefined;
-  if (!handoffData?.shortUrl) throw new Error("send_to_phone did not return a short URL");
-  const mcpOrigin = new URL(url).origin;
-  const linkUrl = new URL(handoffData.shortUrl);
-  linkUrl.host = mcpOrigin.replace(/^https?:\/\//, "");
-  const phonePage = await fetch(linkUrl, { redirect: "follow" });
-  const phoneHtml = await phonePage.text();
-  if (phonePage.status !== 200 || !phoneHtml.includes("/phone/assets/")) throw new Error("Phone summary link did not open the phone app");
-  const phoneToken = new URL(phonePage.url).searchParams.get("t");
-  if (!phoneToken) throw new Error("Phone summary link did not preserve its access token");
-  const phoneView = await fetch(new URL("/api/phone/view", mcpOrigin), { headers: { authorization: `Bearer ${phoneToken}` } });
-  const summary = await phoneView.json() as { title?: string; sections?: Array<{ heading: string }> };
-  if (!phoneView.ok || !summary.title?.includes("week") || !summary.sections?.length) throw new Error("Phone summary API did not return the expected view");
-  console.log("Phone page:", phonePage.status, linkUrl.pathname);
+  // A disposable household per run, so the production 120-second send dedupe is never the thing under test.
+  const smokeHousehold = `hh_smoke-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  try {
+    const setup = await client.callTool({ name: "setup_household", arguments: { householdId: smokeHousehold, country: "US", region: "Smoke test", timeZone: "America/Chicago", phone: "+15555550100", consent: true, confirm: true } });
+    if (setup.isError) throw new Error("Could not prepare the smoke-test phone household");
+    const handoff = await client.callTool({ name: "send_to_phone", arguments: { householdId: smokeHousehold, contentType: "summary" } });
+    if (handoff.isError) throw new Error("send_to_phone returned an error");
+    const handoffData = handoff.structuredContent?.data as { shortUrl?: string } | undefined;
+    if (!handoffData?.shortUrl) throw new Error("send_to_phone did not return a short URL");
+    const mcpOrigin = new URL(url).origin;
+    const linkUrl = new URL(handoffData.shortUrl);
+    linkUrl.host = mcpOrigin.replace(/^https?:\/\//, "");
+    const phonePage = await fetch(linkUrl, { redirect: "follow" });
+    const phoneHtml = await phonePage.text();
+    if (phonePage.status !== 200 || !phoneHtml.includes("/phone/assets/")) throw new Error("Phone summary link did not open the phone app");
+    const phoneToken = new URL(phonePage.url).searchParams.get("t");
+    if (!phoneToken) throw new Error("Phone summary link did not preserve its access token");
+    const phoneView = await fetch(new URL("/api/phone/view", mcpOrigin), { headers: { authorization: `Bearer ${phoneToken}` } });
+    const summary = await phoneView.json() as { title?: string; sections?: Array<{ heading: string }> };
+    if (!phoneView.ok || !summary.title?.includes("week") || !summary.sections?.length) throw new Error("Phone summary API did not return the expected view");
+    console.log("Phone page:", phonePage.status, linkUrl.pathname);
+  } finally {
+    await eraseSmokeHousehold(client, smokeHousehold);
+  }
 } finally {
   await client.close();
+}
+
+async function eraseSmokeHousehold(mcp: Client, householdId: string): Promise<void> {
+  try {
+    const plan = await mcp.callTool({ name: "forget_household", arguments: { householdId } });
+    const prompt = plan.structuredContent as { speech?: string; followUp?: { retry?: { args?: Record<string, unknown> } } } | undefined;
+    const confirmationCode = prompt?.speech?.match(/forget everything, ([a-z]+ [a-z]+)/i)?.[1];
+    const retryArgs = prompt?.followUp?.retry?.args;
+    if (!confirmationCode || !retryArgs) throw new Error("no confirmation prompt");
+    const erased = await mcp.callTool({ name: "forget_household", arguments: { ...retryArgs, confirmationCode } });
+    if (erased.isError) throw new Error("erase returned an error");
+    console.log("Cleanup: erased", householdId);
+  } catch (error) {
+    console.warn(`Cleanup warning: could not erase ${householdId}: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
