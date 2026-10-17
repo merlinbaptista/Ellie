@@ -8,7 +8,15 @@
 
 ## Screenshots
 
-The four optional captures are not present yet because Playwright Chromium is not installed in this environment. After running `npx playwright install chromium` and `npm run screenshots` with Ellie running, add the generated images from `docs/images/`: simulator idle screen, two-intent simulator result, phone fix guide, and phone booking guide. This text-only fallback avoids broken-image placeholders before capture.
+| Simulated Echo Show | Two tools in one sentence |
+| --- | --- |
+| ![Ellie simulator idle screen](docs/images/simulator-idle.png) | ![One sentence logging the cylinder and diagnosing the purifier](docs/images/simulator-hero.png) |
+
+| Fix guide on the phone | Booking reminder on the phone |
+| --- | --- |
+| ![Cited repair steps on the phone page](docs/images/phone-fix.png) | ![Booking reminder on the phone page](docs/images/phone-booking.png) |
+
+Regenerate them with `npx playwright install chromium`, then `npm run screenshots` while Ellie is running.
 
 ## Demo in 60 Seconds
 
@@ -22,6 +30,20 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:8787/sim/` and press `P` to start Presenter mode. Use **Speak now** or the deterministic **Use chip** fallback. Press `F` for the recording layout. To verify the complete journey headlessly, keep the server running and run `npm run demo:check` in another terminal.
+
+### Reproducing the scripted demo exactly
+
+`npm run seed:reset` anchors the seed to **today**, so everyday runs always look current. The recorded demo and `demo/script.json` are written against a fixed day, so a judge reproducing them must pin both the seed anchor and the clock:
+
+```powershell
+$env:SEED_ANCHOR_DATE = "2026-10-16"      # anchor the seeded history
+npm run seed:reset                         # rebuild the two demo households
+$env:ELLIE_FAKE_NOW = "2026-10-16T09:00:00+05:30"   # 09:00 in Asia/Kolkata
+npm start                                  # or: npm run dev
+npm run demo:check                         # 15/15 against the running server
+```
+
+To start over at any point, run `npm run seed:reset` again; to clear the demo clock, call `ellie_dev_time_travel` with `reset: true`, or restart without `ELLIE_FAKE_NOW`. Presenter mode's **Reset clock** and **Reseed** buttons do the same from the browser. Deleting `data/ellie-store.json` before reseeding gives a completely clean store.
 
 ## Architecture
 
@@ -114,7 +136,8 @@ Latest workspace tests: schema 26, server 151, UI 6, phone 19, simulator 15 (217
 - Hindi, Kannada, Tamil, and Spanish labels remain starter translations and need native-speaker review; use English for the demo unless reviewed.
 - AWS live deployment and Bedrock/SNS/EventBridge delivery have not been verified in this environment. SNS SMS sandbox and India DLT requirements may apply.
 - Alexa+ connector instructions and real-device rehearsal must follow the official connector documentation; the simulator remains the verified demo path.
-- Playwright Chromium screenshots, Docker runtime, public tunnel, and the GitHub schema repository require maintainer-run setup steps.
+- **Docker files are provided, not tested on this machine.** Docker is not installed in this environment, so `Dockerfile`, `docker-compose.yml` and `npm run docker:up` have never been built or run here. Treat them as untested.
+- The public tunnel and the GitHub schema repository require maintainer-run setup steps.
 
 ## License
 
