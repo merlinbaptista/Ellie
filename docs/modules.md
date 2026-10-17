@@ -28,7 +28,7 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `9035db5` | Module 8 simulated Alexa+ web app                                 | 24 / 124 / 6 / 17 / 11                           |   182 |
 | `cfdddfb` | Module 8 completion status and history docs                       | —                                                |     — |
 | `086e048` | Module 9: privacy and trust                                       | 26 / 142 / 6 / 19 / 11                           |   204 |
-| Pending   | Module 10 local tooling (external go-live steps pending)          | 26 / 151 / 6 / 19 / 15                           |   217 |
+| `c8ebd77` | Module 10 local tooling (external go-live steps pending)          | 26 / 151 / 6 / 19 / 15                           |   217 |
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
 Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.
