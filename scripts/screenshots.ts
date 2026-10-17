@@ -29,6 +29,8 @@ resetSeed();
 mkdirSync(imageDir, { recursive: true });
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+  // newPage() cannot override a context viewport, so phone captures need their own context.
+  const phoneContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const page = await context.newPage();
   const health = await page.request.get(`${baseUrl}/sim/`).catch(() => undefined);
   if (!health?.ok()) throw new Error(`Simulator is not available at ${baseUrl}/sim/. Start the server and retry.`);
@@ -41,31 +43,33 @@ try {
   await page.screenshot({ path: resolve(imageDir, "simulator-hero.png") });
 
   await page.locator(".card-stack .ellie-card").nth(1).getByRole("button", { name: "Steps on phone" }).click();
-  const fixLinkButton = page.getByRole("button", { name: "Open Ellie link" }).last();
-  await fixLinkButton.waitFor({ timeout: 15_000 });
-  await fixLinkButton.click();
+  const fixBubble = page.locator(".sms-bubble", { hasText: /steps to fix/i }).last();
+  await fixBubble.waitFor({ timeout: 15_000 });
+  await fixBubble.getByRole("button", { name: "Open Ellie link" }).click();
   const fixHref = await page.locator('iframe[title="Phone browser"]').getAttribute("src");
   if (!fixHref) throw new Error("The fix message did not open a phone link.");
-  const fixPage = await context.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const fixPage = await phoneContext.newPage();
   await fixPage.goto(new URL(fixHref, baseUrl).href);
   await fixPage.locator(".phone-app").waitFor({ timeout: 15_000 });
   await fixPage.screenshot({ path: resolve(imageDir, "phone-fix.png") });
   await fixPage.close();
 
+  // Opening a link switches the phone panel to its Browser tab, which hides the message list.
+  await page.getByRole("button", { name: /^Messages/ }).click();
   await page.getByRole("button", { name: /Day 30.*reminder/i }).click();
   await page.getByText(/reminder(?:s)? sent/i).waitFor({ timeout: 15_000 });
-  await page.waitForTimeout(2_100);
-  const bookingLinkButton = page.getByRole("button", { name: "Open Ellie link" }).last();
-  await bookingLinkButton.waitFor({ timeout: 15_000 });
-  await bookingLinkButton.click();
+  const bookingBubble = page.locator(".sms-bubble", { hasText: /book|runs out/i }).last();
+  await bookingBubble.waitFor({ timeout: 15_000 });
+  await bookingBubble.getByRole("button", { name: "Open Ellie link" }).click();
   const bookingHref = await page.locator('iframe[title="Phone browser"]').getAttribute("src");
   if (!bookingHref) throw new Error("The reminder did not open a phone booking link.");
-  const bookingPage = await context.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const bookingPage = await phoneContext.newPage();
   await bookingPage.goto(new URL(bookingHref, baseUrl).href);
   await bookingPage.locator(".phone-app").waitFor({ timeout: 15_000 });
   await bookingPage.getByRole("heading").first().waitFor();
   await bookingPage.screenshot({ path: resolve(imageDir, "phone-booking.png") });
   await bookingPage.close();
+  await phoneContext.close();
   await context.close();
   console.log(`Screenshots saved to ${imageDir}`);
 } finally {
