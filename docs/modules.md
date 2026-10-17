@@ -12,6 +12,7 @@
 | 8   | Simulated Alexa+ web app         | Browser voice, multi-intent, Echo Show cards, household switcher                                                           | ✅     |
 | 9   | Privacy & trust                  | Knowledge and forget tools, consent, export, retention, optional OAuth 2.1 resource protection                             | ✅     |
 | 10  | Demo & submission                | Presenter, demo check, preflight/bench, pack report, Docker/deployment prep, schema extraction, submission docs            | ⏳     |
+| 11  | Go-live, final audit and win plan | Phase A audit recorded; Gate A awaiting approval; no fixes or Phase B started                                               | ⏳     |
 
 Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
 
@@ -29,6 +30,18 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `cfdddfb` | Module 8 completion status and history docs                       | —                                                |     — |
 | `086e048` | Module 9: privacy and trust                                       | 26 / 142 / 6 / 19 / 11                           |   204 |
 | `c8ebd77` | Module 10 local tooling (external go-live steps pending)          | 26 / 151 / 6 / 19 / 15                           |   217 |
+| `1299f8e` | Module 11 source prompt, committed separately                    | Not rerun (prompt only)                          |     — |
+| `bbe6754` | Module 11 Phase A audit; Gate A awaiting approval                | 26 / 150 passed, 1 failed / 6 / 19 / 15           | 216 passed / 217 |
+
+## Module 11 Phase A
+
+Audit evidence and proposed fixes: [audit/final-audit.md](audit/final-audit.md). Full gate discovered 217 tests, unchanged from Module 10: 216 passed and one server privacy integration test failed. Its isolated rerun passed, but the full-run failure remains open. Build, typecheck, lint, pack validation and all 15 demo steps passed. Smoke failed on repeated fixed-household send dedupe. All seven mock benchmark p95 values were below 500 ms; the highest was diagnosis at 101 ms. No live AWS timings were measured.
+
+The fresh clone installed, built, seeded, served `/sim/` and passed the first presenter step in the integrated browser. Inspector UI, Docker runtime, real microphone rehearsal and public/live AWS paths were not run. No code fixes were applied and no release tag was created. Phase B must wait for approval at Gate A.
+
+### Schema Test Count: C7
+
+The monorepo has 26 schema tests; the standalone extract has 22. Extraction omits three Ellie phone-only tests from `packages/schema/test/phone.test.ts` and two mixed Ellie-specific contract tests from `packages/schema/test/contracts.test.ts`, then adds one generic standalone contracts test: **26 - 3 - 2 + 1 = 22**. This is an intentional scope difference, not four unexplained failing or skipped tests. Standalone typecheck, all 22 tests, pack validation and JSON Schema stability passed. Its seven dev/test-toolchain dependency advisories remain approval-gated; details are in the audit.
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
 Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.
