@@ -58,4 +58,24 @@ describe("privacy forget cascade", () => {
     const stored = await takeConfirmation(ctx, "demo-blr", confirmation.id, "household", false);
     expect(stored?.planHash).toBe(before.planHash);
   });
+
+  it("keeps an item forget plan stable while unrelated household and shared rows change", async () => {
+    const ctx = await createTestContext();
+    await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
+    const items = await ctx.repositories.items.list("demo-blr");
+    const target = items.find((item) => item.catalogKey === "inverter_battery") ?? items[0]!;
+    const other = items.find((item) => item.itemId !== target.itemId)!;
+    const before = await forgetItem(ctx, "demo-blr", target.itemId);
+    const confirmation = await saveConfirmation(ctx, "demo-blr", "item", before.planHash);
+    await ctx.storage.put({ pk: householdPk("demo-blr"), sk: `PENDING#${other.itemId}:unrelated`, type: "pending", data: { itemId: other.itemId } });
+    await ctx.storage.put({ pk: householdPk("demo-blr"), sk: `CONSENT#phone_messages#2026-10-16T03:00:00.000Z#unrelated`, type: "consent", data: { purpose: "phone_messages", granted: true } });
+    await ctx.storage.put({ pk: "AUDIT", sk: "demo-blr#2026-10-16T03:00:00.000Z#unrelated", type: "privacy-audit", data: { householdId: "demo-blr", action: "inventory_viewed" } });
+    await saveConfirmation(ctx, "demo-blr", "item", before.planHash);
+    const after = await forgetItem(ctx, "demo-blr", target.itemId);
+    expect(after.planHash).toBe(before.planHash);
+    const stored = await takeConfirmation(ctx, "demo-blr", confirmation.id, "item");
+    expect(stored?.planHash).toBe(after.planHash);
+    expect((await executeForgetItem(ctx, "demo-blr", target.itemId)).scope).toBe("item");
+    expect(await ctx.repositories.items.get("demo-blr", other.itemId)).not.toBeNull();
+  });
 });

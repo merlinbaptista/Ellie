@@ -42,7 +42,8 @@ describe("privacy Journey 6", () => {
     expect(changedPlan.followUp.retry.args.confirmationId).toBeTruthy();
     expect(await ctx.repositories.items.get("demo-blr", firstItem.itemId)).not.toBeNull();
     const deleted = await client.callTool({ name: "forget_item", arguments: { ...changedPlan.followUp.retry.args, confirm: true } });
-    expect((deleted.structuredContent as { data: { scope: string } }).data.scope).toBe("item");
+    // The renewed confirmation must execute; print the whole response if it does not, so a failure is never unexplained.
+    expect((deleted.structuredContent as { data?: { scope: string } }).data?.scope, `renewed confirmation did not execute: ${JSON.stringify(deleted.structuredContent)}`).toBe("item");
     expect(await ctx.repositories.items.get("demo-blr", firstItem.itemId)).toBeNull();
 
     const withdrawal = await client.callTool({ name: "manage_consent", arguments: { householdId: "demo-blr", action: "withdraw", purpose: "phone_messages" } });
