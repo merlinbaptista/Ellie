@@ -130,7 +130,26 @@ All five are documentation or user decisions. **None is a feature.** All fit bef
 | 4 | Audit every card against "one fact, one action" and fix any that fail | +0.3 Design | 1.0 | 0.3 | me |
 | 5 | Publish `home-event-schema` and complete the submission URLs, declaring both mini challenges | +0.3 Impact | 1.0 | 0.3 | 👤 **you only** — needs an IP check and a GitHub account |
 
-Items 1, 2 and 4 are the cheap wins and are applied in this module without changing any behaviour. Items 3 and 5 stay with you.
+Items 1, 2 and 4 are applied in this module. Items 3 and 5 stay with you.
+
+### Card audit result (item 4)
+
+Every card-producing tool was inspected against "one fact, one action". Two were genuinely too dense for a glance on an Echo Show and were trimmed in `bc27ba5`; the rest were already within budget. Text and `structuredContent` are unchanged in all cases, so nothing was removed from the response — only from the visual.
+
+| Tool | Before | After | Verdict |
+|---|---|---|---|
+| `due_this_week` | up to 12 rows and **8 buttons** | 6 rows, 3 buttons | ❌ → ✅ fixed. Entries are already ordered by urgency; the full list remains in `structuredContent` |
+| `diagnose` (result) | 3 causes + 4 evidence + fix = 8 rows | 2 + 2 + fix = 5 rows | ⚠️ → ✅ fixed. The three actions are kept: they are three genuinely different next intents |
+| `predict_next` | 6–7 rows, 0–1 action | unchanged | ⚠️ acceptable: every row (next due, remind on, based on, confidence) is a distinct fact the speech cannot carry |
+| `log_event` | up to 7 rows, 1 action | unchanged | ⚠️ acceptable: "days since previous" and "warranty until" are the learning-loop proof |
+| `get_history` | 8 rows | unchanged | ✅ a timeline is inherently a list |
+| `setup_household` | 7 rows | unchanged | ✅ a settings card is read, not glanced |
+| `what_do_you_know`, `status`, `ping`, `log_resolution`, `region_info` | small | unchanged | ✅ |
+| `diagnose` safety stop, `diagnose` follow-up | 1 row | unchanged | ✅ exactly one fact, and the safety card shows only the banner and the call button |
+
+A regression test in `packages/server/test/dueThisWeek.test.ts` now caps the card at 6 items and 3 actions while asserting `structuredContent` stays complete.
+
+Caveat: the "glanceable, one fact one action" phrasing comes from an **unverified** source (§0). The changes above are justified on their own terms — eight buttons on a voice-first card is poor design regardless of who said so — and no claim about the Loop It! criteria is made anywhere in the submission.
 
 ### What is explicitly *not* recommended
 
