@@ -45,6 +45,12 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `51f9fbc` | Fix 1.11: preflight splits CODE problems from CREDENTIAL gaps    | —                                                |     — |
 | `93485f5` | Fixes 1.5/1.9: demo anchor pinned, Docker status stated          | —                                                |     — |
 | `20979a8` | Fix 1.4: reconstructed Module 9 prompt                           | —                                                |     — |
+| `6775af9` | Gate A register closed; Phase 1 evidence recorded                | 26 / 157 / 6 / 19 / 15                           |   223 |
+| `fef7b10` | Phase 2 B1/B3: `keys:check` and per-service `aws:check`          | —                                                |     — |
+| `711431d` | Phase 2 B5: configurable Bedrock timeout and `bench -- --live`   | —                                                |     — |
+| `52e1936` | Phase 2 B4: `ALEXA_MODE` 401 behaviour and conformance table     | —                                                |     — |
+| `75b3c04` | Phase 2 B2: `docs/API_SETUP.md`                                  | —                                                |     — |
+| `e878256` | Phase 3: `docs/WINNERS_ANALYSIS.md`                              | 26 / 173 / 6 / 19 / 15                           |   239 |
 
 ## Module 12 Phase 1: Gate A closed
 

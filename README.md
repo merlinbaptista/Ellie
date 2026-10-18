@@ -2,9 +2,24 @@
 
 **Normal reminders remember a time. Ellie remembers your home.** Ellie is an MCP household memory agent that turns home history into predictions, cited diagnosis, and useful phone handoffs.
 
+<!-- 👤 Replace this paragraph with your own household moment, in your own words. One true incident. No statistics. -->
+> *The moment that started this.* <!-- for example: the Saturday the cooking gas ran out mid-meal, two days after I'd told myself I should order a refill. -->
+
+**What Alexa+ already does.** Set a reminder for a date you choose, and tell you when it's due.
+
+**What it can't do.** Know that *your* cylinder lasts 27 days rather than 30 because that's what your last six refills show. Know that your region needs a booking lead time. Remember that the purifier did this before and what fixed it.
+
+**What Ellie adds.** A household memory that learns from your own events, applies sourced regional rules, diagnoses from your own repair history with cited evidence, and hands the long version to your phone.
+
 - Remembers appliances, supplies, maintenance, and household events.
 - Predicts what is due from household history and sourced regional packs.
 - Diagnoses problems with cited evidence, safety stops, and a one-question-at-a-time flow, then hands longer guidance to a phone.
+
+Five surfaces, one server: the Echo Show card, the phone page, the Alexa+ simulator, the MCP App view, and the privacy views.
+
+Honest scope: the Alexa+ MCP Toolkit is [available in the United States](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-overview.html) and limited to selected partners, so the demo runs on the bundled simulator. It is labelled a simulator everywhere it appears. The MCP server underneath is real — see [docs/audit/inspector-evidence.md](docs/audit/inspector-evidence.md) and the [conformance table](docs/DEPLOY.md#alexa-connection-you).
+
+Building this surfaced real platform friction, logged in [docs/friction-log.md](docs/friction-log.md) — including a requirement where Alexa+ and RFC 9728 disagree about 401 responses.
 
 ## Screenshots
 
