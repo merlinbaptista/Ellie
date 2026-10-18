@@ -13,7 +13,7 @@
 | 9   | Privacy & trust                  | Knowledge and forget tools, consent, export, retention, optional OAuth 2.1 resource protection                             | ✅     |
 | 10  | Demo & submission                | Presenter, demo check, preflight/bench, pack report, Docker/deployment prep, schema extraction, submission docs            | ⏳     |
 | 11  | Go-live, final audit and win plan | Phase A audit recorded; Gate A awaiting approval; no fixes or Phase B started                                               | ⏳     |
-| 12  | Gate A closure, API-ready freeze  | Gate A fixes applied; API inventory, `API_SETUP.md`, `keys:check`, Alexa+ conformance, winner benchmarking                  | ⏳     |
+| 12  | Gate A closure, API-ready freeze  | Gate A fixes applied; API inventory, `API_SETUP.md`, `keys:check`, Alexa+ conformance, winner benchmarking                  | ✅     |
 
 Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
 
@@ -51,9 +51,29 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `52e1936` | Phase 2 B4: `ALEXA_MODE` 401 behaviour and conformance table     | —                                                |     — |
 | `75b3c04` | Phase 2 B2: `docs/API_SETUP.md`                                  | —                                                |     — |
 | `e878256` | Phase 3: `docs/WINNERS_ANALYSIS.md`                              | 26 / 173 / 6 / 19 / 15                           |   239 |
+| `a071b5f` | Phase 3.3: README, submission and video script cheap wins        | —                                                |     — |
+| `bc27ba5` | Card audit: glanceable due and diagnosis cards                   | 26 / 174 / 6 / 19 / 15                           |   240 |
+| `514a029` | Card audit result recorded                                       | —                                                |     — |
+
+## Module 12 final gate
+
+Run on a clean tree at `514a029`, 18 Oct 2026, Windows, Node 24, mock/file adapters, fake clock `2026-10-16T09:00:00+05:30`.
+
+| Check | Result |
+|---|---|
+| `npm ci && npm run build && npm run typecheck && npm run lint` | PASS |
+| `npm test` ×3 consecutive | PASS, PASS, PASS (9 / 10 / 69 / 8 / 3 test files per package each time) |
+| `npx vitest run --sequence.shuffle` (server) | PASS, seed `1792341806953`, 69 files / 174 tests |
+| `npm run validate:packs` | PASS, no schema errors; 59 starter values remain unverified (👤) |
+| `npm run demo:check` | PASS, 15/15, exit 0 |
+| `npm run bench` | PASS, 7/7 tools under 500 ms p95; highest diagnosis at 85 ms |
+| `npm run smoke` ×2 against one server | PASS, PASS |
+| `npm run keys:check` | 0 configured, 9 missing, **0 malformed**, no code errors |
+| `npm run preflight` | **0 CODE problems**, 8 credential gaps, 4 mock-driver warnings |
+
+Test total: **240** (schema 26 / server 174 / ui 6 / phone 19 / simulator 15). The rise from 217 at Module 10 is 23 added regression tests; none was removed, skipped or weakened.
 
 ## Module 12 Phase 1: Gate A closed
-
 All eleven approved Gate A fixes are applied; the per-item outcome table is in [audit/final-audit.md](audit/final-audit.md). Nine are FIXED, three ACCEPTED with reasons, and the remaining register rows are credential-blocked (🔑 A-12, A-13) or user-owned (👤 A-14 to A-18). No ❌ or ⚠️ rows remain.
 
 The two most instructive fixes were the same bug: the privacy Journey 6 flake was **not** a test-isolation problem but a real redaction defect. A UUID whose first segment happens to be eight digits matched the phone-number heuristic, so `confirmationId` was rewritten to `[REDACTED_PHONE]` inside the tool result and the destructive confirmation could never be completed. The MCP Inspector CLI run (fix 1.8) made it visible; no test was weakened to make it pass.
