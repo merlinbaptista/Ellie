@@ -49,6 +49,7 @@
     "dev:issuer": "tsx scripts/dev-issuer.ts",
     "aws:env": "tsx scripts/print-env-from-stack.ts",
     "aws:check": "tsx scripts/aws-check.ts",
+    "keys:check": "tsx scripts/keys-check.ts",
     "inspector": "npx @modelcontextprotocol/inspector"
   },
   "devDependencies": {
