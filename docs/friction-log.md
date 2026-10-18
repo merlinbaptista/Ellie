@@ -1,5 +1,7 @@
 # Friction log
 
+> **Naming note.** The product was renamed from **Ellie** to **Headsup** after these entries were written. They are left verbatim so the quoted output still matches what was actually observed; "Ellie" means Headsup. Only the display name changed — `ELLIE_*` variables, `@ellie/*` package names and `ellie_*` MCP tool names are unchanged.
+
 ## Module 12 Phase 2 — making the repo API-ready
 
 | Snag | Severity | Observed result | Workaround | Suggestion |

@@ -1,5 +1,7 @@
 # MCP Inspector evidence (Gate A item A-08)
 
+> **Naming note.** The product was renamed from **Ellie** to **Headsup** after this evidence was captured. This file is left verbatim so it still matches what was actually run; "Ellie" below means Headsup. Internal identifiers (`ELLIE_*` variables, `@ellie/*` packages, `ellie_*` tool names) were deliberately **not** renamed, so the transcript remains accurate for the current build too.
+
 Closes Gate A finding **A-08** ("Inspector UI not exercised"). The official MCP Inspector was run in **CLI mode** against a locally running Ellie server. This replaces the earlier SDK-client sweep, which was supporting evidence only.
 
 ## How this was produced

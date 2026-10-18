@@ -1,5 +1,7 @@
 # Final Module Audit: Gate A
 
+> **Naming note.** The product was renamed from **Ellie** to **Headsup** after this audit was written. The text is left verbatim so it still matches the runs it records; "Ellie" means Headsup throughout. Only the display name changed — `ELLIE_*` variables, `@ellie/*` package names and `ellie_*` MCP tool names are unchanged.
+
 Audit date: 2026-10-17. Implementation baseline: `a471bbd`. Module 11 prompt: `1299f8e`.
 Scope: Phase A only. No application fixes, dependency upgrades, pack decisions, live deployment, or release tag are authorized here. Gate A is awaiting approval.
 
