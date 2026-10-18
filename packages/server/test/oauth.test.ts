@@ -18,6 +18,22 @@ function listen(app: express.Express): Promise<string> {
 }
 
 describe("OAuth protected resource", () => {
+  it("omits WWW-Authenticate from 401 responses by default, as the Alexa+ QuickStart requires", async () => {
+    const ctx = await createTestContext();
+    ctx.env = { ...ctx.env, ELLIE_PUBLIC_BASE_URL: "http://127.0.0.1:8787", OAUTH_ENABLED: true, OAUTH_ISSUER_URL: "https://issuer.example", OAUTH_AUDIENCE: "http://127.0.0.1:8787/mcp" };
+    expect(ctx.env.ALEXA_MODE).toBe(true);
+    const base = await listen(createApp(ctx));
+
+    const denied = await fetch(`${base}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    expect(denied.status).toBe(401);
+    expect(denied.headers.get("www-authenticate")).toBeNull();
+
+    // The discovery path Alexa+ does use must still work without the header.
+    const metadata = await fetch(`${base}/.well-known/oauth-protected-resource`).then((response) => response.json()) as { resource: string; scopes_supported: string[] };
+    expect(metadata.resource).toBe("http://127.0.0.1:8787/mcp");
+    expect(metadata.scopes_supported).toContain("ellie.home");
+  });
+
   it("keeps development endpoints disabled in production even when OAuth is enabled", async () => {
     const ctx = await createTestContext();
     ctx.env = { ...ctx.env, NODE_ENV: "production", OAUTH_ENABLED: true };
@@ -34,7 +50,7 @@ describe("OAuth protected resource", () => {
     issuer = await listen(issuerApp);
     const ctx = await createTestContext();
     await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
-    ctx.env = { ...ctx.env, ELLIE_PUBLIC_BASE_URL: "http://127.0.0.1:8787", OAUTH_ENABLED: true, OAUTH_ISSUER_URL: issuer, OAUTH_JWKS_URL: `${issuer}/jwks`, OAUTH_AUDIENCE: "http://127.0.0.1:8787/mcp", OAUTH_REQUIRED_SCOPES: "ellie.home" };
+    ctx.env = { ...ctx.env, ELLIE_PUBLIC_BASE_URL: "http://127.0.0.1:8787", OAUTH_ENABLED: true, OAUTH_ISSUER_URL: issuer, OAUTH_JWKS_URL: `${issuer}/jwks`, OAUTH_AUDIENCE: "http://127.0.0.1:8787/mcp", OAUTH_REQUIRED_SCOPES: "ellie.home", ALEXA_MODE: false };
     const app = createApp(ctx);
     const base = await listen(app);
     const metadata = await fetch(`${base}/.well-known/oauth-protected-resource`).then((response) => response.json()) as { resource: string; scopes_supported: string[] };
@@ -42,6 +58,7 @@ describe("OAuth protected resource", () => {
     expect(metadata.scopes_supported).toEqual(["ellie.home"]);
     const denied = await fetch(`${base}/mcp`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
     expect(denied.status).toBe(401);
+    // ALEXA_MODE is false here, so the RFC 9728 challenge header is present for standard MCP clients.
     expect(denied.headers.get("www-authenticate")).toContain("oauth-protected-resource");
 
     const tokenFor = (scope: string, audience = metadata.resource, expiration = "2m", tokenIssuer = issuer, householdClaim: string | null = "demo-blr") => new SignJWT({ scope, ...(householdClaim ? { ellie_household: householdClaim } : {}) }).setProtectedHeader({ alg: "RS256" }).setIssuer(tokenIssuer).setAudience(audience).setSubject("test-subject").setIssuedAt().setExpirationTime(expiration).sign(privateKey);

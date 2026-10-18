@@ -44,6 +44,11 @@ function challenge(ctx: AppContext, error?: string): string {
   const metadata = `${ctx.env.ELLIE_PUBLIC_BASE_URL.replace(/\/$/, "")}/.well-known/oauth-protected-resource`;
   return `Bearer resource_metadata="${metadata}"${error ? `, error="${error}"` : ""}`;
 }
+/** Alexa+ lists `WWW-Authenticate` in 401 responses as not yet supported, so ALEXA_MODE omits it. Clients find the PRM document at its well-known URI instead. */
+function setChallenge(ctx: AppContext, res: Response, error?: string): void {
+  if (ctx.env.ALEXA_MODE) return;
+  res.setHeader("WWW-Authenticate", challenge(ctx, error));
+}
 async function auditFailure(ctx: AppContext, reason: string): Promise<void> {
   const at = ctx.clock.now().toISOString();
   await ctx.storage.put({ pk: auditPk(), sk: auditSk("unknown", at, randomUUID()), type: "privacy-audit", data: { action: "oauth_sign_in_failed", reason }, ttlClock: "wall", ttl: Math.floor(Date.now() / 1000) + ctx.env.AUDIT_RETENTION_DAYS * 86400 }).catch(() => undefined);
@@ -54,7 +59,7 @@ export function oauthMiddleware(ctx: AppContext) {
     if (!ctx.env.OAUTH_ENABLED) { next(); return; }
     const raw = req.header("authorization");
     const token = raw?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
-    if (!token) { res.setHeader("WWW-Authenticate", challenge(ctx)); res.status(401).json({ error: "invalid_token" }); return; }
+    if (!token) { setChallenge(ctx, res); res.status(401).json({ error: "invalid_token" }); return; }
     try {
       const issuer = ctx.env.OAUTH_ISSUER_URL;
       if (!issuer) throw new Error("OAuth issuer is not configured");
@@ -63,7 +68,7 @@ export function oauthMiddleware(ctx: AppContext) {
       const scopes = typeof verified.payload.scope === "string" ? verified.payload.scope.split(/\s+/) : Array.isArray(verified.payload.scp) ? verified.payload.scp.filter((scope): scope is string => typeof scope === "string") : [];
       const required = ctx.env.OAUTH_REQUIRED_SCOPES.split(/\s+/).filter(Boolean);
       if (!required.every((scope) => scopes.includes(scope))) {
-        res.setHeader("WWW-Authenticate", challenge(ctx, "insufficient_scope"));
+        setChallenge(ctx, res, "insufficient_scope");
         res.status(403).json({ error: "insufficient_scope", scope: required.join(" ") });
         return;
       }
@@ -72,7 +77,7 @@ export function oauthMiddleware(ctx: AppContext) {
       withAuthIdentity({ householdId, subject }, next);
     } catch (error) {
       await auditFailure(ctx, error instanceof Error ? error.name : "invalid_token");
-      res.setHeader("WWW-Authenticate", challenge(ctx, "invalid_token"));
+      setChallenge(ctx, res, "invalid_token");
       res.status(401).json({ error: "invalid_token" });
     }
   };

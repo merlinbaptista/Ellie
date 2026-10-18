@@ -1,5 +1,15 @@
 # Friction log
 
+## Module 12 Phase 2 — making the repo API-ready
+
+| Snag | Severity | Observed result | Workaround | Suggestion |
+|---|---|---|---|---|
+| Alexa+ contradicts RFC 9728 on 401 responses | High | RFC 9728 and the MCP authorization spec both say a protected resource should return `WWW-Authenticate` with `resource_metadata` so the client can discover the authorization server. The [Alexa+ QuickStart](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart.html) lists `WWW-Authenticate` in 401 responses under **"Not Supported Yet"**. Module 9 implemented the RFC, so Ellie was non-conformant with Alexa+ | `ALEXA_MODE` (default `true`) omits the header; `false` restores standards behaviour. Both are tested | **Product feedback to Amazon:** a conforming MCP server is penalised here. Please either accept and ignore the header, or state explicitly that it must be absent rather than listing it as unsupported — "not supported" reads as "tolerated", not "forbidden" |
+| The Toolkit is US-only and partner-gated | High | The Overview states the MCP Toolkit is available in the United States, and `addon.json` lists `distributionCountries` with `["US"]`. Access is further limited to selected partners. Ellie is built in Bengaluru, so the headline integration cannot be demonstrated end to end | Built a faithful Alexa+ simulator and label it as a simulator everywhere | A read-only sandbox for non-US developers would let a global hackathon be judged on the same artefact everyone else builds |
+| Two of the auth requirements are not the MCP server's to meet | Med | The checklist mixes resource-server duties (401 shape, PRM document) with authorization-server duties (`/.well-known/oauth-authorization-server`, `S256`, PKCE, the `resource` parameter). It is easy to read the list as all-mine and then "implement" an endpoint you must not own | Split the conformance table into ✅ server, 👤 issuer | Group the checklist by role: "your MCP server must" versus "your authorization server must" |
+| A Converse timeout depended on the caller | Med | `BedrockLlm` honoured whatever `AbortSignal` a caller passed. Diagnosis passed one; a new call site could forget, and nothing capped the request | `BEDROCK_TIMEOUT_MS` is now enforced inside the adapter and raced against the send, so a transport that ignores the signal still cannot hold a tool open | Timeouts belong at the adapter boundary, not in each caller |
+| `aws-sdk-client-mock` ignores `abortSignal` | Low | A fake that never resolves is not cancelled by `abortSignal`, so an abort-only implementation looks correct and the timeout test hangs | Raced the promise explicitly rather than relying on the SDK honouring the signal | A test double that silently drops cancellation semantics should say so |
+
 ## Module 12 Phase 1 — closing Gate A
 
 | Snag | Severity | Observed result | Workaround | Suggestion |

@@ -93,6 +93,8 @@ const envSchema = z.object({
   DEV_OAUTH_PRIVATE_KEY: optionalString,
   LINK_SIGNING_SECRET: defaultString("change-me-in-production"),
   OAUTH_ENABLED: bool(false),
+  // The Alexa+ MCP QuickStart lists `WWW-Authenticate` in 401 responses as "Not Supported Yet", so Alexa+ behaviour is the default.
+  ALEXA_MODE: bool(true),
   OAUTH_ISSUER_URL: optionalString,
   OAUTH_AUDIENCE: optionalString,
   OAUTH_JWKS_URL: optionalString,
