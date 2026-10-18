@@ -25,5 +25,5 @@ export function registerMcpAppResource(server: McpServer, ctx: AppContext): void
     ctx.logger.warn({ path: appPath }, "mcp_apps.bundle_missing");
     return;
   }
-  server.registerResource("Ellie interactive card", MCP_APP_URI, { title: "Ellie interactive card", description: "Interactive rendering of Ellie tool cards.", mimeType: "text/html;profile=mcp-app" }, async (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/html;profile=mcp-app", text: html }] }));
+  server.registerResource("Headsup interactive card", MCP_APP_URI, { title: "Headsup interactive card", description: "Interactive rendering of Headsup tool cards.", mimeType: "text/html;profile=mcp-app" }, async (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/html;profile=mcp-app", text: html }] }));
 }

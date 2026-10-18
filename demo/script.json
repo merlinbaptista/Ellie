@@ -21,7 +21,7 @@
     "household": "demo-blr",
     "action": { "kind": "say", "text": "What's due this week?" },
     "expect": { "tools": ["due_this_week"], "speechIncludes": ["3 months overdue", "due today"], "state": "done", "maxToolMs": 500 },
-    "presenterNote": "Normal reminders remember a time. Ellie remembers your home."
+    "presenterNote": "Normal reminders remember a time. Headsup remembers your home."
   },
   {
     "id": "two-intent-hero",

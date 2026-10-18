@@ -92,7 +92,7 @@ The fresh clone installed, built, seeded, served `/sim/` and passed the first pr
 
 ### Schema Test Count: C7
 
-The monorepo has 26 schema tests; the standalone extract has 22. Extraction omits three Ellie phone-only tests from `packages/schema/test/phone.test.ts` and two mixed Ellie-specific contract tests from `packages/schema/test/contracts.test.ts`, then adds one generic standalone contracts test: **26 - 3 - 2 + 1 = 22**. This is an intentional scope difference, not four unexplained failing or skipped tests. Standalone typecheck, all 22 tests, pack validation and JSON Schema stability passed. Its seven dev/test-toolchain dependency advisories remain approval-gated; details are in the audit.
+The monorepo has 26 schema tests; the standalone extract has 22. Extraction omits three Headsup phone-only tests from `packages/schema/test/phone.test.ts` and two mixed Headsup-specific contract tests from `packages/schema/test/contracts.test.ts`, then adds one generic standalone contracts test: **26 - 3 - 2 + 1 = 22**. This is an intentional scope difference, not four unexplained failing or skipped tests. Standalone typecheck, all 22 tests, pack validation and JSON Schema stability passed. Its seven dev/test-toolchain dependency advisories remain approval-gated; details are in the audit.
 
 Module 5 AC preferred-month regressions: “keeps March 30 AC service due date in March without shifting preferred months” and “shifts May 10 AC service to March 1 and records the preferred-month rule”.
 Module 6 follow-ups committed separately as `2df8b37`: explicit app/wall TTL clock, schema 1.4.1, phone smoke, AC regression names, and read-only AWS check.

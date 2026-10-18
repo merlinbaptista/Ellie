@@ -12,7 +12,7 @@ export function register(server: McpServer, ctx: AppContext): void {
     "setup_household",
     {
       title: "Set up household",
-      description: "Set up or update a household progressively. Ellie asks for one missing detail at a time and never requests a full address.",
+      description: "Set up or update a household progressively. Headsup asks for one missing detail at a time and never requests a full address.",
       inputSchema: ToolContracts.setup_household.shape,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },

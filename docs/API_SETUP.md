@@ -1,6 +1,6 @@
 # API setup
 
-Ellie runs with an **empty `.env`**. Every external service has a working mock, every test passes without credentials, and the demo is reproducible offline. This document is only for the optional live path.
+Headsup runs with an **empty `.env`**. Every external service has a working mock, every test passes without credentials, and the demo is reproducible offline. This document is only for the optional live path.
 
 Work top to bottom: later services depend on earlier ones. After each section, run its verify command before moving on.
 
@@ -37,7 +37,7 @@ Pricing entry point: <https://aws.amazon.com/pricing/>. Free-tier terms: <https:
 
 ## 1. IAM (least privilege)
 
-**What it's for.** Ellie signs every AWS call. Give it exactly the actions it uses and nothing else.
+**What it's for.** Headsup signs every AWS call. Give it exactly the actions it uses and nothing else.
 
 **Steps**
 
@@ -55,7 +55,7 @@ AWS_SESSION_TOKEN=       # only for temporary credentials
 AWS_PROFILE=             # alternative to the two keys above
 ```
 
-`AWS_SESSION_TOKEN` and `AWS_PROFILE` are read by the AWS SDK's provider chain, not by Ellie's own code.
+`AWS_SESSION_TOKEN` and `AWS_PROFILE` are read by the AWS SDK's provider chain, not by Headsup's own code.
 
 **Verify:** `npm run keys:check` → `AWS credentials  ✔ CONFIGURED`.
 **Cost:** IAM is free — see <https://aws.amazon.com/iam/>.
@@ -66,7 +66,7 @@ AWS_PROFILE=             # alternative to the two keys above
 
 ## 2. Bedrock
 
-**What it's for.** Ranking diagnosis causes (the LLM may only re-order causes Ellie computed and cite evidence IDs Ellie supplied), routing simulator utterances, and translating phone copy. Ellie never sends a household id, contact detail, region or household-specific item name to Bedrock.
+**What it's for.** Ranking diagnosis causes (the LLM may only re-order causes Headsup computed and cite evidence IDs Headsup supplied), routing simulator utterances, and translating phone copy. Headsup never sends a household id, contact detail, region or household-specific item name to Bedrock.
 
 **Steps**
 
@@ -89,7 +89,7 @@ LLM_BACKGROUND_TIMEOUT_MS=8000
 
 **Verify:** `npm run aws:check -- --only=bedrock --bedrock`. The `--bedrock` flag is required because this check is the only billable one: it sends a five-token `Converse` ping. Expected: `Bedrock  ✔ PASS`.
 **Cost:** per input/output token — <https://aws.amazon.com/bedrock/pricing/>.
-**Fallback:** leave `BEDROCK_MODEL_ID` blank. Ellie uses the mock LLM; diagnosis still works because scoring, evidence and fix plans are deterministic. On a timeout or a rejected answer the deterministic result is spoken and `bedrock.timeout_fallback` is logged.
+**Fallback:** leave `BEDROCK_MODEL_ID` blank. Headsup uses the mock LLM; diagnosis still works because scoring, evidence and fix plans are deterministic. On a timeout or a rejected answer the deterministic result is spoken and `bedrock.timeout_fallback` is logged.
 **Teardown:** delete the guardrail. Model access costs nothing while idle; there is nothing to delete.
 
 ---
@@ -211,7 +211,7 @@ Generate the secret with `node -e "console.log(require('crypto').randomBytes(32)
 
 **What it's for.** Scoping a connection to one household. With OAuth on, the household comes from the verified token and a differing `householdId` argument is refused.
 
-Ellie is the **resource server** only. The authorization server is yours to provide, and it must publish `/.well-known/oauth-authorization-server` with `S256` in `code_challenge_methods_supported`, or Alexa+ account linking will not proceed. See the conformance table in [DEPLOY.md](DEPLOY.md).
+Headsup is the **resource server** only. The authorization server is yours to provide, and it must publish `/.well-known/oauth-authorization-server` with `S256` in `code_challenge_methods_supported`, or Alexa+ account linking will not proceed. See the conformance table in [DEPLOY.md](DEPLOY.md).
 
 **`.env`**
 
@@ -226,7 +226,7 @@ ALEXA_MODE=true             # omit WWW-Authenticate from 401s, per the Alexa+ Qu
 ```
 
 **Verify:** run the bundled development issuer with `npm run dev:issuer`, mint a token with `npm run dev:token`, then `npm run oauth:live-check` with `ELLIE_OAUTH_TEST_TOKEN` set. `GET /.well-known/oauth-protected-resource` must return `resource` and `scopes_supported`.
-**Cost:** none from Ellie; depends on your issuer.
+**Cost:** none from Headsup; depends on your issuer.
 **Fallback:** `OAUTH_ENABLED=false`. The simulator and phone page both work without it.
 **Teardown:** set `OAUTH_ENABLED=false`; revoke any issued client.
 
@@ -241,7 +241,7 @@ Short version: the MCP Toolkit is **available in the United States** and limited
 **`.env`:** only `ELLIE_PUBLIC_BASE_URL` and the OAuth block above.
 **Verify:** `alexa-ai deploy` returns an add-on id, and the web simulator invokes a tool.
 **Cost:** an Amazon developer account is free — <https://developer.amazon.com/>.
-**Fallback:** the Ellie simulator.
+**Fallback:** the Headsup simulator.
 **Teardown:** delete the add-on from the [developer console](https://developer.amazon.com/alexa/console/ask/addons).
 
 ---
@@ -257,7 +257,7 @@ Short version: the MCP Toolkit is **available in the United States** and limited
 3. Extract the schema package with `npm run schema:extract` and push it as its own repository with CI.
 4. Invite reviewers if the repository stays private: [Managing access](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-access-to-your-personal-repositories).
 
-**`.env`:** none. Ellie never calls GitHub.
+**`.env`:** none. Headsup never calls GitHub.
 **Verify:** clone the repository into a clean directory and run `npm ci && npm test`.
 **Cost:** public repositories are free — <https://github.com/pricing>.
 **Teardown:** none needed; archive rather than delete after judging.

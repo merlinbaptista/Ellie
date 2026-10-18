@@ -20,7 +20,7 @@ export function McpAppHost({ result, onToolCall, onOpen, onClose }: { result: Si
       const message = event.data;
       if (message.method === "ui/initialize" && message.id !== undefined) {
         initialized.current = true;
-        frame.current?.contentWindow?.postMessage({ jsonrpc: "2.0", id: message.id, result: { protocolVersion: "2026-01-26", capabilities: { tools: { call: true }, openLinks: true }, appInfo: { name: "Ellie simulator host", version: "0.1.0" } } }, "*");
+        frame.current?.contentWindow?.postMessage({ jsonrpc: "2.0", id: message.id, result: { protocolVersion: "2026-01-26", capabilities: { tools: { call: true }, openLinks: true }, appInfo: { name: "Headsup simulator host", version: "0.1.0" } } }, "*");
       } else if (message.method === "ui/notifications/initialized") {
         initialized.current = true;
         frame.current?.contentWindow?.postMessage({ jsonrpc: "2.0", method: "ui/notifications/tool-result", params: { structuredContent: { speech: resultRef.current.speech, card: resultRef.current.cards[0] } } }, "*");

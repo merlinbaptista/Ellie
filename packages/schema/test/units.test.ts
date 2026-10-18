@@ -24,7 +24,7 @@ describe("unit and formatting helpers", () => {
     const id = newId("evt");
     expect(id).toMatch(/^evt_[a-z0-9]{20}$/);
     expect(newSortableId("itm", new Date("2026-10-16T00:00:00.000Z"))).toMatch(/^itm_[a-z0-9]{9}-[a-z0-9]{10}$/);
-    expect(fillTemplate("Hello {name}", { name: "Ellie" })).toBe("Hello Ellie");
+    expect(fillTemplate("Hello {name}", { name: "Headsup" })).toBe("Hello Headsup");
     expect(fillTemplate("https://example.com/?q={query}", { query: "gas cylinder" })).toBe("https://example.com/?q=gas%20cylinder");
     expect(fillTemplate("{missing}", {})).toBe("{missing}");
     expect(speechList([])).toBe("");

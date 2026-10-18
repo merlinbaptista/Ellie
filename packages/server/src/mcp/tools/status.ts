@@ -57,8 +57,8 @@ export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool(
     "ellie_status",
     {
-      title: "Ellie status",
-      description: "Inspect Ellie service drivers, storage health, latency, and clock mode.",
+      title: "Headsup status",
+      description: "Inspect Headsup service drivers, storage health, latency, and clock mode.",
       inputSchema: {},
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -69,7 +69,7 @@ export function register(server: McpServer, ctx: AppContext): void {
         speech: mockCount ? `All systems running. ${mockCount} services are on demo mode until AWS keys are added.` : "All systems running on AWS-backed drivers.",
         data,
         card: {
-          title: "Ellie system status",
+          title: "Headsup system status",
           items: Object.entries(ctx.drivers).map(([service, decision]) => ({
             label: service,
             value: `${decision.resolved} / ${decision.implementation}`,

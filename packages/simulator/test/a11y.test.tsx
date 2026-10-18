@@ -17,7 +17,7 @@ describe("simulator accessibility", () => {
       return { ok: true, status: 200, json: async () => value, text: async () => "" } as Response;
     }));
     const { container } = render(<App />);
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Say something to Ellie" })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Say something to Headsup" })).toBeInTheDocument());
     expect(await axe(container)).toHaveNoViolations();
   });
 });

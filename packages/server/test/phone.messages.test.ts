@@ -26,7 +26,7 @@ describe("phone message formatting", () => {
 
   it("creates plain-text email with at most three bullet details per section", () => {
     const message = buildEmailMessage({ kind: "summary", title: "Home update", language: "en", expiresAt: "2026-10-19T00:00:00.000Z", generatedAt: "2026-10-16T00:00:00.000Z", sections: [{ heading: "Due", list: ["A", "B", "C", "D"], ordered: false, tone: "normal" }], actions: [] }, shortUrl);
-    expect(message.subject).toBe("Ellie: Home update");
+    expect(message.subject).toBe("Headsup: Home update");
     expect(message.body).toContain("- C");
     expect(message.body).not.toContain("- D");
     expect(message.body).toContain(shortUrl);

@@ -26,7 +26,7 @@ describe("simulator loopback API", () => {
     await once(server, "listening");
     const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
     const appResource = await fetch(`${base}/api/sim/app-resource`).then((response) => response.text());
-    expect(appResource).toContain("Ellie card is waiting for the tool result");
+    expect(appResource).toContain("Headsup card is waiting for the tool result");
     const session = await fetch(`${base}/api/sim/session`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ householdId: "demo-blr" }) }).then((response) => response.json()) as { sessionId: string };
     sessionIds.push(session.sessionId);
     const turn = await fetch(`${base}/api/sim/turn`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sessionId: session.sessionId, householdId: "demo-blr", text: "Alexa, what's due this week?", lang: "en-IN", inputMode: "text" }) });

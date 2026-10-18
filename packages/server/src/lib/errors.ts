@@ -22,7 +22,7 @@ export class NotFoundError extends EllieError {
 }
 export class ConfigError extends EllieError {
   constructor(message: string) {
-    super(message, "CONFIG_ERROR", "Ellie needs a little configuration before that service can start.");
+    super(message, "CONFIG_ERROR", "Headsup needs a little configuration before that service can start.");
   }
 }
 export class ExternalServiceError extends EllieError {

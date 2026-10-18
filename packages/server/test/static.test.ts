@@ -21,7 +21,7 @@ describe("static phone page", () => {
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("content-security-policy")).toContain("frame-ancestors 'self'");
-    expect(await response.text()).toContain("Ellie");
+    expect(await response.text()).toContain("Headsup");
     const asset = await fetch(`${base}/phone/manifest.webmanifest`);
     expect(asset.status).toBe(200);
   });
@@ -39,7 +39,7 @@ describe("static simulator page", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-security-policy")).toContain("script-src 'self' 'unsafe-inline'");
     expect(response.headers.get("content-security-policy")).toContain("frame-src 'self'");
-    expect(await response.text()).toContain("Ellie");
+    expect(await response.text()).toContain("Headsup");
     expect((await fetch(base, { redirect: "manual" })).status).toBe(302);
   });
 

@@ -11,7 +11,7 @@ import { withTiming } from "../withTiming.js";
 export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool("forget_household", {
     title: "Erase household data",
-    description: "Plan and confirm deletion of all remembered household data. Requires the two-word code Ellie reads aloud.",
+    description: "Plan and confirm deletion of all remembered household data. Requires the two-word code Headsup reads aloud.",
     inputSchema: ToolContracts.forget_household.shape,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
   }, withTiming("forget_household", ctx, async (args: ForgetHouseholdInput) => {

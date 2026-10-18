@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Ellie single-table household memory store
+Description: Headsup single-table household memory store
 Parameters:
   TableName:
     Type: String

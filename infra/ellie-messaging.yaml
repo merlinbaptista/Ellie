@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Ellie SNS messaging and EventBridge Scheduler to SQS for self-hosted deployments
+Description: Headsup SNS messaging and EventBridge Scheduler to SQS for self-hosted deployments
 Parameters:
   AlertEmail:
     Type: String

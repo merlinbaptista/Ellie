@@ -13,7 +13,7 @@ export function register(server: McpServer, ctx: AppContext): void {
     "predict_next",
     {
       title: "Predict next maintenance",
-      description: "Tell the user when something at home will next run out or need service, and when Ellie will remind them. Use when asked when gas is due or when to change a filter.",
+      description: "Tell the user when something at home will next run out or need service, and when Headsup will remind them. Use when asked when gas is due or when to change a filter.",
       inputSchema: ToolContracts.predict_next.shape,
       ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: true, openWorldHint: false },

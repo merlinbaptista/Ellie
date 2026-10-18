@@ -18,13 +18,13 @@ Then the gap: **Alexa+ can already set a reminder for a date you choose.** It ca
 
 ## Project
 
-**Name:** Ellie
+**Name:** Headsup
 
-**One-liner:** Normal reminders remember a time. Ellie remembers your home.
+**One-liner:** Normal reminders remember a time. Headsup remembers your home.
 
 **Problem:** Household maintenance is fragmented across memory, receipts, generic reminders, repair searches, and separate provider workflows. A date-only reminder does not know which appliance, part, prior fix, or regional booking rule matters.
 
-**Solution:** Ellie keeps a household-scoped event history, predicts maintenance from that history and region packs, diagnoses reported problems using cited evidence and safety gates, and hands detailed guidance or bookings to the phone.
+**Solution:** Headsup keeps a household-scoped event history, predicts maintenance from that history and region packs, diagnoses reported problems using cited evidence and safety gates, and hands detailed guidance or bookings to the phone.
 
 **Who it helps:** Households managing recurring maintenance and supply refills, including the India and United States demo regions. Regional facts remain sourced starter data until a maintainer checks them.
 
@@ -32,7 +32,7 @@ Then the gap: **Alexa+ can already set a reminder for a date you choose.** It ca
 
 ## MCP and AWS
 
-Ellie serves MCP over Streamable HTTP at `/mcp` using protocol version 2025-11-25. Tools have read-only or destructive annotations, region-pack resources are available to clients, and the shared MCP App card is additive to complete text/structured results. Optional OAuth resource protection validates issuer, audience, expiry, scope, and token household ownership.
+Headsup serves MCP over Streamable HTTP at `/mcp` using protocol version 2025-11-25. Tools have read-only or destructive annotations, region-pack resources are available to clients, and the shared MCP App card is additive to complete text/structured results. Optional OAuth resource protection validates issuer, audience, expiry, scope, and token household ownership.
 
 The AWS adapters support DynamoDB, Bedrock, SNS, and EventBridge Scheduler to SQS. Mock implementations keep the development path usable without AWS credentials. Live AWS deployment status: <!-- fill after the AWS go-live checklist -->.
 
@@ -48,7 +48,7 @@ The AWS adapters support DynamoDB, Bedrock, SNS, and EventBridge Scheduler to SQ
 
 Full detail in [friction-log.md](friction-log.md). The three worth telling:
 
-1. **Alexa+ and RFC 9728 disagree.** The QuickStart lists `WWW-Authenticate` in 401 responses as "Not Supported Yet"; RFC 9728 and the MCP authorization spec say to send it. Module 9 implemented the standard, so Ellie was non-conformant with the platform. Resolved with an `ALEXA_MODE` switch defaulting to the Alexa+ behaviour, with both paths tested.
+1. **Alexa+ and RFC 9728 disagree.** The QuickStart lists `WWW-Authenticate` in 401 responses as "Not Supported Yet"; RFC 9728 and the MCP authorization spec say to send it. Module 9 implemented the standard, so Headsup was non-conformant with the platform. Resolved with an `ALEXA_MODE` switch defaulting to the Alexa+ behaviour, with both paths tested.
 2. **A one-in-forty test flake was a real product bug.** A UUID whose first segment happened to be eight digits matched the phone-number redaction heuristic, so `confirmationId` was rewritten to `[REDACTED_PHONE]` and a destructive confirmation could never complete. It was invisible under shuffled reruns; the MCP Inspector exposed it by printing the redacted id.
 3. **Vitest 2 silently ignores `test.projects`.** The serial integration configuration never took effect, and `--project integration` matched nothing — with no warning at all.
 
@@ -94,7 +94,7 @@ Mock benchmark: see [docs/bench.md](bench.md); all seven measured p95 values are
 
 ## Links
 
-- Ellie repository: <!-- add repository URL -->
+- Headsup repository: <!-- add repository URL -->
 - Schema repository: <!-- add after creation and push -->
 - Demo video: <!-- add after recording -->
 - Public HTTPS URL: <!-- add if a stable tunnel or deployment is available -->

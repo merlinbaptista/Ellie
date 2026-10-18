@@ -5,11 +5,11 @@ import { PhoneFrame } from "../src/phone/PhoneFrame.js";
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 describe("simulator phone panel", () => {
   it("polls outbox messages and opens a short link in the browser frame", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => [{ id: "msg-1", householdId: "demo-blr", channel: "sms", to: "ending 0001", body: "Ellie: steps are ready", link: "/l/abc123", kind: "fix", sentAt: "2026-10-16T10:00:00.000Z" }] }));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => [{ id: "msg-1", householdId: "demo-blr", channel: "sms", to: "ending 0001", body: "Headsup: steps are ready", link: "/l/abc123", kind: "fix", sentAt: "2026-10-16T10:00:00.000Z" }] }));
     const onOpen = vi.fn();
     render(<PhoneFrame householdId="demo-blr" refreshKey={0} onOpen={onOpen} onCloseBrowser={vi.fn()} />);
-    expect(await screen.findByText("Ellie: steps are ready")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Open Ellie link" }));
+    expect(await screen.findByText("Headsup: steps are ready")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open Headsup link" }));
     const frame = screen.getByTitle("Phone browser");
     await waitFor(() => expect(frame).toHaveAttribute("src", "/l/abc123"));
     expect(onOpen).toHaveBeenCalledWith("/l/abc123");

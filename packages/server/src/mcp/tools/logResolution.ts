@@ -11,7 +11,7 @@ export function register(server: McpServer, ctx: AppContext): void {
     "log_resolution",
     {
       title: "Record what fixed it",
-      description: "Record what fixed a problem at home, whether you fixed it yourself or a technician did, so Ellie can remember next time.",
+      description: "Record what fixed a problem at home, whether you fixed it yourself or a technician did, so Headsup can remember next time.",
       inputSchema: ToolContractShapes.log_resolution,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     },

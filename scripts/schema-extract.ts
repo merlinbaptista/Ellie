@@ -6,7 +6,7 @@ const argument = process.argv.indexOf("--out");
 if (argument < 0 || !process.argv[argument + 1]) throw new Error("Usage: npm run schema:extract -- --out <directory>");
 const output = resolve(root, process.argv[argument + 1]!);
 const force = process.argv.includes("--force");
-if (output === root || output.startsWith(`${root}${process.platform === "win32" ? "\\" : "/"}`)) throw new Error("Extraction output must be outside the Ellie repository.");
+if (output === root || output.startsWith(`${root}${process.platform === "win32" ? "\\" : "/"}`)) throw new Error("Extraction output must be outside the Headsup repository.");
 try {
   const existing = await readdir(output);
   if (existing.length && !force) throw new Error(`Refusing to overwrite non-empty output directory: ${output} (pass --force to replace it)`);
@@ -103,7 +103,7 @@ await writeFile(resolve(output, "README.md"), `${readme}\n\n## Release sync\n\nE
 await writeFile(resolve(output, "CONTRIBUTING.md"), `# Contributing\n\nContributions to schemas and region packs should include tests and provenance. Never add personal household data or mark a fact verified without checking its official source.\n\nRun npm test, npm run typecheck, npm run validate:packs, and npm run gen:jsonschema before opening a pull request.\n`);
 await writeFile(resolve(output, "CODE_OF_CONDUCT.md"), `# Code of Conduct\n\nThis project follows the Contributor Covenant Code of Conduct, version 2.1. The canonical text is at https://www.contributor-covenant.org/version/2/1/code_of_conduct/.\n`);
 await writeFile(resolve(output, "SECURITY.md"), `# Security Policy\n\nPlease report security vulnerabilities privately to the repository maintainers. Do not include household personal data in an issue.\n`);
-await writeFile(resolve(output, "CHANGELOG.md"), `# Changelog\n\n## 1.0.0\n\nInitial standalone release extracted from Ellie schema 1.7.0.\n`);
+await writeFile(resolve(output, "CHANGELOG.md"), `# Changelog\n\n## 1.0.0\n\nInitial standalone release extracted from Headsup schema 1.7.0.\n`);
 await mkdir(resolve(output, ".github/workflows"), { recursive: true });
 const matrixExpression = "${{ matrix.node }}";
 await writeFile(resolve(output, ".github/workflows/ci.yml"), ["name: CI", "on:", "  push:", "  pull_request:", "jobs:", "  test:", "    runs-on: ubuntu-latest", "    strategy:", "      matrix:", "        node: [20, 22]", "    steps:", "      - uses: actions/checkout@v4", "      - uses: actions/setup-node@v4", "        with:", `          node-version: ${matrixExpression}`, "          cache: npm", "      - run: npm install", "      - run: npm run typecheck", "      - run: npm test", "      - run: npm run validate:packs", "      - run: npm run gen:jsonschema", "      - run: git diff --exit-code", ""].join("\n"));

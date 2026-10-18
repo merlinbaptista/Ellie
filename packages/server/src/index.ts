@@ -19,7 +19,7 @@ if (env.SEED_ON_START) {
 }
 const app = createApp(ctx);
 const httpServer = app.listen(env.PORT, env.HOST, async () => {
-  logger.info(`Ellie MCP server v${ctx.version} · spec 2025-11-25 · http://${env.HOST}:${env.PORT}/mcp`);
+  logger.info(`Headsup MCP server v${ctx.version} · spec 2025-11-25 · http://${env.HOST}:${env.PORT}/mcp`);
   for (const service of Object.values(ctx.drivers)) {
     const active = service.resolved === "aws" ? "aws" : "mock";
     const label = service.service === "llm" && service.resolved === "aws"

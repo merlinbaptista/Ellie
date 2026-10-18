@@ -32,7 +32,7 @@ export default function App() {
   if (loading) return <main className="phone-shell"><section className="loading-panel" aria-label="Loading"><span></span><span></span><span></span></section></main>;
   if (error) return <><ErrorPage error={error} lang={language} onRetry={() => void refresh()} /><div className="phone-floating-language"><LanguagePicker value={language} onChange={changeLanguage} /></div></>;
   if (!view || !claims) return <ErrorPage noToken lang={language} />;
-  document.title = `${view.title} · Ellie`;
+  document.title = `${view.title} · Headsup`;
   if (view.kind === "privacy") return <PrivacyPage token={token} view={view} lang={language} />;
   const notice = language !== "en" && view.translated?.by === "none" ? t("translated.none", language) : undefined;
   const safetyOnly = view.kind === "fix" && view.sections.some((section) => section.tone === "safety");

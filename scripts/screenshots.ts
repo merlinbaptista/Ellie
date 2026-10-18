@@ -35,7 +35,7 @@ try {
   const health = await page.request.get(`${baseUrl}/sim/`).catch(() => undefined);
   if (!health?.ok()) throw new Error(`Simulator is not available at ${baseUrl}/sim/. Start the server and retry.`);
   await page.goto(`${baseUrl}/sim/`);
-  await page.getByRole("textbox", { name: "Say something to Ellie" }).waitFor();
+  await page.getByRole("textbox", { name: "Say something to Headsup" }).waitFor();
   await page.screenshot({ path: resolve(imageDir, "simulator-idle.png") });
 
   await page.getByRole("button", { name: "The cylinder's changed and the purifier is beeping again" }).click();
@@ -45,7 +45,7 @@ try {
   await page.locator(".card-stack .ellie-card").nth(1).getByRole("button", { name: "Steps on phone" }).click();
   const fixBubble = page.locator(".sms-bubble", { hasText: /steps to fix/i }).last();
   await fixBubble.waitFor({ timeout: 15_000 });
-  await fixBubble.getByRole("button", { name: "Open Ellie link" }).click();
+  await fixBubble.getByRole("button", { name: "Open Headsup link" }).click();
   const fixHref = await page.locator('iframe[title="Phone browser"]').getAttribute("src");
   if (!fixHref) throw new Error("The fix message did not open a phone link.");
   const fixPage = await phoneContext.newPage();
@@ -60,7 +60,7 @@ try {
   await page.getByText(/reminder(?:s)? sent/i).waitFor({ timeout: 15_000 });
   const bookingBubble = page.locator(".sms-bubble", { hasText: /book|runs out/i }).last();
   await bookingBubble.waitFor({ timeout: 15_000 });
-  await bookingBubble.getByRole("button", { name: "Open Ellie link" }).click();
+  await bookingBubble.getByRole("button", { name: "Open Headsup link" }).click();
   const bookingHref = await page.locator('iframe[title="Phone browser"]').getAttribute("src");
   if (!bookingHref) throw new Error("The reminder did not open a phone booking link.");
   const bookingPage = await phoneContext.newPage();

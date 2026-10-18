@@ -12,7 +12,7 @@ export function register(server: McpServer, ctx: AppContext): void {
     "send_to_phone",
     {
       title: "Send to phone",
-      description: "Send something to the user's phone: fix steps for a problem, a booking link, or a summary of what's due. Use when the user says 'send it to my phone' or accepts Ellie's offer.",
+      description: "Send something to the user's phone: fix steps for a problem, a booking link, or a summary of what's due. Use when the user says 'send it to my phone' or accepts Headsup's offer.",
       inputSchema: ToolContracts.send_to_phone.shape,
       ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },

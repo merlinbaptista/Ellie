@@ -8,8 +8,8 @@ export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool(
     "ellie_ping",
     {
-      title: "Ping Ellie",
-      description: "Check that Ellie, the home memory agent, is online.",
+      title: "Ping Headsup",
+      description: "Check that Headsup, the home memory agent, is online.",
       inputSchema: { name: z.string().max(60).optional().describe("Who is asking") },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -17,9 +17,9 @@ export function register(server: McpServer, ctx: AppContext): void {
       const serverTimeUtc = ctx.clock.now().toISOString();
       const clockMode = ctx.clock.isFake() ? "demo time" : "real time";
       return toolResponse({
-        speech: `Hi ${name ?? "there"}, Ellie is awake and remembering your home.`,
+        speech: `Hi ${name ?? "there"}, Headsup is awake and remembering your home.`,
         data: { ok: true, serverTimeUtc, fakeClock: ctx.clock.isFake(), specVersion: "2025-11-25" },
-        card: { title: "Ellie is online", items: [
+        card: { title: "Headsup is online", items: [
           { label: "Server time", value: serverTimeUtc },
           { label: "Clock mode", value: clockMode, status: "info" },
         ] },

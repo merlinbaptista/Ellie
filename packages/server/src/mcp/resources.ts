@@ -6,7 +6,7 @@ export function registerRegionResources(server: McpServer, ctx: AppContext): voi
   server.registerResource(
     "region-packs",
     "ellie://region-packs",
-    { title: "Ellie region packs", description: "Available household region packs.", mimeType: "application/json" },
+    { title: "Headsup region packs", description: "Available household region packs.", mimeType: "application/json" },
     async (uri) => ({ contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(ctx.regions.list()) }] }),
   );
   const template = new ResourceTemplate("ellie://region-packs/{packId}", {

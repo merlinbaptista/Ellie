@@ -14,7 +14,7 @@ export class ConsoleNotifier implements NotifierAdapter {
     const id = randomUUID();
     const result: SendResult = { id, status: "sent", provider: this.name };
     const maskedTo = msg.channel === "sms" ? maskPhone(msg.to) : maskEmail(msg.to);
-    console.info(`\n+--------------------------------------+\n| Ellie phone inbox                    |\n| To: ${maskedTo.padEnd(31)}|\n| ${redactText(msg.body).slice(0, 34).padEnd(36)}|\n+--------------------------------------+`);
+    console.info(`\n+--------------------------------------+\n| Headsup phone inbox                    |\n| To: ${maskedTo.padEnd(31)}|\n| ${redactText(msg.body).slice(0, 34).padEnd(36)}|\n+--------------------------------------+`);
     await mirrorOutbox(this.storage, this.clock, msg, { ...result, id }, this.retentionDays);
     return result;
   }

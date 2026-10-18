@@ -27,7 +27,7 @@ describe("keys:check", () => {
     const rows = checkKeys({});
     expect(rows.every((row) => row.status === "MISSING")).toBe(true);
     expect(hasMalformed(rows)).toBe(false);
-    expect(formatKeyReport(rows)).toContain("Ellie runs fully on mocks");
+    expect(formatKeyReport(rows)).toContain("Headsup runs fully on mocks");
   });
 
   it("reports every service as CONFIGURED when all required keys are well formed", () => {

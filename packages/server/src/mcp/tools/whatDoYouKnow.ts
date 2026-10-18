@@ -10,8 +10,8 @@ import { withTiming } from "../withTiming.js";
 
 export function register(server: McpServer, ctx: AppContext): void {
   server.registerTool("what_do_you_know", {
-    title: "What Ellie knows",
-    description: "Tell the user what Ellie remembers about their home and who it is shared with. Use for 'what do you know about me/my home' or 'what are you storing'.",
+    title: "What Headsup knows",
+    description: "Tell the user what Headsup remembers about their home and who it is shared with. Use for 'what do you know about me/my home' or 'what are you storing'.",
     inputSchema: ToolContracts.what_do_you_know.shape,
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, withTiming("what_do_you_know", ctx, async (args: WhatDoYouKnowInput) => {
@@ -29,7 +29,7 @@ export function register(server: McpServer, ctx: AppContext): void {
       : `${headline} I can send the full list to your phone, or forget anything you ask.`;
     const latestPhoneConsent = inventory.consent.filter((entry) => entry.purpose === "phone_messages").at(-1);
     const consentStatus = latestPhoneConsent ? latestPhoneConsent.action : inventory.profile.contactMasked ? "granted" : "not set";
-    return toolResponse({ speech, data: inventory, card: { title: "What Ellie knows", items: [
+    return toolResponse({ speech, data: inventory, card: { title: "What Headsup knows", items: [
       ...selected.map((entry) => ({ label: entry.name, value: `${entry.eventCount} events · last ${entry.lastLocal ?? "not recorded"} · due ${entry.nextDueLocal ?? "unknown"}` })),
       { label: "Shared with", value: inventory.sharedWith.map((entry) => entry.service).join(", ") || "Nothing leaves this computer." },
       { label: "Messages", value: `${consentStatus} · contact ${inventory.profile.contactMasked ?? "not saved"}` },

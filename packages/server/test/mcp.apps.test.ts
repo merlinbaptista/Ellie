@@ -32,6 +32,6 @@ describe("MCP Apps card registration", () => {
     const resources = await client.listResources();
     expect(resources.resources.some((resource) => resource.uri === "ui://ellie/card.html" && resource.mimeType === "text/html;profile=mcp-app")).toBe(true);
     const html = await client.readResource({ uri: "ui://ellie/card.html" });
-    expect(String(html.contents[0]?.text)).toContain("Ellie card is waiting for the tool result");
+    expect(String(html.contents[0]?.text)).toContain("Headsup card is waiting for the tool result");
   });
 });

@@ -1,7 +1,7 @@
-# Ellie — Copilot project rules
+# Headsup — Copilot project rules
 
 ## Product
-Ellie is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP) that turns Alexa+ into a household memory agent:
+Headsup is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP) that turns Alexa+ into a household memory agent:
 it logs home events by voice, predicts next due dates using household history + region packs, diagnoses problems
 from history, and hands fixes/bookings to the phone.
 
@@ -82,9 +82,9 @@ from history, and hands fixes/bookings to the phone.
 - Every requested fix or module completion gets a new commit. Never amend a commit or rewrite history.
 
 ## Simulator rules (Module 8+)
-- The simulator calls Ellie only through a real MCP client over Streamable HTTP. Never import domain code into the orchestrator's call path.
+- The simulator calls Headsup only through a real MCP client over Streamable HTTP. Never import domain code into the orchestrator's call path.
 - Safety check runs on the whole utterance before any routing; a hit runs only diagnose and returns the stop message.
-- Routers choose tools and args only. Spoken words always come from Ellie's tool results.
+- Routers choose tools and args only. Spoken words always come from Headsup's tool results.
 - One question per reply; extra follow-ups are queued.
 - Never send phone numbers, email or names to the router LLM.
 - Every fix is a new commit; never amend or rewrite history.

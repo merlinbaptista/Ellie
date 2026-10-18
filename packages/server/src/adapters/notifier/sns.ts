@@ -38,7 +38,7 @@ export class SnsNotifier implements NotifierAdapter {
       if (sms && this.env.SNS_SMS_TEMPLATE_ID) messageAttributes["AWS.MM.SMS.TemplateId"] = { DataType: "String", StringValue: this.env.SNS_SMS_TEMPLATE_ID };
       const response = await this.client.send(new PublishCommand(sms
         ? { PhoneNumber: msg.to, Message: msg.body, MessageAttributes: messageAttributes }
-        : { TopicArn: this.env.SNS_TOPIC_ARN, Subject: (msg.subject ?? `Ellie: ${msg.kind}`).replace(/[^\x20-\x7E]/g, " ").slice(0, 100), Message: msg.subject ? `${msg.subject}\n\n${msg.body}` : msg.body, MessageAttributes: messageAttributes }));
+        : { TopicArn: this.env.SNS_TOPIC_ARN, Subject: (msg.subject ?? `Headsup: ${msg.kind}`).replace(/[^\x20-\x7E]/g, " ").slice(0, 100), Message: msg.subject ? `${msg.subject}\n\n${msg.body}` : msg.body, MessageAttributes: messageAttributes }));
       result = { id: response.MessageId ?? randomUUID(), status: "sent", provider: "sns" };
     } catch (error) {
       const reason = failureReason(error);

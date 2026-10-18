@@ -207,7 +207,7 @@ export function formatKeyReport(rows: ServiceRow[], verbose = false): string {
     counts.MALFORMED > 0
       ? "Fix every MALFORMED value before deploying; see docs/API_SETUP.md."
       : counts.CONFIGURED === 0
-        ? "No external services are provisioned. Ellie runs fully on mocks; see docs/API_SETUP.md to go live."
+        ? "No external services are provisioned. Headsup runs fully on mocks; see docs/API_SETUP.md to go live."
         : "No malformed values. Run `npm run aws:check` to prove the configured services actually answer.",
   );
   return lines.join("\n");

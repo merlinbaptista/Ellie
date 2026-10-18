@@ -12,7 +12,7 @@ export function register(server: McpServer, ctx: AppContext): void {
     "diagnose",
     {
       title: "Diagnose a home problem",
-      description: "Help with a problem at home: something beeping, leaking, not working, or smelling odd. Ellie checks the item's history first. If there is a follow-up question, answer it and pass diagnosisId back.",
+      description: "Help with a problem at home: something beeping, leaking, not working, or smelling odd. Headsup checks the item's history first. If there is a follow-up question, answer it and pass diagnosisId back.",
       inputSchema: ToolContracts.diagnose.shape,
       ...(mcpAppMeta() ? { _meta: mcpAppMeta() } : {}),
       annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },

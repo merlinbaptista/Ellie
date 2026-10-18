@@ -27,7 +27,7 @@ const app = express();
 app.get("/.well-known/openid-configuration", (_req, res) => res.json({ issuer, jwks_uri: `${issuer}/jwks` }));
 app.get("/jwks", (_req, res) => res.json({ keys: [publicJwk] }));
 app.listen(port, "127.0.0.1", () => {
-  console.log(`Ellie development OAuth issuer listening at ${issuer}`);
+  console.log(`Headsup development OAuth issuer listening at ${issuer}`);
   console.log(`DEV_OAUTH_ISSUER_URL=${issuer}`);
   console.log(`DEV_OAUTH_JWKS_URL=${issuer}/jwks`);
   console.log(`DEV_OAUTH_PRIVATE_KEY=${keyPath}`);

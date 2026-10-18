@@ -1,10 +1,10 @@
-# Ellie
+# Headsup
 
-Normal reminders remember a time. Ellie remembers your home.
+Normal reminders remember a time. Headsup remembers your home.
 
 **Status: Module 9: privacy and trust**
 
-Ellie is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
+Headsup is a self-hosted MCP server that turns Alexa+ into a household memory agent. It records home events, predicts what is due from household history and region packs, diagnoses problems, and hands fixes or bookings to a phone.
 
 ## Quick start
 
@@ -28,7 +28,7 @@ Run `npm run inspector`, choose **Streamable HTTP**, then connect to `http://127
 
 ## Connect from VS Code Copilot
 
-The server connection is configured in [.vscode/mcp.json](.vscode/mcp.json). Start Ellie with `npm run dev`, then use Copilot Agent mode.
+The server connection is configured in [.vscode/mcp.json](.vscode/mcp.json). Start Headsup with `npm run dev`, then use Copilot Agent mode.
 
 ## Demo mode vs AWS mode
 
@@ -121,7 +121,7 @@ For an optional manual accessibility score, run Lighthouse in Chrome's mobile em
 
 Phone summary preview at 390 × 844:
 
-![Ellie phone summary page](docs/phone-summary-390x844.png)
+![Headsup phone summary page](docs/phone-summary-390x844.png)
 
 ### Phone chat and languages
 
@@ -129,7 +129,7 @@ Chat answers only questions about the current repair, cites the supplied diagnos
 
 ## MCP Apps
 
-When the single-file card is built, supported hosts can render `ui://ellie/card.html` inline for due, prediction, history, diagnosis, and phone handoff tools. Text speech and structured results remain unchanged for Alexa+ and hosts without Apps support. The MCP Apps server helpers currently require MCP SDK v2, so Ellie registers the HTML resource and metadata directly on its MCP SDK v1 server; the compact embedded client remains under 150 KB.
+When the single-file card is built, supported hosts can render `ui://ellie/card.html` inline for due, prediction, history, diagnosis, and phone handoff tools. Text speech and structured results remain unchanged for Alexa+ and hosts without Apps support. The MCP Apps server helpers currently require MCP SDK v2, so Headsup registers the HTML resource and metadata directly on its MCP SDK v1 server; the compact embedded client remains under 150 KB.
 
 ## Demo with the simulator
 
@@ -153,7 +153,7 @@ The **Host view** toggle loads the same `ui://ellie/card.html` resource used by 
 
 ## Privacy and trust
 
-Ellie stores household profile settings, items, events, predictions, diagnoses, resolutions, consent history, short-lived phone links, and queued messages. Ask “what do you know about my home?” for an inventory, use `forget_item` or `forget_household` to delete data with confirmation, and use the privacy phone page to download a JSON export, withdraw message consent, or erase the household. See [the privacy notice](docs/PRIVACY.md) for the full inventory and controls.
+Headsup stores household profile settings, items, events, predictions, diagnoses, resolutions, consent history, short-lived phone links, and queued messages. Ask “what do you know about my home?” for an inventory, use `forget_item` or `forget_household` to delete data with confirmation, and use the privacy phone page to download a JSON export, withdraw message consent, or erase the household. See [the privacy notice](docs/PRIVACY.md) for the full inventory and controls.
 
 | Active driver         | Data shared                                                              | Purpose                        |
 | --------------------- | ------------------------------------------------------------------------ | ------------------------------ |
@@ -173,11 +173,11 @@ Ellie stores household profile settings, items, events, predictions, diagnoses, 
 | Translation cache                             | 7 days                                                               |
 | Privacy audit records                         | `AUDIT_RETENTION_DAYS` (365 days by default)                         |
 
-Deleting data removes records and cancels schedules under Ellie's control. AWS-side SNS delivery logs, CloudWatch logs, and DynamoDB point-in-time backups are outside Ellie's control; backups kept by AWS expire on their own schedule.
+Deleting data removes records and cancels schedules under Headsup's control. AWS-side SNS delivery logs, CloudWatch logs, and DynamoDB point-in-time backups are outside Headsup's control; backups kept by AWS expire on their own schedule.
 
 ### Connecting with OAuth
 
-OAuth resource protection is optional and off by default. Set `OAUTH_ENABLED=true`, `OAUTH_ISSUER_URL`, `OAUTH_AUDIENCE`, and `OAUTH_JWKS_URL`; configure `OAUTH_REQUIRED_SCOPES` and the `OAUTH_HOUSEHOLD_CLAIM` as needed. Register `<ELLIE_PUBLIC_BASE_URL>/mcp` as the resource/audience with your authorization server and include the household claim in access tokens. Ellie validates issuer, audience, expiry, and scope but does not issue tokens or forward them to services. For Alexa+ account-linking steps, check the Alexa+ connector documentation.
+OAuth resource protection is optional and off by default. Set `OAUTH_ENABLED=true`, `OAUTH_ISSUER_URL`, `OAUTH_AUDIENCE`, and `OAUTH_JWKS_URL`; configure `OAUTH_REQUIRED_SCOPES` and the `OAUTH_HOUSEHOLD_CLAIM` as needed. Register `<ELLIE_PUBLIC_BASE_URL>/mcp` as the resource/audience with your authorization server and include the household claim in access tokens. Headsup validates issuer, audience, expiry, and scope but does not issue tokens or forward them to services. For Alexa+ account-linking steps, check the Alexa+ connector documentation.
 
 ## Go live on AWS
 
@@ -186,7 +186,7 @@ OAuth resource protection is optional and off by default. Set `OAUTH_ENABLED=tru
 3. Deploy `infra/ellie-messaging.yaml`, optionally setting `AlertEmail`, then run `npm run aws:env -- --stack ellie-messaging` and add the printed values to `.env`.
 4. Attach `infra/iam-policy-messaging.json` after replacing its topic, role, and queue ARN placeholders.
 5. New AWS accounts are in the SNS SMS sandbox; only verified destinations can receive SMS. India SMS generally requires DLT entity/template IDs (`SNS_SMS_ENTITY_ID`, `SNS_SMS_TEMPLATE_ID`). Topic-to-email subscription is the simplest demo path.
-6. For a real reminder, use `POST /api/dev/schedule-test` in a non-production deployment and confirm the EventBridge schedule sends into SQS and reaches Ellie. The poller needs outbound AWS access; no public callback URL is required.
+6. For a real reminder, use `POST /api/dev/schedule-test` in a non-production deployment and confirm the EventBridge schedule sends into SQS and reaches Headsup. The poller needs outbound AWS access; no public callback URL is required.
 
 The messaging policy grants `sns:Publish` on `*` only for direct SMS because SNS has no per-phone-number resource ARN. Topic publishing remains restricted to the configured topic ARN.
 

@@ -23,7 +23,7 @@ function McpCardApp() {
       const message = event.data;
       if (!message || message.jsonrpc !== "2.0") return;
       if (message.method === "ui/initialize" && message.id !== undefined) {
-        window.parent.postMessage({ jsonrpc: "2.0", id: message.id, result: { protocolVersion: "2026-01-26", capabilities: { tools: { call: true }, openLinks: true }, appInfo: { name: "Ellie", version: "0.1.0" } } }, "*");
+        window.parent.postMessage({ jsonrpc: "2.0", id: message.id, result: { protocolVersion: "2026-01-26", capabilities: { tools: { call: true }, openLinks: true }, appInfo: { name: "Headsup", version: "0.1.0" } } }, "*");
         notify("ui/notifications/initialized");
         return;
       }
@@ -50,7 +50,7 @@ function McpCardApp() {
     } else if (action.url) await send("ui/open-link", { url: action.url });
   }
   return <main data-theme={theme} style={{ padding: 12 }}>
-    {result?.card ? <Card card={result.card} onAction={(value) => void action(value)} /> : <p>Ellie card is waiting for the tool result.</p>}
+    {result?.card ? <Card card={result.card} onAction={(value) => void action(value)} /> : <p>Headsup card is waiting for the tool result.</p>}
     {result?.speech ? <p aria-live="polite">{result.speech}</p> : null}
   </main>;
 }

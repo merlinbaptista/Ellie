@@ -6,8 +6,8 @@ describe("simulator wake-word cleanup", () => {
     ["Alexa, what's due?", "what's due?"],
     ["Hey Alexa, um tell me what's due", "tell me what's due"],
     ["OK Alexa uh the gas changed", "the gas changed"],
-    ["Ask Ellie to show my history", "show my history"],
-    ["Tell Ellie that the purifier is beeping", "the purifier is beeping"],
+    ["Ask Headsup to show my history", "show my history"],
+    ["Tell Headsup that the purifier is beeping", "the purifier is beeping"],
   ])("cleans %s", (input, expected) => expect(cleanUtterance(input)).toBe(expected));
   it("returns empty after a wake word with no command", () => expect(cleanUtterance("Alexa, um uh")).toBe(""));
 });

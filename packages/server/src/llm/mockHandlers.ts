@@ -5,7 +5,7 @@ let registered = false;
 export function registerDiagnosisMockHandler(): () => void {
   if (registered) return () => undefined;
   registered = true;
-  return registerMockHandler((request) => request.system.startsWith("You are Ellie's diagnosis explainer"), (request) => {
+  return registerMockHandler((request) => request.system.startsWith("You are Headsup's diagnosis explainer"), (request) => {
     const payload = JSON.parse(request.messages.at(-1)?.content ?? "{}") as {
       candidates?: Array<{ key: string; description: string }>;
       evidence?: Array<{ id: string; text: string }>;

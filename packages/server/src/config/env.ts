@@ -111,7 +111,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       key: String(issue.path[0] ?? "environment"),
       error: issue.message,
     }));
-    console.error("Invalid Ellie environment configuration:");
+    console.error("Invalid Headsup environment configuration:");
     console.table(rows);
     process.exitCode = 1;
     throw new Error("Invalid environment configuration");

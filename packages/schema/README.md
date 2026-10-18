@@ -55,4 +55,4 @@ Do not add personal household data, real household addresses, or private phone n
 
 MIT. See [LICENSE](LICENSE).
 
-Ellie currently maintains this monorepo package as the schema source of truth. The standalone `home-event-schema` repository is regenerated from this package with `npm run schema:extract` for each release.
+Headsup currently maintains this monorepo package as the schema source of truth. The standalone `home-event-schema` repository is regenerated from this package with `npm run schema:extract` for each release.

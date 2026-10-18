@@ -6,7 +6,7 @@ import { linkPk, phoneChatCountSk, phoneChatDisabledSk, phoneChatPrefix, phoneCh
 import { NotFoundError } from "../lib/errors.js";
 import { loadHouseholdSnapshot } from "../domain/snapshot.js";
 
-export const CHAT_PROMPT_V1 = `You are Ellie's repair-guide chat. Answer only from the supplied diagnosis, evidence and fix plan. Cite evidence IDs or step IDs exactly. Do not invent parts, dates, prices, contacts, names or instructions. Never contradict a non-DIY cause or safety note. Reply in at most 3 short spoken sentences as JSON with {"text":"...","citations":["id"]}. If the supplied context does not answer the question, say you are not sure and recommend a technician.`;
+export const CHAT_PROMPT_V1 = `You are Headsup's repair-guide chat. Answer only from the supplied diagnosis, evidence and fix plan. Cite evidence IDs or step IDs exactly. Do not invent parts, dates, prices, contacts, names or instructions. Never contradict a non-DIY cause or safety note. Reply in at most 3 short spoken sentences as JSON with {"text":"...","citations":["id"]}. If the supplied context does not answer the question, say you are not sure and recommend a technician.`;
 export class ChatLimitError extends Error { constructor() { super("I've answered a lot here — ask Alexa if you need more."); this.name = "ChatLimitError"; } }
 
 function cleanUserText(value: string): string {

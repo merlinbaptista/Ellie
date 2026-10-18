@@ -221,9 +221,9 @@ export function registerPhoneApi(app: Express, ctx: AppContext): void {
       if (error instanceof PhoneTokenError) {
         const status = error.reason === "expired" ? 410 : 403;
         const message = error.reason === "expired" ? expiredSpeech : invalidSpeech;
-        res.status(status).type("text/html").send(`<!doctype html><html><head><meta name="viewport" content="width=device-width"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"><title>Ellie link</title></head><body><main><h1>${message}</h1></main></body></html>`);
+        res.status(status).type("text/html").send(`<!doctype html><html><head><meta name="viewport" content="width=device-width"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action 'self'"><title>Headsup link</title></head><body><main><h1>${message}</h1></main></body></html>`);
       } else if (error instanceof NotFoundError) {
-        res.status(404).type("text/html").send("<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width\"><title>Ellie link</title></head><body><main><h1>This guide is no longer available. Ask Alexa to send it again.</h1></main></body></html>");
+        res.status(404).type("text/html").send("<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width\"><title>Headsup link</title></head><body><main><h1>This guide is no longer available. Ask Alexa to send it again.</h1></main></body></html>");
       } else next(error);
     }
   });

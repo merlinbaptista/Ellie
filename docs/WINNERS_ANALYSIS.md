@@ -1,6 +1,6 @@
 # Winner benchmarking
 
-Purpose: find what has actually won Amazon voice and AWS agent competitions, measure Ellie against it, and convert the gaps into work that fits before the feature freeze.
+Purpose: find what has actually won Amazon voice and AWS agent competitions, measure Headsup against it, and convert the gaps into work that fits before the feature freeze.
 
 ## 0. Source verification, honestly
 
@@ -29,9 +29,9 @@ From the hackathon page, the four judging criteria are:
 3. **Potential Impact** — a credible, specific case for solving customer needs, realistically serving an audience beyond the hackathon.
 4. **Quality of the Idea** — creative, imaginative use of the tools, with genuine understanding of the ecosystem and end-user needs.
 
-Also from that page, and directly relevant to Ellie:
+Also from that page, and directly relevant to Headsup:
 
-- The Alexa+ track explicitly permits **"a simulated Alexa+ experience in a web app"** for those new to MCP, and requires the repository to include the simulation's source. Ellie does **both**: a real self-hosted MCP server *and* a simulator.
+- The Alexa+ track explicitly permits **"a simulated Alexa+ experience in a web app"** for those new to MCP, and requires the repository to include the simulation's source. Headsup does **both**: a real self-hosted MCP server *and* a simulator.
 - The repository must **actually call the track technology in code** — "an import, an entry point, a loaded agent/flow/MCP config, not just a mention in the README."
 - Demo video **under 3 minutes**, and "judges aren't required to watch past the 3-minute mark."
 - **Product feedback on every tool/API/SDK used** is required.
@@ -59,18 +59,18 @@ Two further hypotheses, from winners whose announcements could not be read (**un
 - *(unverified)* Loop It!, Multimodal 2019: visuals should complement voice, be glanceable, and simplify navigation rather than replace speech.
 - *(unverified)* TWIZ, TaskBot Challenge: one question at a time plus a step card is the proven shape for guided multi-step fixes.
 
-Both happen to describe what Ellie already does, which is exactly why they must not be used as evidence.
+Both happen to describe what Headsup already does, which is exactly why they must not be used as evidence.
 
-## 3. Ellie versus the winner patterns
+## 3. Headsup versus the winner patterns
 
-| Pattern | Ellie today (evidence) | Gap | Fix | Effort | Criterion |
-|---|---|---|---|---|---|| P1 Personal origin story | README and `SUBMISSION.md` open with a product abstraction: "Household maintenance is fragmented across memory, receipts…" | No human moment. The strongest story the winner told is the one Ellie doesn't tell | Open with one true household moment, in first person, with no invented statistic | 20 min, docs only | Impact, Idea |
-| P2 "What Alexa+ already does → what it can't → Ellie" | Implied in "What Is Different", never stated as a contrast | The judges are the Alexa+ team; they need the gap named explicitly | Three-line framing in README, `SUBMISSION.md` and the video open | 20 min, docs only | Idea, Impact |
+| Pattern | Headsup today (evidence) | Gap | Fix | Effort | Criterion |
+|---|---|---|---|---|---|| P1 Personal origin story | README and `SUBMISSION.md` open with a product abstraction: "Household maintenance is fragmented across memory, receipts…" | No human moment. The strongest story the winner told is the one Headsup doesn't tell | Open with one true household moment, in first person, with no invented statistic | 20 min, docs only | Impact, Idea |
+| P2 "What Alexa+ already does → what it can't → Headsup" | Implied in "What Is Different", never stated as a contrast | The judges are the Alexa+ team; they need the gap named explicitly | Three-line framing in README, `SUBMISSION.md` and the video open | 20 min, docs only | Idea, Impact |
 | P3 Voice in, second surface out | Fully built: `send_to_phone`, signed links, consent, GSM-7 ≤160 chars, phone page; `journey3.phone.integration.test.ts` | Not yet *shown* with voice, card and phone in one frame | Video direction: one shot, three surfaces | 0 code | Design |
 | P4 Architecture + honest challenges | `docs/friction-log.md` is extensive and specific; architecture is in the README | Friction log is worth up to 10% and is currently buried in `docs/` | Link it from the README and name it in the submission | 10 min | Tech |
 | P5 Specific local problem with numbers | Region packs carry the India LPG rules; Bengaluru is the demo household | The specific local rule is in data, not in the pitch | Lead with the Bengaluru specifics the packs already encode, cited to the pack `source`, never invented | 20 min | Impact |
 | P6 Multi-surface full stack | Five surfaces exist: Echo Show card, phone page, simulator, MCP App view, privacy views | Under-claimed; the submission mentions tools, not surfaces | Name all five in README and `SUBMISSION.md` | 15 min | Design |
-| P7 Agent chaining tools on Bedrock | Two tools in one utterance via the simulator orchestrator over a **real MCP client loopback**; `sim.combine.test.ts`, `sim.split.test.ts`; Bedrock tool-use router with validation and fallback | Buried. This is the single most winner-shaped thing Ellie does | Make the hero sentence a two-tool utterance and say so | 15 min | Tech, Idea |
+| P7 Agent chaining tools on Bedrock | Two tools in one utterance via the simulator orchestrator over a **real MCP client loopback**; `sim.combine.test.ts`, `sim.split.test.ts`; Bedrock tool-use router with validation and fallback | Buried. This is the single most winner-shaped thing Headsup does | Make the hero sentence a two-tool utterance and say so | 15 min | Tech, Idea |
 | P8 Explainability + verified KB + a number | Diagnosis cites evidence IDs; the LLM may only rank supplied causes and is rejected for invented causes or uncited numbers (`diagnosis.llm.test.ts`). 239 tests; mock p95 under 500 ms | **59 pack values are still unverified.** Province's win was partly *verified* knowledge | Show the citations and the test count on screen; be explicit that packs are sourced starter data pending review | 👤 user decision | Tech, Impact |
 
 ## 4. Showcase checklist
@@ -78,7 +78,7 @@ Both happen to describe what Ellie already does, which is exactly why they must 
 For the video, README and Devpost. Each line maps to a pattern above.
 
 - [ ] **First 20 seconds: a real household moment**, first person, honestly framed, **no invented statistics**. (P1) 👤 *you must supply the sentence*
-- [ ] **"What Alexa+ already does → what it can't → Ellie."** Alexa+ can set a reminder; it cannot learn that *your* cylinder lasts 27 days, apply your region's booking rules, or diagnose from your own repair history. (P2)
+- [ ] **"What Alexa+ already does → what it can't → Headsup."** Alexa+ can set a reminder; it cannot learn that *your* cylinder lasts 27 days, apply your region's booking rules, or diagnose from your own repair history. (P2)
 - [ ] **Hero sentence covers two tools in one utterance**, with **voice, Echo Show card and phone visible together in one frame**. (P3, P7)
 - [ ] **The learning loop, before and after on screen**: the prediction before the new event, then after. (P8)
 - [ ] **Texas switch in 15 seconds** — same code, different region pack, different vocabulary and rules. (P5, P6)
@@ -101,7 +101,7 @@ What was visible: the hackathon overview, requirements, prizes, judges and crite
 2. Sort by most recent, then by most liked. Skim titles only on the first three pages.
 3. Search the gallery for: `home`, `house`, `household`, `maintenance`, `reminder`, `appliance`, `chores`, `memory`, `repair`, `service`. Two minutes total.
 4. For each look-alike, note three things only: does it **learn from history**, does it have **region rules**, does it **diagnose**?
-5. If one matches on all three, sharpen Ellie's opening line to lead with whichever of the five surfaces it lacks. Do **not** change the product.
+5. If one matches on all three, sharpen Headsup's opening line to lead with whichever of the five surfaces it lacks. Do **not** change the product.
 6. Check whether any entry is also doing a *simulated* Alexa+ experience plus a real MCP server. If several are, make the MCP Inspector shot earlier in the video.
 7. Note anything that looks like a prior-art collision and record it in `SUBMISSION.md` under "If your project existed before the hackathon".
 
@@ -114,7 +114,7 @@ Scores are 1–5 against the four official criteria, judged on evidence in this 
 | **Tech Implementation** | **5** | Real MCP server, spec 2025-11-25, Streamable HTTP, 16 tools, MCP Apps on 5 of them, OAuth 2.1 resource protection, four AWS adapters each with a working mock, 239 tests, mock p95 under 500 ms, Inspector evidence, a conformance table against the official Alexa+ requirements, and a documented deviation (`ALEXA_MODE`) | Nothing material. Live AWS is credential-blocked, and that is disclosed |
 | **Design** | **4** | Five coherent surfaces; one question per turn; ≤2-sentence speech; safety views that show only a banner and a call button; axe-clean phone views; 54.97 KB gzip phone bundle | Cards have not been audited one-by-one against "one fact, one action". The judges will see them before they read anything |
 | **Potential Impact** | **3** | Two real regions with different rules; consent, export and erase; an extractable open schema | The pitch is abstract, the Bengaluru specifics are buried in pack data, and **59 pack values remain unverified** — the weakest point in the whole submission |
-| **Quality of the Idea** | **4** | "Normal reminders remember a time. Ellie remembers your home." The learning loop, region packs and cited diagnosis are genuinely distinctive | The lineage to the 2017 Grand Prize winner — and what Ellie does that it could not — is never stated |
+| **Quality of the Idea** | **4** | "Normal reminders remember a time. Headsup remembers your home." The learning loop, region packs and cited diagnosis are genuinely distinctive | The lineage to the 2017 Grand Prize winner — and what Headsup does that it could not — is never stated |
 
 **Overall: 4.0 / 5.** The build is ahead of the story. Every remaining point is in narrative and verification, not in code.
 
@@ -124,7 +124,7 @@ All five are documentation or user decisions. **None is a feature.** All fit bef
 
 | # | Change | Est. gain | Hours | Ratio | Owner |
 |---|---|---|---|---|---|
-| 1 | Rewrite the README and `SUBMISSION.md` openings: real household moment, then "what Alexa+ already does → what it can't → Ellie", then the Bengaluru specifics from the packs | +0.5 Impact, +0.5 Idea | 0.5 | **2.0** | me, with 👤 one sentence from you |
+| 1 | Rewrite the README and `SUBMISSION.md` openings: real household moment, then "what Alexa+ already does → what it can't → Headsup", then the Bengaluru specifics from the packs | +0.5 Impact, +0.5 Idea | 0.5 | **2.0** | me, with 👤 one sentence from you |
 | 2 | Rewrite `VIDEO_SCRIPT.md` to the showcase checklist: two-tool hero sentence with voice + card + phone in one frame; before/after learning loop; Texas in 15 s; live safety refusal; Inspector and test count as proof | +0.5 Design, +0.3 Tech | 0.5 | **1.6** | me |
 | 3 | Verify or remove the pack values the demo actually speaks, and the emergency numbers | +0.5 Impact | 1.0 | **0.5** | 👤 **you only** — the agent must never mark a pack fact verified |
 | 4 | Audit every card against "one fact, one action" and fix any that fail | +0.3 Design | 1.0 | 0.3 | me |
