@@ -110,7 +110,14 @@ All services run in mock mode when no AWS configuration is present. AWS mode use
 | Notifier  | `AWS_REGION`, topic or direct SMS configuration, AWS credentials | Console outbox       |
 | Scheduler | `AWS_REGION`, target, role, queue, AWS credentials               | Local timer          |
 
-See [docs/DEPLOY.md](docs/DEPLOY.md) for Docker, tunnel, AWS, and Alexa+ connection preparation. The user must choose the public tunnel, AWS region/model, and external connector steps.
+See [docs/API_SETUP.md](docs/API_SETUP.md) for per-service setup, costs, verify commands, fallbacks and teardown, and [docs/DEPLOY.md](docs/DEPLOY.md) for Docker, tunnel, AWS and the Alexa+ conformance table. The user must choose the public tunnel, AWS region/model, and external connector steps.
+
+Two commands answer "is this configured?" without ever printing a secret:
+
+```powershell
+npm run keys:check     # per service: CONFIGURED / MISSING / MALFORMED
+npm run aws:check      # per service: PASS / FAIL / SKIPPED, with cause and fix
+```
 
 ## Safety and Privacy
 
