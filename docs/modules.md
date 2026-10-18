@@ -13,6 +13,7 @@
 | 9   | Privacy & trust                  | Knowledge and forget tools, consent, export, retention, optional OAuth 2.1 resource protection                             | ✅     |
 | 10  | Demo & submission                | Presenter, demo check, preflight/bench, pack report, Docker/deployment prep, schema extraction, submission docs            | ⏳     |
 | 11  | Go-live, final audit and win plan | Phase A audit recorded; Gate A awaiting approval; no fixes or Phase B started                                               | ⏳     |
+| 12  | Gate A closure, API-ready freeze  | Gate A fixes applied; API inventory, `API_SETUP.md`, `keys:check`, Alexa+ conformance, winner benchmarking                  | ⏳     |
 
 Module 10 verification: Verify or remove unverified pack values (59 after Module 5).
 
@@ -32,6 +33,30 @@ Module 10 verification: Verify or remove unverified pack values (59 after Module
 | `c8ebd77` | Module 10 local tooling (external go-live steps pending)          | 26 / 151 / 6 / 19 / 15                           |   217 |
 | `1299f8e` | Module 11 source prompt, committed separately                    | Not rerun (prompt only)                          |     — |
 | `bbe6754` | Module 11 Phase A audit; Gate A awaiting approval                | 26 / 150 passed, 1 failed / 6 / 19 / 15           | 216 passed / 217 |
+| `2d653ee` | Module 11 Gate A roadmap record                                  | Not rerun (docs only)                            |     — |
+| `e6aaccc` | Module 12 source prompt, committed separately                    | Not rerun (prompt only)                          |     — |
+| `defeb9f` | Fix 1.1a: real serial Vitest workspace for integration tests     | —                                                |     — |
+| `e0752c3` | Fix 1.3a: redactor no longer swallows spoken dates and counts    | —                                                |     — |
+| `e2f5021` | Fix 1.2: repeatable smoke with a disposable household            | —                                                |     — |
+| `48b276e` | Fix 1.1b: redactor no longer corrupts confirmation ids           | —                                                |     — |
+| `8736ba0` | Fix 1.8: MCP Inspector CLI evidence for every tool               | —                                                |     — |
+| `22af714` | Fix 1.10: screenshot script captures all four demo captures      | —                                                |     — |
+| `a419786` | Fix 1.6: all ten dependency advisories triaged                   | —                                                |     — |
+| `51f9fbc` | Fix 1.11: preflight splits CODE problems from CREDENTIAL gaps    | —                                                |     — |
+| `93485f5` | Fixes 1.5/1.9: demo anchor pinned, Docker status stated          | —                                                |     — |
+| `20979a8` | Fix 1.4: reconstructed Module 9 prompt                           | —                                                |     — |
+
+## Module 12 Phase 1: Gate A closed
+
+All eleven approved Gate A fixes are applied; the per-item outcome table is in [audit/final-audit.md](audit/final-audit.md). Nine are FIXED, three ACCEPTED with reasons, and the remaining register rows are credential-blocked (🔑 A-12, A-13) or user-owned (👤 A-14 to A-18). No ❌ or ⚠️ rows remain.
+
+The two most instructive fixes were the same bug: the privacy Journey 6 flake was **not** a test-isolation problem but a real redaction defect. A UUID whose first segment happens to be eight digits matched the phone-number heuristic, so `confirmationId` was rewritten to `[REDACTED_PHONE]` inside the tool result and the destructive confirmation could never be completed. The MCP Inspector CLI run (fix 1.8) made it visible; no test was weakened to make it pass.
+
+Test total after Phase 1: **223** (schema 26 / server 157 / ui 6 / phone 19 / simulator 15), up from 217 because six regression tests were added. The full suite passed three times consecutively plus once with `--sequence.shuffle`.
+
+Schema coverage rerun on 2026-10-18 (`npm run coverage -w @ellie/schema`): 97.58 % statements and lines, 87.61 % branches, 95.74 % functions — above the Module 2 target of 90 % lines.
+
+Module 1–6 prompts: `git log --all --diff-filter=A -- docs/prompts/` shows these files were only ever committed as condensed execution briefs. No fuller original exists in history to recover, and none was fabricated. `docs/prompts/module-9.md` never existed in any commit and is now a labelled reconstruction.
 
 ## Module 11 Phase A
 

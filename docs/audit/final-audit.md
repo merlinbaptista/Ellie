@@ -187,6 +187,35 @@ Counts in this register are independent of module/checklist counts: MISSING 1; P
 | A-17 | USER | Public repos/reviewer access and submission placeholders pending | IP/employment check, publish/invite at submission, complete URLs/text |
 | A-18 | USER | Final release/tag not authorized | User confirms final checklist after green gates; no tag now |
 
+## Gate A closure (Module 12 Phase 1)
+
+Closed at `20979a8` + this docs commit, on 2026-10-18. Every register row above is re-stated here with its outcome. `FIXED` = proven cause corrected and covered by a test; `ACCEPTED` = deliberately not changed, with the reason recorded; 🔑 = blocked only by credentials; 👤 = user-owned decision or action.
+
+| ID | Outcome | Evidence |
+|---|---|---|
+| A-01 | FIXED | `defeb9f` (`vitest.workspace.ts`, serial `singleFork` integration project) and `48b276e` (redactor corrupting `confirmationId`). The flake was a real product bug: a UUID whose first segment is eight digits was rewritten as `[REDACTED_PHONE]`, so the confirmation could never be matched. Regression: `packages/server/test/privacy.redact.test.ts`. Full suite green 3× plus once shuffled |
+| A-02 | FIXED | `e2f5021`. Smoke now creates `hh_smoke-<timestamp>-<random>` and erases it through `forget_household`. Production 120-second dedupe unchanged. `npm run smoke` passes twice in a row against one server |
+| A-03 | FIXED | `e0752c3`. Candidates are bounded to 8–15 digits, a sentence-ending period cannot act as a separator, and candidates inside a longer hyphenated token are refused. Tests cover both directions: phones/e-mails/tokens still masked, dates and counts preserved. `privacy.audit.test.ts` stays green |
+| A-04 | FIXED | `93485f5`. README pins `ELLIE_FAKE_NOW=2026-10-16T09:00:00+05:30`, the seed command and the reset command |
+| A-05 | ACCEPTED | `a419786`; full table in [advisories.md](advisories.md). All 10 monorepo advisories are dev/test toolchain only and resolve solely through semver-major moves (`vitest 2→5`, `vite 5→8`) or a downgrade. `npm audit --omit=dev` is clean. No non-breaking upgrade exists; no `--force` was run |
+| A-06 | FIXED (reconstructed) | `20979a8`. `git log --all` confirms `docs/prompts/module-9.md` never existed in any commit, so it was rebuilt from the commit history, `modules.md` and the code, and is labelled "reconstructed" in the file itself |
+| A-07 | ACCEPTED + measured | `git log --all --diff-filter=A -- docs/prompts/` shows Modules 1–6 were only ever added as condensed execution briefs; no fuller version exists in history to recover. Schema coverage rerun 2026-10-18 via `npm run coverage -w @ellie/schema`: **97.58 % statements, 97.58 % lines, 87.61 % branches, 95.74 % functions** across 26 tests, above the 90 % line target |
+| A-08 | FIXED | `8736ba0`; redacted CLI transcript in [inspector-evidence.md](inspector-evidence.md). `npx @modelcontextprotocol/inspector --cli` listed all tools against `http://127.0.0.1:8787/mcp` and called each one once. This run is what exposed the A-01 `confirmationId` bug |
+| A-09 | ACCEPTED (untested) | `93485f5`. Docker is not installed on this machine. README states "Docker files provided, not tested on this machine." No claim is made that the image builds or runs |
+| A-10 | FIXED | `22af714`. Chromium installed; `npm run screenshots` now produces all four captures. Three real defects were fixed: the phone panel switching to its Browser tab and hiding the message list, `context.newPage({ viewport })` being ignored (both phone shots were 1440×900), and `.last()` selecting the fix message instead of the booking message |
+| A-11 | FIXED | `51f9fbc`. `npm run preflight` tags every check CODE or CREDENTIAL and counts them separately. CODE problems must be zero; missing AWS keys, region, model id, public URL and SNS destination are CREDENTIAL gaps |
+| A-12 | 🔑 | AWS/Bedrock/DynamoDB/SNS/Scheduler and the AWS benchmark still need provisioned credentials. Phase 2 makes the repo API-ready without keys |
+| A-13 | 🔑 | Public HTTPS endpoint, real-phone delivery and Alexa+ access remain unproven. The Alexa+ MCP Toolkit is US-only and limited to select partners; the simulator is the demo path |
+| A-14 | 👤 | 59 resolved unverified pack values (DEFAULT 4, IN 31, US 16, UK 8). Pack facts must not be marked verified by the agent; see [pack-verification.md](../pack-verification.md) |
+| A-15 | 👤 | Native-language review of the five starter UI translations, or an explicit English-only demo decision |
+| A-16 | 👤 | Real microphone rehearsal, three run-throughs and the recorded video |
+| A-17 | 👤 | Public repository publication, reviewer access and the remaining submission placeholders |
+| A-18 | 👤 | Final release tag, on explicit user confirmation only |
+
+Closure counts: FIXED 9; ACCEPTED 3 (A-05, A-07 recovery half, A-09); 🔑 2; 👤 5. No ❌ and no ⚠️ remain: every open row is 🔑 or 👤.
+
+Full gate after Phase 1 (2026-10-18): build, typecheck and lint pass; `npm test` discovers and passes **223** tests (schema 26 / server 157 / ui 6 / phone 19 / simulator 15); pack validation passes with the 59 starter warnings; `demo:check` 15/15; mock bench all seven tools under 500 ms p95; `npm run smoke` passes twice in a row. The test total rose from 217 to 223 because Phase 1 added six regression tests, not because any test was removed or weakened.
+
 ## Security and stop condition
 
 Reachable-history scan for credential-shaped AWS keys/private keys found no matches. A comprehensive historical PII/token scan has not been completed; literal security terms in docs/tests are not credentials. Before each audit docs commit, inspect staged content and scan credential-shaped values; never print or commit actual secrets. No pre-commit hook is installed by this read-only audit; automation can be considered after approval.
