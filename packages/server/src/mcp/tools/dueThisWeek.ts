@@ -114,12 +114,13 @@ export function register(server: McpServer, ctx: AppContext): void {
           data: { entries: entries.map((entry) => ({ itemId: entry.itemId, component: entry.component, displayName: entry.displayName, status: entry.status, nextDueLocal: entry.nextDueLocal, daysUntilDue: entry.daysUntilDue, reason: entry.reason })), generatedForLocal: today },
         card: {
           title: "This week at home",
-          items: entries.slice(0, 12).map((entry) => ({
+          // A glanceable card: the entries are already ordered by urgency, and the full list stays in structuredContent.
+          items: entries.slice(0, 6).map((entry) => ({
             label: `${entry.icon ?? ""} ${entry.displayName}`.trim(),
             value: `${entry.nextDueLocal ?? ""}${entry.reason ? ` · ${entry.reason}` : ""}`,
             status: entry.status === "overdue" ? "overdue" as const : entry.status === "due" || entry.status === "due_soon" ? "due" as const : entry.status === "warranty" ? "warning" as const : "info" as const,
           })),
-          actions: entries.slice(0, 8).map((entry) => ({ label: `View ${entry.displayName}`, tool: "predict_next", args: { householdId, item: snapshot.items.find((item) => item.itemId === entry.itemId)?.name ?? entry.itemId, ...(entry.component ? { component: entry.component } : {}) } })),
+          actions: entries.slice(0, 3).map((entry) => ({ label: `View ${entry.displayName}`, tool: "predict_next", args: { householdId, item: snapshot.items.find((item) => item.itemId === entry.itemId)?.name ?? entry.itemId, ...(entry.component ? { component: entry.component } : {}) } })),
         },
       });
     }),

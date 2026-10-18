@@ -39,4 +39,22 @@ describe("due_this_week", () => {
       expect((warranty.structuredContent as { data: { entries: Array<{ status: string }> } }).data.entries.some((entry) => entry.status === "warranty")).toBe(true);
     } finally { await client.close(); }
   });
+
+  it("keeps the card glanceable while structuredContent stays complete", async () => {
+    const ctx = await createTestContext("2026-10-16T03:30:00.000Z");
+    await seedDemo(ctx, { reset: true, anchorLocal: "2026-10-16" });
+    const server = createApp(ctx).listen(0, "127.0.0.1");
+    registerIntegrationCleanup(server, ctx);
+    await once(server, "listening");
+    const address = server.address() as AddressInfo;
+    const client = new Client({ name: "due-this-week-card-test", version: "1.0.0" });
+    try {
+      await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${address.port}/mcp`)));
+      const result = await client.callTool({ name: "due_this_week", arguments: { householdId: "demo-blr" } });
+      const payload = result.structuredContent as { data: { entries: unknown[] }; card?: { items: unknown[]; actions?: unknown[] } };
+      expect(payload.card?.items.length).toBeLessThanOrEqual(6);
+      expect(payload.card?.actions?.length ?? 0).toBeLessThanOrEqual(3);
+      expect(payload.data.entries.length).toBeGreaterThanOrEqual(payload.card?.items.length ?? 0);
+    } finally { await client.close(); }
+  });
 });

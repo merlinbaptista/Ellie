@@ -40,8 +40,8 @@ export function register(server: McpServer, ctx: AppContext): void {
         card: {
           title: `${pack.catalog[result.item.catalogKey]?.icon ?? ""} ${result.item.name} · ${args.symptom}`.trim(),
           items: [
-            ...result.diagnosis.candidates.slice(0, 3).map((candidate) => ({ label: candidate.description, value: `${Math.round(candidate.score * 100)}%`, status: "info" as const })),
-            ...result.diagnosis.evidence.slice(0, 4).map((evidence) => ({ label: "Evidence", value: evidence.text, status: evidence.kind.includes("overdue") ? "warning" as const : "info" as const })),
+            ...result.diagnosis.candidates.slice(0, 2).map((candidate) => ({ label: candidate.description, value: `${Math.round(candidate.score * 100)}%`, status: "info" as const })),
+            ...result.diagnosis.evidence.slice(0, 2).map((evidence) => ({ label: "Evidence", value: evidence.text, status: evidence.kind.includes("overdue") ? "warning" as const : "info" as const })),
             ...(result.diagnosis.fixPlan ? [{ label: "Fix", value: result.diagnosis.fixPlan.summary, status: "ok" as const }] : []),
           ],
           actions: [
