@@ -14,22 +14,53 @@ export class BedrockLlm implements LlmAdapter {
     this.client = new BedrockRuntimeClient({
       region: env.AWS_REGION,
       maxAttempts: 2,
-      requestHandler: new NodeHttpHandler({ requestTimeout: env.LLM_BACKGROUND_TIMEOUT_MS }),
+      requestHandler: new NodeHttpHandler({ requestTimeout: env.BEDROCK_TIMEOUT_MS }),
     });
+  }
+
+  /** Caps every Converse call at BEDROCK_TIMEOUT_MS even when the caller passes no signal, so a slow model can never hold a tool open. */
+  private deadline(callerSignal: AbortSignal | undefined): {
+    signal: AbortSignal;
+    timedOut: () => boolean;
+    race: <T>(work: Promise<T>) => Promise<T>;
+    dispose: () => void;
+  } {
+    const controller = new AbortController();
+    let expired = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const expiry = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        expired = true;
+        controller.abort();
+        reject(new ExternalServiceError(`Bedrock timed out after ${this.env.BEDROCK_TIMEOUT_MS} ms`, "My explanation service is unavailable, so I'll use my household records."));
+      }, this.env.BEDROCK_TIMEOUT_MS);
+    });
+    expiry.catch(() => undefined);
+    const onCallerAbort = () => controller.abort();
+    callerSignal?.addEventListener("abort", onCallerAbort, { once: true });
+    if (callerSignal?.aborted) controller.abort();
+    return {
+      signal: controller.signal,
+      timedOut: () => expired,
+      // The abort signal alone is not enough: a transport that ignores it would still block the tool.
+      race: (work) => Promise.race([work, expiry]),
+      dispose: () => { clearTimeout(timer); callerSignal?.removeEventListener("abort", onCallerAbort); },
+    };
   }
 
   async complete(req: LlmRequest): Promise<LlmResponse> {
     if (!this.env.BEDROCK_MODEL_ID) throw new ExternalServiceError("BEDROCK_MODEL_ID is not configured", "My explanation service is unavailable, so I'll use my household records.");
     const started = performance.now();
     const system = `${redactText(req.system)}${req.responseFormat === "json" ? "\nReturn only JSON." : ""}`;
+    const deadline = this.deadline(req.signal);
     try {
-      const response = await this.client.send(new ConverseCommand({
+      const response = await deadline.race(this.client.send(new ConverseCommand({
         modelId: this.env.BEDROCK_MODEL_ID,
         system: [{ text: system }],
         messages: req.messages.map((message) => ({ role: message.role, content: [{ text: redactText(message.content) }] })),
         inferenceConfig: { maxTokens: req.maxTokens ?? this.env.BEDROCK_MAX_TOKENS, temperature: req.temperature ?? 0.2 },
         ...(this.env.BEDROCK_GUARDRAIL_ID ? { guardrailConfig: { guardrailIdentifier: this.env.BEDROCK_GUARDRAIL_ID, guardrailVersion: this.env.BEDROCK_GUARDRAIL_VERSION ?? "DRAFT" } } : {}),
-      }), { abortSignal: req.signal });
+      }), { abortSignal: deadline.signal }));
       this.lastLatencyMs = Math.round(performance.now() - started);
       const rawText = response.output?.message?.content?.map((part) => part.text ?? "").join("") ?? "";
       let text = rawText;
@@ -50,23 +81,28 @@ export class BedrockLlm implements LlmAdapter {
       };
     } catch (error) {
       const awsError = error as { name?: string; $metadata?: { httpStatusCode?: number; requestId?: string } };
-      const reason = awsError.name === "AccessDeniedException"
-        ? "Bedrock model access is not enabled"
-        : awsError.name === "ThrottlingException"
-          ? "Bedrock is throttling requests"
-          : awsError.name === "ValidationException"
-            ? "Bedrock rejected the request"
-            : req.signal?.aborted ? "Bedrock request timed out" : "Bedrock request failed";
-      this.logger.warn({ model: this.env.BEDROCK_MODEL_ID, reason, name: awsError.name, statusCode: awsError.$metadata?.httpStatusCode, requestId: awsError.$metadata?.requestId, ms: Math.round(performance.now() - started) }, "Bedrock completion failed");
+      const reason = deadline.timedOut()
+        ? `Bedrock timed out after ${this.env.BEDROCK_TIMEOUT_MS} ms`
+        : awsError.name === "AccessDeniedException"
+          ? "Bedrock model access is not enabled"
+          : awsError.name === "ThrottlingException"
+            ? "Bedrock is throttling requests"
+            : awsError.name === "ValidationException"
+              ? "Bedrock rejected the request"
+              : req.signal?.aborted ? "Bedrock request timed out" : "Bedrock request failed";
+      this.logger.warn({ model: this.env.BEDROCK_MODEL_ID, reason, timedOut: deadline.timedOut(), timeoutMs: this.env.BEDROCK_TIMEOUT_MS, name: awsError.name, statusCode: awsError.$metadata?.httpStatusCode, requestId: awsError.$metadata?.requestId, ms: Math.round(performance.now() - started) }, deadline.timedOut() ? "bedrock.timeout_fallback" : "Bedrock completion failed");
       throw new ExternalServiceError(reason, "My explanation service is unavailable, so I'll use my household records.");
+    } finally {
+      deadline.dispose();
     }
   }
 
   async completeWithTools(req: LlmToolRequest): Promise<LlmToolResponse> {
     if (!this.env.BEDROCK_MODEL_ID) throw new ExternalServiceError("BEDROCK_MODEL_ID is not configured", "My explanation service is unavailable, so I'll use my household records.");
     const started = performance.now();
+    const deadline = this.deadline(req.signal);
     try {
-      const response = await this.client.send(new ConverseCommand({
+      const response = await deadline.race(this.client.send(new ConverseCommand({
         modelId: this.env.BEDROCK_MODEL_ID,
         system: [{ text: redactText(req.system) }],
         messages: req.messages.map((message) => ({ role: message.role, content: [{ text: redactText(message.content) }] })),
@@ -75,15 +111,19 @@ export class BedrockLlm implements LlmAdapter {
           toolChoice: { auto: {} },
         },
         inferenceConfig: { maxTokens: req.maxTokens ?? this.env.BEDROCK_MAX_TOKENS, temperature: req.temperature ?? 0.1 },
-      }), { abortSignal: req.signal });
+      }), { abortSignal: deadline.signal }));
       this.lastLatencyMs = Math.round(performance.now() - started);
       const toolCalls = (response.output?.message?.content ?? []).flatMap((part) => part.toolUse?.name ? [{ name: part.toolUse.name, input: (part.toolUse.input ?? {}) as Record<string, unknown> }] : []);
       return { toolCalls, latencyMs: this.lastLatencyMs };
     } catch (error) {
       const awsError = error as { name?: string; $metadata?: { httpStatusCode?: number; requestId?: string } };
-      const reason = req.signal?.aborted ? "Bedrock tool routing timed out" : `Bedrock tool routing failed${awsError.name ? ` (${awsError.name})` : ""}`;
-      this.logger.warn({ model: this.env.BEDROCK_MODEL_ID, reason, name: awsError.name, statusCode: awsError.$metadata?.httpStatusCode, requestId: awsError.$metadata?.requestId, ms: Math.round(performance.now() - started) }, "Bedrock tool routing failed");
+      const reason = deadline.timedOut()
+        ? `Bedrock tool routing timed out after ${this.env.BEDROCK_TIMEOUT_MS} ms`
+        : req.signal?.aborted ? "Bedrock tool routing timed out" : `Bedrock tool routing failed${awsError.name ? ` (${awsError.name})` : ""}`;
+      this.logger.warn({ model: this.env.BEDROCK_MODEL_ID, reason, timedOut: deadline.timedOut(), timeoutMs: this.env.BEDROCK_TIMEOUT_MS, name: awsError.name, statusCode: awsError.$metadata?.httpStatusCode, requestId: awsError.$metadata?.requestId, ms: Math.round(performance.now() - started) }, deadline.timedOut() ? "bedrock.timeout_fallback" : "Bedrock tool routing failed");
       throw new ExternalServiceError(reason, "I couldn't route that request safely.");
+    } finally {
+      deadline.dispose();
     }
   }
 

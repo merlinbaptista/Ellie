@@ -60,6 +60,7 @@ const envSchema = z.object({
   DYNAMODB_ENDPOINT: optionalString,
   BEDROCK_MODEL_ID: optionalString,
   BEDROCK_MAX_TOKENS: positiveInt(600),
+  BEDROCK_TIMEOUT_MS: positiveInt(8000, 60_000),
   BEDROCK_GUARDRAIL_ID: optionalString,
   BEDROCK_GUARDRAIL_VERSION: optionalString,
   LLM_VOICE_TIMEOUT_MS: positiveInt(350),

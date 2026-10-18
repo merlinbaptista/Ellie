@@ -7,6 +7,8 @@ import { eraseThrowawayHousehold, percentile } from "./bench-lib.js";
 
 const endpoint = new URL(process.env.ELLIE_BENCH_URL ?? "http://127.0.0.1:8787/mcp");
 const base = endpoint.origin;
+// --live records AWS timings in a separate file; it refuses to run on mocks so a mock number can never be quoted as live.
+const live = process.argv.includes("--live");
 const householdId = `hh_bench-${randomUUID().slice(0, 8)}`;
 const iterations = 30;
 const warmups = 3;
@@ -37,10 +39,14 @@ async function eraseBenchHousehold(): Promise<void> {
 try {
   await client.connect(new StreamableHTTPClientTransport(endpoint));
   const status = await fetch(new URL("/api/status", base)).then((response) => response.json()) as { drivers?: Record<string, { implementation?: string; resolved?: string }> };
+  const mockDrivers = Object.entries(status.drivers ?? {}).filter(([, driver]) => driver.resolved !== "aws").map(([name]) => name);
+  if (live && mockDrivers.length) {
+    throw new Error(`--live needs every driver on AWS; still on mocks: ${mockDrivers.join(", ")}. Run \`npm run keys:check\` and \`npm run aws:check\` first.`);
+  }
   const initialized = await client.callTool({ name: "setup_household", arguments: { householdId, country: "IN", region: "Bench", timeZone: "Asia/Kolkata", consent: false, confirm: true } });
   if (initialized.isError) throw new Error("Could not initialize throwaway benchmark household.");
   sessionReady = true;
-  const resultsPath = resolve("docs/bench.md");
+  const resultsPath = resolve(live ? "docs/bench-live.md" : "docs/bench.md");
   for (const test of cases) {
     const times: number[] = [];
     for (let index = 0; index < warmups + iterations; index++) {
@@ -56,7 +62,7 @@ try {
     results.push({ tool: test.name, p50, p95, max, status: p95 <= 500 ? "PASS" : "FAIL" });
   }
   const lines = [
-    "# Benchmark",
+    live ? "# Benchmark (live AWS)" : "# Benchmark (local mock)",
     "",
     `Date: ${new Date().toISOString()}`,
     `Endpoint: ${endpoint.origin}`,

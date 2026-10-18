@@ -35,4 +35,40 @@ describe("Bedrock Converse adapter", () => {
     await expect(adapter.complete({ system: "x", messages: [{ role: "user", content: "x" }] })).rejects.toMatchObject({ speech: "My explanation service is unavailable, so I'll use my household records." });
     adapter.close();
   });
+
+  it("gives up on a slow model after BEDROCK_TIMEOUT_MS and lets the caller fall back deterministically", async () => {
+    bedrockMock.reset();
+    bedrockMock.on(ConverseCommand).callsFake(() => new Promise(() => undefined));
+    const env = loadEnv({ AWS_REGION: "us-east-1", BEDROCK_MODEL_ID: "model", BEDROCK_TIMEOUT_MS: "60" });
+    const warnings: string[] = [];
+    const adapter = new BedrockLlm(env, { ...logger, warn: (_fields: unknown, message?: string) => { warnings.push(message ?? ""); } } as unknown as typeof logger);
+    const started = Date.now();
+    await expect(adapter.complete({ system: "x", messages: [{ role: "user", content: "x" }] })).rejects.toMatchObject({
+      message: "Bedrock timed out after 60 ms",
+      speech: "My explanation service is unavailable, so I'll use my household records.",
+    });
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(warnings).toContain("bedrock.timeout_fallback");
+    adapter.close();
+  });
+
+  it("applies the same timeout to tool routing", async () => {
+    bedrockMock.reset();
+    bedrockMock.on(ConverseCommand).callsFake(() => new Promise(() => undefined));
+    const env = loadEnv({ AWS_REGION: "us-east-1", BEDROCK_MODEL_ID: "model", BEDROCK_TIMEOUT_MS: "60" });
+    const adapter = new BedrockLlm(env, logger);
+    await expect(adapter.completeWithTools({ system: "x", messages: [{ role: "user", content: "x" }], tools: [{ name: "t", description: "d", inputSchema: { type: "object" } }] })).rejects.toMatchObject({
+      speech: "I couldn't route that request safely.",
+    });
+    adapter.close();
+  });
+
+  it("does not time out a fast model", async () => {
+    bedrockMock.reset();
+    bedrockMock.on(ConverseCommand).resolves({ output: { message: { content: [{ text: "fine" }] } } });
+    const env = loadEnv({ AWS_REGION: "us-east-1", BEDROCK_MODEL_ID: "model", BEDROCK_TIMEOUT_MS: "500" });
+    const adapter = new BedrockLlm(env, logger);
+    await expect(adapter.complete({ system: "x", messages: [{ role: "user", content: "x" }] })).resolves.toMatchObject({ text: "fine" });
+    adapter.close();
+  });
 });
