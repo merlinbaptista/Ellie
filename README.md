@@ -1,6 +1,6 @@
-# Headsup
+# Ellie
 
-**Normal reminders remember a time. Headsup remembers your home.** Headsup is an MCP household memory agent that turns home history into predictions, cited diagnosis, and useful phone handoffs.
+**Normal reminders remember a time. Ellie remembers your home.** Ellie is an MCP household memory agent that turns home history into predictions, cited diagnosis, and useful phone handoffs.
 
 <!-- 👤 Replace this paragraph with your own household moment, in your own words. One true incident. No statistics. -->
 > *The moment that started this.* <!-- for example: the Saturday the cooking gas ran out mid-meal, two days after I'd told myself I should order a refill. -->
@@ -9,7 +9,7 @@
 
 **What it can't do.** Know that *your* cylinder lasts 27 days rather than 30 because that's what your last six refills show. Know that your region needs a booking lead time. Remember that the purifier did this before and what fixed it.
 
-**What Headsup adds.** A household memory that learns from your own events, applies sourced regional rules, diagnoses from your own repair history with cited evidence, and hands the long version to your phone.
+**What Ellie adds.** A household memory that learns from your own events, applies sourced regional rules, diagnoses from your own repair history with cited evidence, and hands the long version to your phone.
 
 - Remembers appliances, supplies, maintenance, and household events.
 - Predicts what is due from household history and sourced regional packs.
@@ -25,13 +25,13 @@ Building this surfaced real platform friction, logged in [docs/friction-log.md](
 
 | Simulated Echo Show | Two tools in one sentence |
 | --- | --- |
-| ![Headsup simulator idle screen](docs/images/simulator-idle.png) | ![One sentence logging the cylinder and diagnosing the purifier](docs/images/simulator-hero.png) |
+| ![Ellie simulator idle screen](docs/images/simulator-idle.png) | ![One sentence logging the cylinder and diagnosing the purifier](docs/images/simulator-hero.png) |
 
 | Fix guide on the phone | Booking reminder on the phone |
 | --- | --- |
 | ![Cited repair steps on the phone page](docs/images/phone-fix.png) | ![Booking reminder on the phone page](docs/images/phone-booking.png) |
 
-Regenerate them with `npx playwright install chromium`, then `npm run screenshots` while Headsup is running.
+Regenerate them with `npx playwright install chromium`, then `npm run screenshots` while Ellie is running.
 
 ## Demo in 60 Seconds
 
@@ -84,7 +84,7 @@ flowchart LR
 
 | Tool                    | Purpose                                          | Annotation                         |
 | ----------------------- | ------------------------------------------------ | ---------------------------------- |
-| `ellie_ping`            | Check that Headsup is responding                   | Read-only                          |
+| `ellie_ping`            | Check that Ellie is responding                   | Read-only                          |
 | `ellie_status`          | Inspect active drivers and health                | Read-only                          |
 | `ellie_region_info`     | Explain a region-pack item or rule               | Read-only                          |
 | `setup_household`       | Save household preferences and consented contact | Writes data                        |
@@ -103,8 +103,8 @@ flowchart LR
 
 ## Journeys
 
-- **First change:** log an event; Headsup can ask one follow-up and then update its prediction.
-- **Diagnosis from history:** report a symptom; Headsup ranks cited evidence and applies safety checks before guidance.
+- **First change:** log an event; Ellie can ask one follow-up and then update its prediction.
+- **Diagnosis from history:** report a symptom; Ellie ranks cited evidence and applies safety checks before guidance.
 - **Phone and booking:** send fix steps, record a fix, then use a reminder link to book with the region provider.
 - **Privacy:** review what is stored, export JSON, withdraw consent, forget one item, or erase the household.
 
