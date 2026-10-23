@@ -10,6 +10,7 @@ describe("simulator follow-up state", () => {
     expect(answerForPending("send the booking link", phoneChoice)).toBe("booking");
     expect(answerForPending("the fix steps", phoneChoice)).toBe("fix");
     expect(answerForPending("not sure", { ...phoneChoice, defaultValue: "fix" })).toBe("fix");
+    expect(answerForPending("yes", { ...phoneChoice, defaultValue: "fix" })).toBe("fix");
     const consent = { ...pending, retry: { ...pending.retry, argName: "consent" } };
     expect(answerForPending("yes", consent)).toBe(true);
     expect(answerForPending("no", consent)).toBe(false);

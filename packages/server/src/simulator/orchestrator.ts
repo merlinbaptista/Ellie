@@ -27,6 +27,7 @@ function followUpFrom(value: unknown): PendingFollowUp | undefined {
 export function answerForPending(text: string, pending: PendingFollowUp): unknown {
   const normalized = text.trim().toLowerCase();
   if (/^(?:i'?m )?(?:not sure|don't know|do not know|no idea)$/.test(normalized) && pending.defaultValue !== undefined) return pending.defaultValue;
+  if (pending.retry.argName === "contentType" && /^(yes|yeah|yep|sure|please)$/.test(normalized) && pending.defaultValue !== undefined) return pending.defaultValue;
   if (pending.retry.argName === "contentType") {
     if (/\b(fix|steps)\b/.test(normalized)) return "fix";
     if (/\b(book|booking|link)\b/.test(normalized)) return "booking";
